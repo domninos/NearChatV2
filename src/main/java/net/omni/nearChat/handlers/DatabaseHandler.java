@@ -30,25 +30,23 @@ public class DatabaseHandler {
             String host = "redis-13615.crce178.ap-east-1-1.ec2.redns.redis-cloud.com";
             int portInt = 13615;
             String user = "default";
-            String password = "UMnqdMOz9GpF3LktR4hqKAO6rbJslpmS";
+            String password = "UMnqdMOz9GpF3LktR4hqKAO6rbJslpmS"; // TODO: REMOVE AFTER FINISHING PLUGINO
 
             connect(host, portInt, user, password.toCharArray());
             plugin.sendConsole("&b[DEV] &aEnabled.");
         }
     }
 
-    public void connectConfig() {
+    public boolean connectConfig() {
         String host = plugin.getNearConfig().getString("host");
         String port = plugin.getNearConfig().getString("port");
         String user = plugin.getNearConfig().getString("user");
         String password = plugin.getNearConfig().getString("password");
 
-        if (isNullOrBlank(host, port, user, password)) {
+        if (isNullOrBlank(host, port, user, password) || port.isBlank()) {
             plugin.error("Database information not found in config.yml. Will not use database...");
-            return;
+            return false;
         }
-
-        if (port.isBlank()) return;
 
         int portInt;
 
@@ -56,10 +54,11 @@ public class DatabaseHandler {
             portInt = Integer.parseInt(port);
         } catch (NumberFormatException e) {
             plugin.error("port: " + e);
-            return;
+            return false;
         }
 
         connect(host, portInt, user, password.toCharArray());
+        return true;
     }
 
     public void connect(String host, int portInt, String user, char[] password) {

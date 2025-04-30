@@ -1,5 +1,6 @@
 package net.omni.nearChat;
 
+import net.omni.nearChat.commands.MainCommand;
 import net.omni.nearChat.commands.NearChatCommand;
 import net.omni.nearChat.handlers.DatabaseHandler;
 import net.omni.nearChat.handlers.MessageHandler;
@@ -9,10 +10,13 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 
 public final class NearChatPlugin extends JavaPlugin {
 
+    private final List<MainCommand> mainCommands = new ArrayList<>();
     private MessageHandler messageHandler;
     private NearChatConfig nearConfig;
     private NearChatConfig messageConfig;
@@ -44,23 +48,18 @@ public final class NearChatPlugin extends JavaPlugin {
         // TODO: configHandler.saveToConfig()
 //        messageHandler.saveToConfig();
 
-        nearConfig.save();
-        messageConfig.save();
-
-        messageHandler.flush();
-        databaseHandler.closeDatabase();
+        flush();
 
         sendConsole("&cSuccessfully disabled "
                 + getDescription().getFullName() + " [" + getDescription().getAPIVersion() + "]");
     }
-
 
     public void error(Exception e) {
         error(e.getMessage());
     }
 
     public void error(String text) {
-        getLogger().log(Level.SEVERE, "ERROR! Something went wrong: " + text);
+        getLogger().log(Level.SEVERE, translate("&cERROR! Something went wrong: " + text));
     }
 
     public void sendConsole(String text) {
@@ -83,6 +82,10 @@ public final class NearChatPlugin extends JavaPlugin {
         return databaseHandler;
     }
 
+    public List<MainCommand> getCommands() {
+        return mainCommands;
+    }
+
     public void sendMessage(CommandSender sender, String msg) {
         sender.sendMessage(translate("&f[&6Near&eChat&f] &7" + msg));
     }
@@ -103,5 +106,20 @@ public final class NearChatPlugin extends JavaPlugin {
 
         new NearChatCommand(this).register();
         sendConsole("&aCommands initialized.");
+    }
+
+    private void flush() {
+        nearConfig.save();
+        messageConfig.save();
+
+        messageHandler.flush();
+        databaseHandler.closeDatabase();
+
+        if (!mainCommands.isEmpty()) {
+            mainCommands.stream()
+                    .filter(mainCommand -> !mainCommand.getSubCommands().isEmpty())
+                    .forEach(MainCommand::flush);
+        }
+
     }
 }

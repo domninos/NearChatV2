@@ -1,18 +1,29 @@
 package net.omni.nearChat.commands;
 
 import net.omni.nearChat.NearChatPlugin;
-import org.bukkit.Bukkit;
+import net.omni.nearChat.commands.subcommands.DatabaseSubCommand;
+import net.omni.nearChat.commands.subcommands.SubCommand;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
-import java.util.Objects;
-
-public class NearChatCommand implements CommandExecutor {
-    private final NearChatPlugin plugin;
+public class NearChatCommand extends MainCommand {
 
     public NearChatCommand(NearChatPlugin plugin) {
-        this.plugin = plugin;
+        super(plugin);
+    }
+
+    @Override
+    public void registerSubCommands() {
+        subCommands.add(new DatabaseSubCommand(plugin, this));
+    }
+
+    @Override
+    public String[] getHelpText() {
+        return new String[]{
+                "[+][+][+][+][+][+][+][+][+][+][+][+][+][+][+][+][+]",
+                "&c/nearchat database >> Loads database from config.",
+                "[+][+][+][+][+][+][+][+][+][+][+][+][+][+][+][+][+]",
+        };
     }
 
     @Override
@@ -22,36 +33,30 @@ public class NearChatCommand implements CommandExecutor {
 //            return true;
 //        }
 
+        if (subCommands.isEmpty())
+            return true;
+
         if (args.length == 0) {
             // TODO: Make separate class for each commands for cleanliness
             // TODO: open GUI
-        } else if (args.length == 1) {
-            //TODO: subcommands
-            /*
-            /nearchat reload
-             */
+        } else {
+            for (SubCommand subCommand : getSubCommands()) {
+                if (subCommand == null) continue;
 
-            if (args[0].equalsIgnoreCase("database")) {
-                // TODO load database (THIS MUST BE ON A SEPARATE CLASS OR SOMETHING
-                try {
-                    // reload before accessing config.
-                    plugin.getNearConfig().reload();
-
-                    plugin.getDatabaseHandler().connectConfig();
-                    plugin.sendMessage(sender, "&aSuccessfully connected database!");
-
-                } catch (Exception e) {
-                    plugin.sendMessage(sender, "&cSomething went wrong loading database: " + e.getMessage());
-                }
-
-                return true;
+                if (args[subCommand.getArg()].equalsIgnoreCase(subCommand.getCommand()))
+                    return subCommand.execute(sender, args);
             }
+
+            sendHelp(sender);
+            return true;
         }
 
-        return false;
+        sendHelp(sender);
+        return true;
     }
 
-    public void register() {
-        Objects.requireNonNull(Bukkit.getPluginCommand("nearchat")).setExecutor(this);
+    @Override
+    public String getMainCommand() {
+        return "nearchat";
     }
 }

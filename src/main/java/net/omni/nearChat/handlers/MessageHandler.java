@@ -37,8 +37,6 @@ public class MessageHandler {
             String msg = messageSection.getString(key);
 
             childToMessage.put(key, msg);
-            plugin.sendConsole("&9LoadKeys");
-
         }
 
         plugin.sendConsole("&aLoaded messages");
@@ -48,7 +46,7 @@ public class MessageHandler {
         // TODO: save childToMessage to messages.yml
     }
 
-    public String getPlayersOnly() {
+    public String getPlayerOnly() {
         return childToMessage.getOrDefault("player_only", "&c`player_only` could not be found");
     }
 
