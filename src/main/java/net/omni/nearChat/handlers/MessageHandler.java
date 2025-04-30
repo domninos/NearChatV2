@@ -10,13 +10,13 @@ import java.util.Map;
 
 public class MessageHandler {
     private final NearChatPlugin plugin;
-    private final NearChatConfig nearConfig;
+    private final NearChatConfig messageConfig;
 
     private final Map<String, String> childToMessage = new HashMap<>();
 
     public MessageHandler(NearChatPlugin plugin) {
         this.plugin = plugin;
-        this.nearConfig = plugin.getNearConfig();
+        this.messageConfig = plugin.getMessageConfig();
     }
 
     public void load() {
@@ -26,6 +26,7 @@ public class MessageHandler {
 
         if (messageSection == null) {
             plugin.sendConsole("`messages` not found. Creating..");
+
             messageSection = getConfig().createSection("messages");
             loadDefaults(messageSection);
         }
@@ -36,11 +37,11 @@ public class MessageHandler {
             String msg = messageSection.getString(key);
 
             childToMessage.put(key, msg);
+            plugin.sendConsole("&9LoadKeys");
+
         }
 
-
-        plugin.sendConsole("&aLoaded config.yml");
-
+        plugin.sendConsole("&aLoaded messages");
     }
 
     public void saveToConfig() {
@@ -48,7 +49,7 @@ public class MessageHandler {
     }
 
     public String getPlayersOnly() {
-        return childToMessage.getOrDefault("players_only", "&c`players_only` could not be found");
+        return childToMessage.getOrDefault("player_only", "&c`player_only` could not be found");
     }
 
     private void loadDefaults(ConfigurationSection... sections) {
@@ -62,14 +63,15 @@ public class MessageHandler {
                 // set
                 s.set("player_only", "&cOnly players can execute this command.");
                 // TODO
+                plugin.sendConsole("&9LoadDefaults");
             }
         }
 
-        plugin.getNearConfig().save();
+        this.messageConfig.save();
     }
 
     public FileConfiguration getConfig() {
-        return this.nearConfig.getConfig();
+        return this.messageConfig.getConfig();
     }
 
     public void flush() {

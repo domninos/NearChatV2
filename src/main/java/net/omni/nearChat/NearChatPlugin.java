@@ -9,7 +9,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.Arrays;
 import java.util.logging.Level;
 
 public final class NearChatPlugin extends JavaPlugin {
@@ -48,22 +47,20 @@ public final class NearChatPlugin extends JavaPlugin {
         nearConfig.save();
         messageConfig.save();
 
-
         messageHandler.flush();
-
         databaseHandler.closeDatabase();
 
         sendConsole("&cSuccessfully disabled "
                 + getDescription().getFullName() + " [" + getDescription().getAPIVersion() + "]");
     }
 
-    public void error(String text) {
-        getLogger().log(Level.SEVERE, "ERROR! Something went wrong: " + text);
-    }
 
     public void error(Exception e) {
-        getLogger().log(Level.SEVERE, "Error saving file: " + Arrays.toString(e.getStackTrace()));
-        sendConsole("&cERROR! Something went wrong: " + e.getMessage());
+        error(e.getMessage());
+    }
+
+    public void error(String text) {
+        getLogger().log(Level.SEVERE, "ERROR! Something went wrong: " + text);
     }
 
     public void sendConsole(String text) {
@@ -74,12 +71,20 @@ public final class NearChatPlugin extends JavaPlugin {
         return this.nearConfig;
     }
 
+    public NearChatConfig getMessageConfig() {
+        return messageConfig;
+    }
+
     public MessageHandler getMessageHandler() {
         return messageHandler;
     }
 
+    public DatabaseHandler getDatabaseHandler() {
+        return databaseHandler;
+    }
+
     public void sendMessage(CommandSender sender, String msg) {
-        sender.sendMessage(translate("&4[&6Near&2Chat&4] &7" + msg));
+        sender.sendMessage(translate("&f[&6Near&eChat&f] &7" + msg));
     }
 
     public String translate(String text) {
@@ -97,6 +102,6 @@ public final class NearChatPlugin extends JavaPlugin {
         // TODO
 
         new NearChatCommand(this).register();
-        sendConsole("Commands initialized.");
+        sendConsole("&aCommands initialized.");
     }
 }

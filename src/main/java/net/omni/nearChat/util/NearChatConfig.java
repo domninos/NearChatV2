@@ -34,7 +34,16 @@ public class NearChatConfig {
         this.file = new File(directory, fileName);
 
         if (!file.exists()) {
-            plugin.saveResource(fileName, false); // TODO: test
+            if (res)
+                plugin.saveResource(fileName, false); // TODO: test
+            else {
+                try {
+                    file.createNewFile();
+                } catch (IOException e) {
+                    plugin.error("Could not create file: " + e.getMessage());
+                }
+            }
+
             plugin.sendConsole("&aSuccessfully created " + fileName);
         }
 

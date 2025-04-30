@@ -1,99 +1,115 @@
 package net.omni.nearChat.handlers;
 
 import io.lettuce.core.RedisClient;
+import io.lettuce.core.RedisFuture;
 import io.lettuce.core.RedisURI;
-import io.lettuce.core.api.StatefulRedisConnection;
-import io.lettuce.core.api.async.RedisAsyncCommands;
 import net.omni.nearChat.NearChatPlugin;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
+import java.util.Arrays;
 
 public class DatabaseHandler {
     private final NearChatPlugin plugin;
+
+    private boolean enabled = false;
+
+    private RedisClient client;
 
     public DatabaseHandler(NearChatPlugin plugin) {
         this.plugin = plugin;
     }
 
     public void initDatabase() {
+        // REF: https://redis.io/docs/latest/develop/clients/lettuce/connect/
         String devS = plugin.getNearConfig().getString("dev");
 
-        boolean dev;
-
-        if (devS == null || devS.isBlank())
-            dev = false;
-        else
-            dev = plugin.getNearConfig().getBool("dev");
-
-        String host, port, password;
-        int portInt;
+        boolean dev = devS != null && !devS.isBlank() && plugin.getNearConfig().getBool("dev");
 
         if (!dev) {
-            host = plugin.getNearConfig().getString("host");
-            port = plugin.getNearConfig().getString("port");
-            password = plugin.getNearConfig().getString("password");
-
-            if (host == null || port == null || password == null) {
-                plugin.error("Database information not found in config.yml. Will not use database...");
-                return;
-            }
-
-            try {
-                portInt = Integer.parseInt(port);
-            } catch (NumberFormatException e) {
-                plugin.error(e);
-                return;
-            }
+            connectConfig();
         } else {
-            host = "redis-13615.crce178.ap-east-1-1.ec2.redns.redis-cloud.com";
-            portInt = 13615;
-            password = "UMnqdMOz9GpF3LktR4hqKAO6rbJslpmS";
+            String host = "redis-13615.crce178.ap-east-1-1.ec2.redns.redis-cloud.com";
+            int portInt = 13615;
+            String user = "default";
+            String password = "UMnqdMOz9GpF3LktR4hqKAO6rbJslpmS";
 
+            connect(host, portInt, user, password.toCharArray());
             plugin.sendConsole("&b[DEV] &aEnabled.");
         }
-
-        RedisURI uri = RedisURI.Builder.redis(host, portInt)
-                .withSsl(true)
-                .withPassword(password.toCharArray())
-                .build();
-
-        try (RedisClient client = RedisClient.create(uri)) {
-            try (StatefulRedisConnection<String, String> connection = client.connect()) {
-                RedisAsyncCommands<String, String> commands = connection.async();
-
-                // Asynchronously store & retrieve a simple string
-                commands.set("foo", "bar").get();
-                System.out.println(commands.get("foo").get()); // prints bar
-
-                // Asynchronously store key-value pairs in a hash directly
-                Map<String, String> hash = new HashMap<>();
-                hash.put("name", "John");
-                hash.put("surname", "Smith");
-                hash.put("company", "Redis");
-                hash.put("age", "29");
-                commands.hset("user-session:123", hash).get();
-
-                System.out.println(commands.hgetall("user-session:123").get());
-                // Prints: {name=John, surname=Smith, company=Redis, age=29}
-                plugin.sendConsole("&aSuccessfully connected to: &3" + host);
-            } catch (ExecutionException | InterruptedException e) {
-                throw new RuntimeException(e);
-            } finally {
-                client.shutdown();
-            }
-        }
-
-        // REF: https://redis.io/docs/latest/develop/clients/lettuce/connect/
     }
 
-    /*
-     getters setters
-     everything must run asynchronously
+    public void connectConfig() {
+        String host = plugin.getNearConfig().getString("host");
+        String port = plugin.getNearConfig().getString("port");
+        String user = plugin.getNearConfig().getString("user");
+        String password = plugin.getNearConfig().getString("password");
 
-    */
+        if (isNullOrBlank(host, port, user, password)) {
+            plugin.error("Database information not found in config.yml. Will not use database...");
+            return;
+        }
+
+        if (port.isBlank()) return;
+
+        int portInt;
+
+        try {
+            portInt = Integer.parseInt(port);
+        } catch (NumberFormatException e) {
+            plugin.error("port: " + e);
+            return;
+        }
+
+        connect(host, portInt, user, password.toCharArray());
+    }
+
+    public void connect(String host, int portInt, String user, char[] password) {
+        if (isEnabled()) {
+            plugin.error("&cYou cannot connect to the database whilst enabled.");
+            return;
+        }
+
+        try {
+            RedisURI redisUri = RedisURI.Builder.redis(host, portInt)
+                    .withAuthentication(user, password).build();
+
+            client = RedisClient.create(redisUri);
+
+            plugin.sendConsole("&aSuccessfully connected to: &3" + host);
+
+            this.enabled = true;
+        } catch (Exception e) {
+            plugin.error(e);
+        }
+    }
+
+    public boolean isEnabled() {
+        return this.enabled && client != null;
+    }
+
+    public String syncGet(String key) {
+        return client.connect().sync().get(key);
+    }
+
+    public void syncSet(String key, String value) {
+        client.connect().sync().set(key, value);
+    }
+
+    public RedisFuture<String> asyncGet(String key) {
+        return client.connect().async().get(key);
+    }
+
+    public RedisFuture<String> asyncSet(String k, String v) {
+        return client.connect().async().set(k, v);
+    }
+
+    private boolean isNullOrBlank(String... strings) {
+        return Arrays.stream(strings).anyMatch(string -> string == null || toString().isBlank());
+    }
 
     public void closeDatabase() {
+        if (isEnabled()) {
+            client.shutdown();
+            plugin.sendConsole("&aDatabase disconnected.");
+        }
     }
 }
