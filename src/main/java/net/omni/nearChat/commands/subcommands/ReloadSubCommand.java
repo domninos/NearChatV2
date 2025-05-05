@@ -4,24 +4,30 @@ import net.omni.nearChat.NearChatPlugin;
 import net.omni.nearChat.commands.MainCommand;
 import org.bukkit.command.CommandSender;
 
-public class HelpSubCommand extends SubCommand {
-    public HelpSubCommand(NearChatPlugin plugin, MainCommand mainCommand) {
+public class ReloadSubCommand extends SubCommand {
+    public ReloadSubCommand(NearChatPlugin plugin, MainCommand mainCommand) {
         super(plugin, mainCommand);
     }
 
     @Override
     public String getCommand() {
-        return "help";
+        return "reload";
     }
 
     @Override
     public String[] getAliases() {
-        return new String[]{"h"};
+        return new String[]{"rl"};
     }
 
     @Override
     public boolean execute(CommandSender sender, String[] args) {
-        getMainCommand().sendHelp(sender);
+        plugin.getNearConfig().reload();
+        plugin.getConfigHandler().load();
+
+        plugin.getMessageConfig().reload();
+        plugin.getMessageHandler().load();
+
+        plugin.sendMessage(sender, "Reloaded config and messages.yml"); // TODO messages.yml
         return true;
     }
 
@@ -32,6 +38,6 @@ public class HelpSubCommand extends SubCommand {
 
     @Override
     public String getPermission() {
-        return "nearchat.use";
+        return "nearchat.reload";
     }
 }

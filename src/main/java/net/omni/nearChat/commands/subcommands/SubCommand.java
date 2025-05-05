@@ -23,4 +23,8 @@ public abstract class SubCommand {
     public abstract int getArg();
 
     public abstract String getPermission();
+
+    public MainCommand getMainCommand() {
+        return mainCommand;
+    }
 }

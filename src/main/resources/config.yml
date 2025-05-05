@@ -3,4 +3,5 @@ port: ""
 user: ""
 password: ""
 
+database-save-delay: 6000
 near-block-radius: 30

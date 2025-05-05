@@ -16,7 +16,7 @@ public class DatabaseSubCommand extends SubCommand {
 
     @Override
     public String[] getAliases() {
-        return new String[]{"db", "data", "reload", "rl"};
+        return new String[]{"db", "data"};
     }
 
     @Override

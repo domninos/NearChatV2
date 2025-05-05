@@ -86,7 +86,7 @@ public class NearChatConfig {
     }
 
     public boolean getBool(String path) {
-        return config.getBoolean(path);
+        return config.getBoolean(path, false);
     }
 
     public void reload() {

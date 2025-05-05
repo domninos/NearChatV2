@@ -5,6 +5,8 @@ import io.lettuce.core.RedisFuture;
 import io.lettuce.core.RedisURI;
 import io.lettuce.core.TransactionResult;
 import io.lettuce.core.api.StatefulRedisConnection;
+import io.lettuce.core.api.async.RedisAsyncCommands;
+import io.lettuce.core.api.sync.RedisCommands;
 import net.omni.nearChat.NearChatPlugin;
 
 import java.time.Duration;
@@ -26,47 +28,51 @@ public class DatabaseHandler {
 
     public void initDatabase() {
         // REF: https://redis.io/docs/latest/develop/clients/lettuce/connect/
-        String devS = plugin.getNearConfig().getString("dev");
 
-        boolean dev = devS != null && !devS.isBlank() && plugin.getNearConfig().getBool("dev");
-
-        if (!dev) {
-            connectConfig();
-        } else {
-            String host = "redis-13615.crce178.ap-east-1-1.ec2.redns.redis-cloud.com";
-            int portInt = 13615;
-            String user = "default";
-            String password = "UMnqdMOz9GpF3LktR4hqKAO6rbJslpmS"; // TODO: REMOVE AFTER FINISHING PLUGIN
-
-            connect(host, portInt, user, password.toCharArray());
-            plugin.sendConsole("&b[DEV] &aEnabled.");
-        }
-    }
-
-    public boolean connectConfig() {
-        if (isEnabled()) {
-            plugin.error("&cYou cannot connect to the database while it is already enabled.");
-            return false;
-        }
-
-        String host = plugin.getConfigHandler().getHost();
-        int port = plugin.getConfigHandler().getPort();
-        String user = plugin.getNearConfig().getString("user");
-        String password = plugin.getNearConfig().getString("password");
-
-        if (isNullOrBlank(host, user, password)) {
-            plugin.error("Database information not found in config.yml. Will not use database...");
-            return false;
-        }
-
-        connect(host, port, user, password.toCharArray());
-        return true;
-    }
-
-    public void connect(String host, int portInt, String user, char[] password) {
         if (isEnabled()) {
             plugin.error("&cYou cannot connect to the database while it is already enabled.");
             return;
+        }
+
+        connectConfig();
+    }
+
+    private boolean checkDev() {
+        String devS = plugin.getNearConfig().getString("dev");
+
+        return devS != null && !devS.isBlank() && plugin.getNearConfig().getBool("dev");
+    }
+
+    public boolean connectConfig() {
+        String host, user, password;
+        int port;
+
+        if (checkDev()) {
+            host = "redis-13615.crce178.ap-east-1-1.ec2.redns.redis-cloud.com";
+            port = 13615;
+            user = "default";
+            password = "UMnqdMOz9GpF3LktR4hqKAO6rbJslpmS"; // TODO: REMOVE AFTER FINISHING PLUGIN
+
+            plugin.sendConsole("&b[DEV] &aEnabled.");
+        } else {
+            host = plugin.getConfigHandler().getHost();
+            port = plugin.getConfigHandler().getPort();
+            user = plugin.getConfigHandler().getUser();
+            password = plugin.getConfigHandler().getPassword();
+
+            if (isNullOrBlank(host, user, password)) {
+                plugin.error("Database information not found in config.yml. Will not use database...");
+                return false;
+            }
+        }
+
+        return connect(host, port, user, password.toCharArray());
+    }
+
+    public boolean connect(String host, int portInt, String user, char[] password) {
+        if (isEnabled()) {
+            plugin.error("&cYou cannot connect to the database while it is already enabled."); // TODO messages.yml
+            return false;
         }
 
         try {
@@ -77,14 +83,18 @@ public class DatabaseHandler {
             client = RedisClient.create(redisUri);
             connection = client.connect();
 
-            plugin.sendConsole("&aSuccessfully connected to: &3" + host);
+            plugin.sendConsole("&aSuccessfully connected to: &3" + host); // TODO messages.yml
+
+            connection.async().clientCaching(true); // TODO research
 
             this.enabled = true;
         } catch (Exception e) {
             plugin.error(e);
+            return false;
         }
 
-        connection.async().multi();
+        plugin.tryBrokers();
+
         // TODO: test db
 
         System.out.println(syncGet("key"));
@@ -94,6 +104,7 @@ public class DatabaseHandler {
         System.out.println(syncGet("keys"));
 
         asyncGet("keys").thenRun(System.out::println);
+        return true;
     }
 
     public boolean isEnabled() {
@@ -122,8 +133,9 @@ public class DatabaseHandler {
             return;
         }
 
-        connection.sync().set(key, value);
-        connection.sync().save();
+        RedisCommands<String, String> sync = connection.sync();
+        sync.set(key, value);
+//        sync.save();
     }
 
     public void syncHashSet(String key, String field, String value) {
@@ -132,8 +144,9 @@ public class DatabaseHandler {
             return;
         }
 
-        connection.sync().hset(key, field, value);
-        connection.sync().save();
+        RedisCommands<String, String> sync = connection.sync();
+        sync.hset(key, field, value);
+//        sync.save();
     }
 
     public RedisFuture<String> asyncGet(String key) {
@@ -149,19 +162,26 @@ public class DatabaseHandler {
     }
 
     public RedisFuture<String> asyncSet(String key, String value) {
-        RedisFuture<String> future = connection.async().set(key, value);
-        future.thenRun(() -> connection.async().save());
+        RedisAsyncCommands<String, String> async = connection.async();
+
+        RedisFuture<String> future = async.set(key, value);
+        future.thenRun(async::save);
 
         return future;
     }
 
     public void asyncHashSet(String key, String field, String value) {
-        RedisFuture<Boolean> future = connection.async().hset(key, field, value);
-        future.thenRun(() -> connection.async().save());
+        RedisAsyncCommands<String, String> async = connection.async();
+
+        RedisFuture<Boolean> future = async.hset(key, field, value);
+        future.thenRun(() -> {
+            async.save();
+            plugin.sendConsole("[DEBUG] Saved Async HashSet");
+        });
     }
 
     private boolean isNullOrBlank(String... strings) {
-        return Arrays.stream(strings).anyMatch(string -> string == null || toString().isBlank());
+        return Arrays.stream(strings).anyMatch(string -> string == null || string.isBlank());
     }
 
     public void closeDatabase() {

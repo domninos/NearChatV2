@@ -7,8 +7,9 @@ import net.omni.nearChat.handlers.DatabaseHandler;
 import net.omni.nearChat.handlers.MessageHandler;
 import net.omni.nearChat.listeners.NCPlayerListener;
 import net.omni.nearChat.managers.PlayerManager;
-import net.omni.nearChat.util.DatabaseBroker;
 import net.omni.nearChat.util.NearChatConfig;
+import net.omni.nearChat.util.brokers.DatabaseBroker;
+import net.omni.nearChat.util.brokers.NearbyBroker;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -38,12 +39,13 @@ public final class NearChatPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        this.nearConfig = new NearChatConfig(this, "config.yml", true);
         this.messageConfig = new NearChatConfig(this, "messages.yml", true);
+        this.messageHandler = new MessageHandler(this);
+
+        this.nearConfig = new NearChatConfig(this, "config.yml", true);
 
         this.databaseHandler = new DatabaseHandler(this);
         this.configHandler = new ConfigHandler(this);
-        this.messageHandler = new MessageHandler(this);
 
         configHandler.load();
         messageHandler.load();
@@ -53,7 +55,8 @@ public final class NearChatPlugin extends JavaPlugin {
 
         registerListeners();
         registerCommands();
-        registerBroker();
+
+        tryBrokers();
 
         sendConsole("&aSuccessfully enabled "
                 + getDescription().getFullName() + " [" + getDescription().getAPIVersion() + "]");
@@ -61,8 +64,6 @@ public final class NearChatPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        // Plugin shutdown logic
-
         configHandler.saveToConfig();
         messageHandler.saveToConfig();
 
@@ -78,7 +79,7 @@ public final class NearChatPlugin extends JavaPlugin {
     }
 
     public void error(String text) {
-        getLogger().log(Level.SEVERE, translate("&cERROR! Something went wrong: " + text));
+        getLogger().log(Level.SEVERE, "ERROR! Something went wrong: " + text);
     }
 
     public void sendConsole(String text) {
@@ -114,7 +115,7 @@ public final class NearChatPlugin extends JavaPlugin {
     }
 
     public void sendMessage(CommandSender sender, String msg) {
-        sender.sendMessage(translate("&f[&6Near&eChat&f] &7" + msg));
+        sender.sendMessage(translate(messageHandler.getPrefix() + msg));
     }
 
     public String translate(String text) {
@@ -133,10 +134,14 @@ public final class NearChatPlugin extends JavaPlugin {
         new NearChatCommand(this).register();
     }
 
-    private void registerBroker() {
+    public void tryBrokers() {
+        if (!getDatabaseHandler().isEnabled())
+            return;
+
         sendConsole("&aInitializing broker..");
 
         new DatabaseBroker(this);
+        new NearbyBroker(this);
     }
 
     private void flush() {

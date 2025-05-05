@@ -32,7 +32,37 @@ public abstract class MainCommand implements CommandExecutor {
     public abstract List<String> getHelpText();
 
     public void sendHelp(CommandSender sender) {
-        plugin.sendMessage(sender, String.join("&r\n", getHelpText()));
+        StringBuilder toSend = new StringBuilder("\n");
+
+        for (String line : getHelpText()) {
+            if (line.isBlank()) {
+                toSend.append("\n");
+                continue;
+            }
+
+            String firstWord = line.split(" ")[0];
+
+            if (firstWord.startsWith("<nearchat")) {
+                // has permission check
+                String permission = firstWord.replace("<", "").replace(">", "");
+
+                if (sender.hasPermission(permission))
+                    toSend.append(line.replace(firstWord, "").strip());
+
+                continue;
+            }
+
+            if (line.contains("%plugin_name%"))
+                line = line.replace("%plugin_name%", plugin.getConfigHandler().getPluginName());
+            if (line.contains("%plugin_version%"))
+                line = line.replace("%plugin_version%", plugin.getConfigHandler().getPluginVersion());
+            if (line.contains("%plugin_mc_version%"))
+                line = line.replace("%plugin_mc_version%", plugin.getConfigHandler().getPluginMCVersion());
+
+            toSend.append(line.strip()).append("&r\n");
+        }
+
+        sender.sendMessage(plugin.translate(toSend.toString()));
     }
 
     public void flush() {

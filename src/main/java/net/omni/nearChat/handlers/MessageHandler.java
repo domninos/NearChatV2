@@ -14,6 +14,7 @@ public class MessageHandler {
     private final NearChatConfig messageConfig;
     private final Map<String, String> childToMessage = new HashMap<>();
     private final Map<String, List<String>> childToListMessage = new HashMap<>();
+    private String prefix, format;
 
     public MessageHandler(NearChatPlugin plugin) {
         this.plugin = plugin;
@@ -29,6 +30,9 @@ public class MessageHandler {
         childToMessage.put("player_only", getConfig().getString("player_only"));
         childToMessage.put("no_permission", getConfig().getString("no_permission"));
         childToMessage.put("db_connected", getConfig().getString("db_connected"));
+
+        this.prefix = getConfig().getString("prefix");
+        this.format = getConfig().getString("format");
 
         childToListMessage.put("help_text", getConfig().getStringList("help_text"));
 
@@ -63,6 +67,14 @@ public class MessageHandler {
         return childToListMessage.getOrDefault("help_text", List.of("null"));
     }
 
+    public String getPrefix() {
+        return prefix == null ? "&f[&6Near&eChat&f] &7" : prefix;
+    }
+
+    public String getFormat() {
+        return format;
+    }
+
     private boolean loadDefaults() {
         boolean def = false;
 
@@ -86,12 +98,26 @@ public class MessageHandler {
                     "&7-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-",
                     "&a/nearchat >> Opens the NearChat GUI.",
                     "&a/nearchat help >> Opens this menu.",
-                    "<nearchat.db> &a/nearchat database >> Opens the NearChat GUI.",
-                    "&a/nearchat database >> Opens the NearChat GUI. ",
+                    "<nearchat.db> &a/nearchat database >> Reconnects to the database.",
+                    "<nearchat.reload> &a/nearchat reload >> Reloads config.yml and messages.yml.",
                     "",
                     "&bDISCORD: discord.gg/nearchat",
+                    "",
+                    "&6%plugin_name% running %plugin_version% for MC %plugin_mc_version%",
                     "&7-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
             ));
+
+            def = true;
+        }
+
+        if (getConfig().getString("prefix") == null) {
+            messageConfig.setNoSave("prefix", "&f[&6Near&eChat&f] &7");
+
+            def = true;
+        }
+
+        if (getConfig().getString("format") == null) {
+            messageConfig.setNoSave("format", "%prefix% &r%player%&r: %chat%");
 
             def = true;
         }

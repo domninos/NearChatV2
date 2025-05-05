@@ -3,6 +3,7 @@ package net.omni.nearChat.commands;
 import net.omni.nearChat.NearChatPlugin;
 import net.omni.nearChat.commands.subcommands.DatabaseSubCommand;
 import net.omni.nearChat.commands.subcommands.HelpSubCommand;
+import net.omni.nearChat.commands.subcommands.ReloadSubCommand;
 import net.omni.nearChat.commands.subcommands.SubCommand;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -21,6 +22,7 @@ public class NearChatCommand extends MainCommand {
     public void registerSubCommands() {
         subCommands.add(new DatabaseSubCommand(plugin, this));
         subCommands.add(new HelpSubCommand(plugin, this));
+        subCommands.add(new ReloadSubCommand(plugin, this));
     }
 
     @Override
@@ -70,7 +72,6 @@ public class NearChatCommand extends MainCommand {
             return true;
         }
 
-        sendHelp(sender);
         return true;
     }
 
