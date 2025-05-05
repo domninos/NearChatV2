@@ -1,2 +1,13 @@
-messages:
-  player_only: "&cOnly players can execute this command."
+player_only: "&cOnly players can execute this command."
+no_permission: "&cYou do not have permission to use this command."
+db_connected: "&aSuccessfully connected to database!"
+
+help_text:
+  - "&7-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
+  - "&a/nearchat >> Opens the NearChat GUI."
+  - "&a/nearchat help >> Opens this menu."
+  - "<nearchat.db> &a/nearchat database >> Opens the NearChat GUI."
+  - "&a/nearchat database >> Opens the NearChat GUI. "
+  - ""
+  - "&bDISCORD: discord.gg/nearchat"
+  - "&7-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"

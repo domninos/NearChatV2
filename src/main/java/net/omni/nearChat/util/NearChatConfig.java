@@ -50,6 +50,10 @@ public class NearChatConfig {
         reload();
     }
 
+    public void set(String path, Object obj) {
+        set(path, obj, true);
+    }
+
     public void set(String path, Object obj, boolean save) {
         config.set(path, obj);
 

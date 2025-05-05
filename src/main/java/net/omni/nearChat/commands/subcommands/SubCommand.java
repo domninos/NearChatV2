@@ -16,7 +16,11 @@ public abstract class SubCommand {
 
     public abstract String getCommand();
 
+    public abstract String[] getAliases();
+
     public abstract boolean execute(CommandSender sender, String[] args);
 
     public abstract int getArg();
+
+    public abstract String getPermission();
 }

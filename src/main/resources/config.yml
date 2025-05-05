@@ -2,3 +2,5 @@ host: ""
 port: ""
 user: ""
 password: ""
+
+near-block-radius: 30

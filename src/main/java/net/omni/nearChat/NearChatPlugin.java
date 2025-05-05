@@ -2,8 +2,12 @@ package net.omni.nearChat;
 
 import net.omni.nearChat.commands.MainCommand;
 import net.omni.nearChat.commands.NearChatCommand;
+import net.omni.nearChat.handlers.ConfigHandler;
 import net.omni.nearChat.handlers.DatabaseHandler;
 import net.omni.nearChat.handlers.MessageHandler;
+import net.omni.nearChat.listeners.NCPlayerListener;
+import net.omni.nearChat.managers.PlayerManager;
+import net.omni.nearChat.util.DatabaseBroker;
 import net.omni.nearChat.util.NearChatConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -20,7 +24,17 @@ public final class NearChatPlugin extends JavaPlugin {
     private MessageHandler messageHandler;
     private NearChatConfig nearConfig;
     private NearChatConfig messageConfig;
+    private ConfigHandler configHandler;
     private DatabaseHandler databaseHandler;
+    private PlayerManager playerManager;
+
+    /*
+    TODO:
+        * Add /nearchat gui
+          * Possibly create inventory handler.
+        * Add plugin worker (for running tasks for every player that has nearchat enabled to check nearby players.) # why ? just check for chat send
+        * Add database integration (set toggled on database for UUID) # why
+     */
 
     @Override
     public void onEnable() {
@@ -28,14 +42,18 @@ public final class NearChatPlugin extends JavaPlugin {
         this.messageConfig = new NearChatConfig(this, "messages.yml", true);
 
         this.databaseHandler = new DatabaseHandler(this);
+        this.configHandler = new ConfigHandler(this);
         this.messageHandler = new MessageHandler(this);
 
-        databaseHandler.initDatabase();
+        configHandler.load();
         messageHandler.load();
-        // Plugin startup logic
+        databaseHandler.initDatabase();
+
+        this.playerManager = new PlayerManager(this);
 
         registerListeners();
         registerCommands();
+        registerBroker();
 
         sendConsole("&aSuccessfully enabled "
                 + getDescription().getFullName() + " [" + getDescription().getAPIVersion() + "]");
@@ -45,13 +63,14 @@ public final class NearChatPlugin extends JavaPlugin {
     public void onDisable() {
         // Plugin shutdown logic
 
-        // TODO: configHandler.saveToConfig()
-//        messageHandler.saveToConfig();
+        configHandler.saveToConfig();
+        messageHandler.saveToConfig();
+
+        playerManager.saveToDatabase();
 
         flush();
 
-        sendConsole("&cSuccessfully disabled "
-                + getDescription().getFullName() + " [" + getDescription().getAPIVersion() + "]");
+        sendConsole("&cSuccessfully disabled " + getDescription().getFullName() + " [" + getDescription().getAPIVersion() + "]");
     }
 
     public void error(Exception e) {
@@ -82,6 +101,14 @@ public final class NearChatPlugin extends JavaPlugin {
         return databaseHandler;
     }
 
+    public ConfigHandler getConfigHandler() {
+        return configHandler;
+    }
+
+    public PlayerManager getPlayerManager() {
+        return playerManager;
+    }
+
     public List<MainCommand> getCommands() {
         return mainCommands;
     }
@@ -95,17 +122,21 @@ public final class NearChatPlugin extends JavaPlugin {
     }
 
     private void registerListeners() {
-        // TODO
         sendConsole("&aInitializing listeners..");
 
-//        Bukkit.getPluginManager().registereven
+        Bukkit.getPluginManager().registerEvents(new NCPlayerListener(this), this);
     }
 
-    private void registerCommands() {
-        // TODO
+    private void registerCommands() { // TODO: if ever add more commands
+        sendConsole("&aInitializing commands..");
 
         new NearChatCommand(this).register();
-        sendConsole("&aCommands initialized.");
+    }
+
+    private void registerBroker() {
+        sendConsole("&aInitializing broker..");
+
+        new DatabaseBroker(this);
     }
 
     private void flush() {
@@ -119,7 +150,10 @@ public final class NearChatPlugin extends JavaPlugin {
             mainCommands.stream()
                     .filter(mainCommand -> !mainCommand.getSubCommands().isEmpty())
                     .forEach(MainCommand::flush);
+
+            mainCommands.clear();
         }
 
+        playerManager.flush();
     }
 }

@@ -25,9 +25,11 @@ public abstract class MainCommand implements CommandExecutor {
 
     public abstract String getMainCommand();
 
+    public abstract String getPermission();
+
     public abstract void registerSubCommands();
 
-    public abstract String[] getHelpText();
+    public abstract List<String> getHelpText();
 
     public void sendHelp(CommandSender sender) {
         plugin.sendMessage(sender, String.join("&r\n", getHelpText()));
