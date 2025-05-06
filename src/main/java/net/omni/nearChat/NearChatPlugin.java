@@ -7,6 +7,7 @@ import net.omni.nearChat.handlers.DatabaseHandler;
 import net.omni.nearChat.handlers.MessageHandler;
 import net.omni.nearChat.listeners.NCPlayerListener;
 import net.omni.nearChat.managers.PlayerManager;
+import net.omni.nearChat.util.MainUtil;
 import net.omni.nearChat.util.NearChatConfig;
 import net.omni.nearChat.util.brokers.DatabaseBroker;
 import net.omni.nearChat.util.brokers.NearbyBroker;
@@ -22,30 +23,30 @@ import java.util.logging.Level;
 public final class NearChatPlugin extends JavaPlugin {
 
     private final List<MainCommand> mainCommands = new ArrayList<>();
-    private MessageHandler messageHandler;
+    private final MessageHandler messageHandler;
     private NearChatConfig nearConfig;
     private NearChatConfig messageConfig;
-    private ConfigHandler configHandler;
-    private DatabaseHandler databaseHandler;
+    private final ConfigHandler configHandler;
+    private final DatabaseHandler databaseHandler;
     private PlayerManager playerManager;
+
+    public NearChatPlugin() {
+        this.databaseHandler = new DatabaseHandler(this);
+        this.messageHandler = new MessageHandler(this);
+        this.configHandler = new ConfigHandler(this);
+    }
 
     /*
     TODO:
         * Add /nearchat gui
           * Possibly create inventory handler.
-        * Add plugin worker (for running tasks for every player that has nearchat enabled to check nearby players.) # why ? just check for chat send
         * Add database integration (set toggled on database for UUID) # why
      */
 
     @Override
     public void onEnable() {
         this.messageConfig = new NearChatConfig(this, "messages.yml", true);
-        this.messageHandler = new MessageHandler(this);
-
         this.nearConfig = new NearChatConfig(this, "config.yml", true);
-
-        this.databaseHandler = new DatabaseHandler(this);
-        this.configHandler = new ConfigHandler(this);
 
         configHandler.load();
         messageHandler.load();
@@ -58,8 +59,15 @@ public final class NearChatPlugin extends JavaPlugin {
 
         tryBrokers();
 
+        // TODO: messages.yml on start
         sendConsole("&aSuccessfully enabled "
                 + getDescription().getFullName() + " [" + getDescription().getAPIVersion() + "]");
+
+        sendConsole("&dDatabase delay settings: "
+                + getConfigHandler().getDatabaseSaveDelay() + "ms (" + MainUtil.convertTicks(getConfigHandler().getDatabaseSaveDelay()) + ")");
+        sendConsole("&dNearby Get delay settings: "
+                + getConfigHandler().getNearbyGetDelay() + "ms (" + MainUtil.convertTicks(getConfigHandler().getNearbyGetDelay()) + ")");
+        sendConsole("&dNearby Radius settings: " + getConfigHandler().getNearBlockRadius());
     }
 
     @Override
@@ -70,6 +78,8 @@ public final class NearChatPlugin extends JavaPlugin {
         playerManager.saveToDatabase();
 
         flush();
+
+        // TODO: messages.yml on disable
 
         sendConsole("&cSuccessfully disabled " + getDescription().getFullName() + " [" + getDescription().getAPIVersion() + "]");
     }
@@ -135,8 +145,10 @@ public final class NearChatPlugin extends JavaPlugin {
     }
 
     public void tryBrokers() {
-        if (!getDatabaseHandler().isEnabled())
+        if (!getDatabaseHandler().isEnabled()) {
+            sendConsole(getMessageHandler().getDBErrorConnectDisabled());
             return;
+        }
 
         sendConsole("&aInitializing broker..");
 

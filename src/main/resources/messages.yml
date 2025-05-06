@@ -1,10 +1,17 @@
+# player messages
 player_only: "&cOnly players can execute this command."
 no_permission: "&cYou do not have permission to use this command."
 db_connected: "&aSuccessfully connected to database!"
+db_error_connect_disabled: "&cCould not save to database because database is disabled."
+reloaded_config: "&aReloaded config and messages.yml"
 
+# set the command prefix
 prefix: "&f[&6Near&eChat&f] &7"
+
+# set the format for chat messaging on nearchat.
 format: "%prefix% &r%player%&r: %chat%"
 
+# what to send when player uses /nearchat help
 help_text:
   - "&7-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
   - "&a/nearchat >> Opens the NearChat GUI."

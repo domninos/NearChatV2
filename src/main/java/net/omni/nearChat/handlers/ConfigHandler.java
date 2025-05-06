@@ -7,27 +7,41 @@ import org.bukkit.configuration.file.FileConfiguration;
 public class ConfigHandler {
     private final NearChatPlugin plugin;
 
-    private final NearChatConfig nearChatConfig;
+    private NearChatConfig nearChatConfig;
 
     private String plugin_name, plugin_version, plugin_mc_version;
 
     private int database_save_delay;
+
+    private int nearby_get_delay;
+
     private int near_block_radius;
+
     private String host, user, password;
+
+    private boolean log_messages;
 
     private int port;
 
     public ConfigHandler(NearChatPlugin plugin) {
         this.plugin = plugin;
-        this.nearChatConfig = plugin.getNearConfig();
     }
 
     public void load() {
+        if (this.nearChatConfig == null)
+            this.nearChatConfig = plugin.getNearConfig();
+
+        getConfig().options().copyDefaults(true); //
+        nearChatConfig.save();
+
         boolean def = loadDefaults(); // check if there are empty messages, if so, replace it
 
         // load messages to cache
+        this.nearby_get_delay = getConfig().getInt("nearby-get-delay");
         this.database_save_delay = getConfig().getInt("database-save-delay");
         this.near_block_radius = getConfig().getInt("near-block-radius");
+
+        this.log_messages = getConfig().getBoolean("log-messages");
 
         this.host = getConfig().getString("host");
         this.port = getConfig().getInt("port");
@@ -50,8 +64,10 @@ public class ConfigHandler {
         nearChatConfig.setNoSave("user", this.user);
         nearChatConfig.setNoSave("password", this.password);
 
+        nearChatConfig.setNoSave("nearby-get-delay", this.nearby_get_delay);
         nearChatConfig.setNoSave("database-save-delay", this.database_save_delay);
         nearChatConfig.setNoSave("near-block-radius", this.near_block_radius);
+        nearChatConfig.setNoSave("log-messages", this.log_messages);
 
         nearChatConfig.save();
     }
@@ -89,12 +105,31 @@ public class ConfigHandler {
             def = true;
         }
 
+        if (getConfig().getInt("nearby-get-delay") == 0) {
+            nearChatConfig.setNoSave("nearby-get-delay", 10);
+            def = true;
+        }
+
+        if (getConfig().getString("log-messages") == null) {
+            nearChatConfig.setNoSave("log-messages", true);
+
+            def = true;
+        }
+
         if (def) {
             plugin.sendConsole("&9Loaded default config values.");
             this.nearChatConfig.save();
         }
 
         return def;
+    }
+
+    public boolean isLogging() {
+        return log_messages;
+    }
+
+    public int getNearbyGetDelay() {
+        return nearby_get_delay;
     }
 
     public String getPluginName() {

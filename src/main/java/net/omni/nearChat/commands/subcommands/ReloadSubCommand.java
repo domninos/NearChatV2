@@ -27,7 +27,7 @@ public class ReloadSubCommand extends SubCommand {
         plugin.getMessageConfig().reload();
         plugin.getMessageHandler().load();
 
-        plugin.sendMessage(sender, "Reloaded config and messages.yml"); // TODO messages.yml
+        plugin.sendMessage(sender, plugin.getMessageHandler().getReloadedConfig());
         return true;
     }
 

@@ -9,8 +9,7 @@ public class DatabaseBroker extends BukkitRunnable {
     public DatabaseBroker(NearChatPlugin plugin) {
         this.plugin = plugin;
 
-        runTaskTimerAsynchronously(plugin, 20L,
-                plugin.getConfigHandler().getDatabaseSaveDelay());
+        runTaskTimerAsynchronously(plugin, 20L, plugin.getConfigHandler().getDatabaseSaveDelay());
     }
 
     @Override

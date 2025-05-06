@@ -11,17 +11,21 @@ import java.util.Map;
 
 public class MessageHandler {
     private final NearChatPlugin plugin;
-    private final NearChatConfig messageConfig;
     private final Map<String, String> childToMessage = new HashMap<>();
     private final Map<String, List<String>> childToListMessage = new HashMap<>();
-    private String prefix, format;
+    private NearChatConfig messageConfig;
 
     public MessageHandler(NearChatPlugin plugin) {
         this.plugin = plugin;
-        this.messageConfig = plugin.getMessageConfig();
     }
 
     public void load() { // TODO ADD MORE MESSAGES
+        if (this.messageConfig == null)
+            this.messageConfig = plugin.getMessageConfig();
+
+        getConfig().options().copyDefaults(true);
+        messageConfig.save();
+
         childToMessage.clear();
 
         boolean def = loadDefaults(); // check if there are empty messages, if so, replace it
@@ -30,9 +34,11 @@ public class MessageHandler {
         childToMessage.put("player_only", getConfig().getString("player_only"));
         childToMessage.put("no_permission", getConfig().getString("no_permission"));
         childToMessage.put("db_connected", getConfig().getString("db_connected"));
+        childToMessage.put("db_error_connect_disabled", getConfig().getString("db_error_connect_disabled"));
+        childToMessage.put("reloaded_config", getConfig().getString("reloaded_config"));
 
-        this.prefix = getConfig().getString("prefix");
-        this.format = getConfig().getString("format");
+        childToMessage.put("prefix", getConfig().getString("prefix"));
+        childToMessage.put("format", getConfig().getString("format"));
 
         childToListMessage.put("help_text", getConfig().getStringList("help_text"));
 
@@ -41,9 +47,16 @@ public class MessageHandler {
     }
 
     public void saveToConfig() {
-        for (Map.Entry<String, String> k : childToMessage.entrySet()) {
-            String key = k.getKey();
-            String value = k.getValue();
+        for (Map.Entry<String, String> entry : childToMessage.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+
+            messageConfig.setNoSave(key, value);
+        }
+
+        for (Map.Entry<String, List<String>> entry : childToListMessage.entrySet()) {
+            String key = entry.getKey();
+            List<String> value = entry.getValue();
 
             messageConfig.setNoSave(key, value);
         }
@@ -68,11 +81,19 @@ public class MessageHandler {
     }
 
     public String getPrefix() {
-        return prefix == null ? "&f[&6Near&eChat&f] &7" : prefix;
+        return childToMessage.getOrDefault("prefix", "&f[&6Near&eChat&f] &7");
     }
 
     public String getFormat() {
-        return format;
+        return childToMessage.getOrDefault("format", "&c`format`");
+    }
+
+    public String getDBErrorConnectDisabled() {
+        return childToMessage.getOrDefault("db_error_connect_disabled", "&c`db_error_connect_disabled`");
+    }
+
+    public String getReloadedConfig() {
+        return childToMessage.getOrDefault("reloaded_config", "&c`reloaded_config`");
     }
 
     private boolean loadDefaults() {
@@ -112,13 +133,21 @@ public class MessageHandler {
 
         if (getConfig().getString("prefix") == null) {
             messageConfig.setNoSave("prefix", "&f[&6Near&eChat&f] &7");
-
             def = true;
         }
 
         if (getConfig().getString("format") == null) {
             messageConfig.setNoSave("format", "%prefix% &r%player%&r: %chat%");
+            def = true;
+        }
 
+        if (getConfig().getString("db_error_connect_disabled") == null) {
+            messageConfig.setNoSave("db_error_connect_disabled", "&cCould not save to database because database is disabled.");
+            def = true;
+        }
+
+        if (getConfig().getString("reloaded_config") == null) {
+            messageConfig.setNoSave("reloaded_config", "&aReloaded config and messages.yml");
             def = true;
         }
 
@@ -136,5 +165,12 @@ public class MessageHandler {
 
     public void flush() {
         childToMessage.clear();
+
+        if (!childToListMessage.isEmpty())
+            childToListMessage.forEach((k, v) -> {
+                if (v != null && !v.isEmpty()) v.clear();
+            });
+
+        childToListMessage.clear();
     }
 }

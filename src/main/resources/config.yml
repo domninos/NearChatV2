@@ -1,7 +1,17 @@
+# plugin uses redis as its database api.
 host: ""
 port: ""
 user: ""
 password: ""
 
+# in ticks (millis). 6000 - 5 mins. 20 * 60 = 1200 (60 seconds) * 5 = 6000 milliseconds. (default 6000)
 database-save-delay: 6000
+
+# in ticks (millis). delay between getting nearby players. 20 * 10 = 200 (10 seconds) (default: 3 seconds)
+nearby-get-delay: 60
+
+# block radius to check for nearby players for nearchat. (default: 30)
 near-block-radius: 30
+
+# check whether to log messages to console. (default: true)
+log-messages: true

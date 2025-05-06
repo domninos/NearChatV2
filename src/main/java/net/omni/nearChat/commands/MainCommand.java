@@ -42,14 +42,12 @@ public abstract class MainCommand implements CommandExecutor {
 
             String firstWord = line.split(" ")[0];
 
-            if (firstWord.startsWith("<nearchat")) {
+            if (firstWord.startsWith("<nearchat.")) {
                 // has permission check
                 String permission = firstWord.replace("<", "").replace(">", "");
 
                 if (sender.hasPermission(permission))
-                    toSend.append(line.replace(firstWord, "").strip());
-
-                continue;
+                    line = line.replace(firstWord, "").replaceFirst(" ", "");
             }
 
             if (line.contains("%plugin_name%"))
@@ -59,7 +57,7 @@ public abstract class MainCommand implements CommandExecutor {
             if (line.contains("%plugin_mc_version%"))
                 line = line.replace("%plugin_mc_version%", plugin.getConfigHandler().getPluginMCVersion());
 
-            toSend.append(line.strip()).append("&r\n");
+            toSend.append(line).append("&r\n");
         }
 
         sender.sendMessage(plugin.translate(toSend.toString()));

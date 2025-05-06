@@ -21,17 +21,8 @@ public class NCPlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        if (!plugin.getDatabaseHandler().isEnabled()) return;
-
-        plugin.getPlayerManager().loadEnabled(event.getPlayer());
-
-        // TODO: test
-        plugin.sendConsole("" + plugin.getPlayerManager().isEnabled(event.getPlayer().getName()));
-        plugin.getPlayerManager().toggle(event.getPlayer());
-        plugin.sendConsole("" + plugin.getPlayerManager().isEnabled(event.getPlayer().getName()));
-
-        if (plugin.getPlayerManager().isEnabled(event.getPlayer().getName()))
-            plugin.getPlayerManager().setNearby(event.getPlayer());
+        if (plugin.getDatabaseHandler().isEnabled())
+            plugin.getPlayerManager().loadEnabled(event.getPlayer());
     }
 
     @EventHandler
@@ -39,7 +30,6 @@ public class NCPlayerListener implements Listener {
         if (!plugin.getDatabaseHandler().isEnabled()) return;
 
         plugin.getPlayerManager().saveToDatabase(event.getPlayer());
-
         plugin.getPlayerManager().removeNearby(event.getPlayer());
     }
 
@@ -53,54 +43,28 @@ public class NCPlayerListener implements Listener {
 
         List<Player> nearbyPlayers = plugin.getPlayerManager().getNearby(player);
 
-        if (nearbyPlayers.isEmpty())
+        if (nearbyPlayers == null || nearbyPlayers.isEmpty())
             return;
 
         event.setCancelled(true);
 
+        String format = plugin.getMessageHandler().getFormat();
+
+        if (format.contains("%prefix%"))
+            format = format.replace("%prefix%", plugin.getMessageHandler().getPrefix());
+        if (format.contains("%player%"))
+            format = format.replace("%player%", player.getDisplayName());
+        if (format.contains("%chat%"))
+            format = format.replace("%chat%", event.getMessage());
+
+        format = plugin.translate(format);
+
         for (Player nearbyPlayer : nearbyPlayers) {
-            if (!plugin.getPlayerManager().isEnabled(nearbyPlayer.getName()))
-                continue;
-
-            String format = plugin.getMessageHandler().getFormat();
-
-            if (format.contains("%prefix%"))
-                format = format.replace("%prefix%", plugin.getMessageHandler().getPrefix());
-            if (format.contains("%player%"))
-                format = format.replace("%player%", player.getDisplayName());
-            if (format.contains("%chat%"))
-                format = format.replace("%chat%", event.getMessage());
-
-            nearbyPlayer.sendMessage(format);
-
-            // TODO: console
-            Bukkit.getConsoleSender().sendMessage(format);
+            if (plugin.getPlayerManager().isEnabled(nearbyPlayer.getName()))
+                nearbyPlayer.sendMessage(format);
         }
 
-//        player.getWorld().getNearbyEntities(player.getLocation(), block_radius, block_radius, block_radius);
-
-//        for (Player recipient : recipients) {
-//            Location recipientLoc = recipient.getLocation();
-//
-//            if (recipientLoc.distance(playerLoc) <= block_radius) {
-//
-//            }
-//        }
-
-        // TODO check
-
-//        new BukkitRunnable() {
-//            @Override
-//            public void run() {
-//                if (plugin.getPlayerManager().has(player.getName())) {
-//                    int block_radius = plugin.getConfigHandler().getNearBlockRadius();
-//
-//                    for (Entity nearbyEntity : player.getNearbyEntities(block_radius, block_radius, block_radius)) {
-//                        if (nearbyEntity instanceof Player nearbyPlayer && plugin.getPlayerManager().isEnabled(nearbyPlayer.getName()))
-//                            nearbyPlayer.sendMessage(event.getMessage());
-//                    }
-//                }
-//            }
-//        }.runTask(plugin);
+        if (plugin.getConfigHandler().isLogging())
+            Bukkit.getConsoleSender().sendMessage(format);
     }
 }

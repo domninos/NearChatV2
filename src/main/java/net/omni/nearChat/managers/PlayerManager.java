@@ -2,6 +2,7 @@ package net.omni.nearChat.managers;
 
 import io.lettuce.core.RedisFuture;
 import io.lettuce.core.TransactionResult;
+import io.lettuce.core.api.async.RedisAsyncCommands;
 import net.omni.nearChat.NearChatPlugin;
 import net.omni.nearChat.util.PlayerUtil;
 import org.bukkit.entity.Player;
@@ -24,39 +25,33 @@ public class PlayerManager {
 
     public void loadEnabled(Player player) {
         if (!plugin.getDatabaseHandler().isEnabled()) {
-            plugin.sendConsole("Could not load player because database is disabled.");
+            plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectDisabled());
             return;
         }
 
-        // TODO: database have hashset structure]
+        // TODO: database have hashset structure
         //  * KEY,uuid,owner,value (NearChat 2.0)
 
         String playerName = player.getName();
-//
-//        if (!has(playerName)) { // not in cache
-//            plugin.getDatabaseHandler().asyncHashGet(KEY, playerName).thenAcceptAsync((string) -> {
-//                enabled.put(playerName, Boolean.valueOf(string));
-//                plugin.sendConsole("[DEBUG] Added " + playerName + " | " + Boolean.valueOf(string));
-//            });
-//        } else {
-//        }
 
+        if (!plugin.getDatabaseHandler().hashExists(KEY, playerName))
+            plugin.getDatabaseHandler().asyncHashSet(KEY, playerName, "false");
 
         if (!has(playerName)) {
+            // put into cache
             plugin.getDatabaseHandler().asyncHashGet(KEY, playerName).thenAcceptAsync((string) -> {
                 enabled.put(playerName, Boolean.valueOf(string));
-                plugin.sendConsole("[DEBUG] Added " + playerName + " | " + Boolean.valueOf(string));
+                plugin.sendConsole("[DEBUG] Set " + playerName + " | " + Boolean.valueOf(string));
+
+                setNearby(player);
             });
-        }
-        // TODO check if in cache = reset to database
-
-        // TODO check if user is present in database
-
+        } else if (isEnabled(player.getName()))
+            setNearby(player);
     }
 
     public void saveToDatabase(Player player) {
         if (!plugin.getDatabaseHandler().isEnabled()) {
-            plugin.sendConsole("Could not save to database because database is disabled.");
+            plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectDisabled());
             return;
         }
 
@@ -69,16 +64,18 @@ public class PlayerManager {
 
     public void saveToDatabase() {
         if (!plugin.getDatabaseHandler().isEnabled()) {
-            plugin.sendConsole("Could not save to database because database is disabled.");
+            plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectDisabled());
             return;
         }
 
-        RedisFuture<String> multi = plugin.getDatabaseHandler().asyncMulti();
+        RedisAsyncCommands<String, String> async = plugin.getDatabaseHandler().getAsync();
+
+        async.multi();
 
         enabled.forEach(((name, value) ->
-                plugin.getDatabaseHandler().asyncHashSet(KEY, name, value.toString())));
+                plugin.getDatabaseHandler().asyncHashSet(async, KEY, name, value.toString())));
 
-        RedisFuture<TransactionResult> exec = plugin.getDatabaseHandler().getAsyncExec();
+        RedisFuture<TransactionResult> exec = async.exec();
 
         exec.whenComplete((result, throwable) -> {
             if (throwable != null) {
@@ -96,11 +93,15 @@ public class PlayerManager {
     public void toggle(Player player) {
         String name = player.getName();
 
-        if (!has(name)) return;
+        if (has(name))
+            this.enabled.replace(name, !isEnabled(name));
+        else
+            this.enabled.put(name, true);
 
-        this.enabled.replace(name, !isEnabled(name));
-
-        saveToDatabase(player);
+        if (isEnabled(name))
+            setNearby(player);
+        else
+            removeNearby(player);
     }
 
     public List<Player> getNearby(Player player) {

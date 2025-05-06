@@ -8,6 +8,7 @@ import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
 import io.lettuce.core.api.sync.RedisCommands;
 import net.omni.nearChat.NearChatPlugin;
+import org.bukkit.ChatColor;
 
 import java.time.Duration;
 import java.util.Arrays;
@@ -71,7 +72,7 @@ public class DatabaseHandler {
 
     public boolean connect(String host, int portInt, String user, char[] password) {
         if (isEnabled()) {
-            plugin.error("&cYou cannot connect to the database while it is already enabled."); // TODO messages.yml
+            plugin.error(ChatColor.stripColor(plugin.getMessageHandler().getDBErrorConnectDisabled()));
             return false;
         }
 
@@ -107,46 +108,54 @@ public class DatabaseHandler {
         return true;
     }
 
+    public boolean hashExists(String key, String field) {
+        return getSync().hexists(key, field);
+    }
+
     public boolean isEnabled() {
         return this.enabled && client != null;
     }
 
     public RedisFuture<String> asyncMulti() {
-        return connection.async().multi();
+        return getAsync().multi();
     }
 
     public RedisFuture<TransactionResult> getAsyncExec() {
-        return connection.async().exec();
+        return getAsync().exec();
     }
 
     public String syncGet(String key) {
-        return isEnabled() ? connection.sync().get(key) : "NULL";
+        return isEnabled() ? getSync().get(key) : "NULL";
     }
 
     public String syncHashGet(String key, String field) {
         return isEnabled() ? connection.sync().hget(key, field) : "NULL";
     }
 
-    public void syncSet(String key, String value) {
+    public void syncSet(RedisCommands<String, String> sync, String key, String value) {
         if (!isEnabled()) {
-            plugin.sendConsole("Could not process sync set, database is disabled.");
+            plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectDisabled());
             return;
         }
 
-        RedisCommands<String, String> sync = connection.sync();
         sync.set(key, value);
-//        sync.save();
+    }
+
+    public void syncSet(String key, String value) {
+        syncSet(getSync(), key, value);
+    }
+
+    public void syncHashSet(RedisCommands<String, String> sync, String key, String field, String value) {
+        if (!isEnabled()) {
+            plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectDisabled());
+            return;
+        }
+
+        sync.hset(key, field, value);
     }
 
     public void syncHashSet(String key, String field, String value) {
-        if (!isEnabled()) {
-            plugin.sendConsole("Could not process sync hashset, database is disabled.");
-            return;
-        }
-
-        RedisCommands<String, String> sync = connection.sync();
-        sync.hset(key, field, value);
-//        sync.save();
+        syncHashSet(getSync(), key, field, value);
     }
 
     public RedisFuture<String> asyncGet(String key) {
@@ -161,23 +170,38 @@ public class DatabaseHandler {
         return isEnabled() ? connection.async().hgetall(key) : null;
     }
 
-    public RedisFuture<String> asyncSet(String key, String value) {
-        RedisAsyncCommands<String, String> async = connection.async();
-
+    public RedisFuture<String> asyncSet(RedisAsyncCommands<String, String> async, String key, String value) {
         RedisFuture<String> future = async.set(key, value);
         future.thenRun(async::save);
 
         return future;
     }
 
-    public void asyncHashSet(String key, String field, String value) {
-        RedisAsyncCommands<String, String> async = connection.async();
+    public RedisFuture<String> asyncSet(String key, String value) {
+        return asyncSet(getAsync(), key, value);
+    }
 
-        RedisFuture<Boolean> future = async.hset(key, field, value);
-        future.thenRun(() -> {
-            async.save();
-            plugin.sendConsole("[DEBUG] Saved Async HashSet");
-        });
+    public void asyncHashSet(RedisAsyncCommands<String, String> async, String key, String field, String value) {
+        try {
+            RedisFuture<Boolean> future = async.hset(key, field, value);
+
+            future.whenComplete((action, throwable) -> async.save());
+        } catch (Exception e) {
+            e.fillInStackTrace();
+            plugin.error(e);
+        }
+    }
+
+    public void asyncHashSet(String key, String field, String value) {
+        asyncHashSet(getAsync(), key, field, value);
+    }
+
+    public RedisAsyncCommands<String, String> getAsync() {
+        return connection.async();
+    }
+
+    public RedisCommands<String, String> getSync() {
+        return connection.sync();
     }
 
     private boolean isNullOrBlank(String... strings) {
@@ -185,10 +209,14 @@ public class DatabaseHandler {
     }
 
     public void closeDatabase() {
-        if (isEnabled()) {
-            connection.sync().shutdown(true);
-            client.shutdown();
-            plugin.sendConsole("&aDatabase disconnected.");
+        try {
+            if (isEnabled()) {
+                connection.sync().shutdown(true);
+                client.shutdown();
+                plugin.sendConsole("&aDatabase disconnected.");
+            }
+        } catch (Exception e) {
+            plugin.error("Something went wrong closing database: " + e.getMessage());
         }
     }
 }

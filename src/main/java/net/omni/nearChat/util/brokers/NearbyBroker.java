@@ -15,7 +15,7 @@ public class NearbyBroker extends BukkitRunnable {
     public NearbyBroker(NearChatPlugin plugin) {
         this.plugin = plugin;
 
-        runTaskTimerAsynchronously(plugin, 20L, 20 * 30); // every 30 seconds
+        runTaskTimerAsynchronously(plugin, 20L, plugin.getConfigHandler().getNearbyGetDelay());
     }
 
     @Override
@@ -30,7 +30,6 @@ public class NearbyBroker extends BukkitRunnable {
             for (Map.Entry<Player, List<Player>> entry : plugin.getPlayerManager().getNearbyPlayers().entrySet()) {
                 Player key = entry.getKey();
                 if (key == null) continue;
-
                 if (!plugin.getPlayerManager().isEnabled(key.getName())) continue;
 
                 Location playerLoc = key.getLocation();
