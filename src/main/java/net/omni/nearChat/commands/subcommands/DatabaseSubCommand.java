@@ -30,11 +30,12 @@ public class DatabaseSubCommand extends SubCommand {
             if (plugin.getDatabaseHandler().connect())
                 plugin.sendMessage(sender, plugin.getMessageHandler().getDBConnected());
             else
-                plugin.sendMessage(sender, "&cNot successful."); // TODO: messages.yml
+                plugin.sendMessage(sender, plugin.getMessageHandler().getDBErrorConnectUnsuccessful());
 
             return true;
         } catch (Exception e) {
             plugin.sendMessage(sender, "&cSomething went wrong loading database: " + e.getMessage());
+            plugin.error("Something went wrong loading database: ", e);
         }
 
         return true;

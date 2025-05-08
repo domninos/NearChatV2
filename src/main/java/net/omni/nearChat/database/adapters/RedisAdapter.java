@@ -32,20 +32,20 @@ public class RedisAdapter implements DatabaseAdapter {
     public void initDatabase() {
         // REF: https://redis.io/docs/latest/develop/clients/lettuce/connect/
 
-//        if (isEnabled()) {
-//            plugin.error("You cannot connect to the database while it is already enabled.");
-//            return;
-//        }
+        if (isEnabled()) {
+            plugin.error("You cannot connect to the database while it is already enabled.");
+            return;
+        }
 
         redis.connectConfig();
     }
 
     @Override
     public boolean connect() {
-//        if (isEnabled()) {
-//            plugin.error("You cannot connect to the database while it is already enabled.");
-//            return false;
-//        }
+        if (isEnabled()) {
+            plugin.error("You cannot connect to the database while it is already enabled.");
+            return false;
+        }
 
         return redis.connectConfig();
     }
@@ -73,7 +73,7 @@ public class RedisAdapter implements DatabaseAdapter {
             redis.asyncHashSet(async, name, value.toString())
                     .whenComplete((action, throwable) -> {
                         if (throwable != null) {
-                            plugin.error(throwable);
+                            plugin.error("Could not complete asynchronous hash set: ", throwable);
                             return;
                         }
 
@@ -81,7 +81,7 @@ public class RedisAdapter implements DatabaseAdapter {
 
                         exec.whenComplete((result, throwable2) -> {
                             if (throwable2 != null) {
-                                plugin.error(throwable2);
+                                plugin.error("Could not complete execution: ", throwable2);
                                 return;
                             }
 
@@ -104,15 +104,20 @@ public class RedisAdapter implements DatabaseAdapter {
         try {
             if (isEnabled()) {
                 redis.close();
-                plugin.sendConsole("&aDatabase disconnected."); // TODO: messages.yml
+                plugin.sendConsole(plugin.getMessageHandler().getDBDisconnected());
             }
         } catch (Exception e) {
-            plugin.error(e);
+            plugin.error("Something went wrong closing database connection: ", e);
         }
     }
 
     @Override
     public NearChatDatabase getDatabase() {
         return this.redis;
+    }
+
+    @Override
+    public String toString() {
+        return "REDIS";
     }
 }

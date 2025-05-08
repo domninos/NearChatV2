@@ -75,8 +75,8 @@ public final class NearChatPlugin extends JavaPlugin {
         messageHandler.sendDisabledMessage();
     }
 
-    public void error(Throwable throwable) {
-        getLogger().log(Level.SEVERE, throwable.getMessage(), throwable);
+    public void error(String message, Throwable throwable) {
+        getLogger().log(Level.SEVERE, ChatColor.stripColor(message), throwable);
     }
 
     public void error(String text) {

@@ -21,4 +21,7 @@ public interface DatabaseAdapter {
     void closeDatabase();
 
     NearChatDatabase getDatabase();
+
+    @Override
+    String toString();
 }

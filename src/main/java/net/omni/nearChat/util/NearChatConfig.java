@@ -34,17 +34,17 @@ public class NearChatConfig {
         this.file = new File(directory, fileName);
 
         if (!file.exists()) {
-            if (res)
-                plugin.saveResource(fileName, false); // TODO: test
-            else {
+            if (res) {
+                plugin.saveResource(fileName, false);
+                plugin.sendConsole(plugin.getMessageHandler().getCreatedFile(fileName));
+            } else {
                 try {
-                    file.createNewFile();
+                    if (file.createNewFile())
+                        plugin.sendConsole(plugin.getMessageHandler().getCreatedFile(fileName));
                 } catch (IOException e) {
-                    plugin.error(e);
+                    plugin.error("Something went wrong creating " + fileName, e);
                 }
             }
-
-            plugin.sendConsole("&aSuccessfully created " + fileName);
         }
 
         reload();
@@ -69,7 +69,7 @@ public class NearChatConfig {
         try {
             config.save(file);
         } catch (IOException e) {
-            plugin.error(e);
+            plugin.error("Something went wrong saving " + file.getName(), e);
         }
     }
 

@@ -43,13 +43,13 @@ public class RedisDatabase implements NearChatDatabase {
             client = RedisClient.create(redisUri);
             connection = client.connect();
 
-            plugin.sendConsole("&aSuccessfully connected to: &3" + host); // TODO messages.yml
+            plugin.sendConsole(plugin.getMessageHandler().getDBConnectedConsole(host));
 
             connection.async().clientCaching(true); // TODO research
 
             this.enabled = true;
         } catch (Exception e) {
-            plugin.error(e);
+            plugin.error(plugin.getMessageHandler().getDBErrorConnectUnsuccessful(), e);
             return false;
         }
 
@@ -75,7 +75,7 @@ public class RedisDatabase implements NearChatDatabase {
             password = plugin.getConfigHandler().getPassword();
 
             if (MainUtil.isNullOrBlank(host, user, password)) {
-                plugin.error("Database information not found in config.yml. Will not use database...");
+                plugin.error(plugin.getMessageHandler().getDBErrorCredentialsNotFound());
                 return false;
             }
         }
@@ -160,8 +160,7 @@ public class RedisDatabase implements NearChatDatabase {
 
             return future;
         } catch (Exception e) {
-            e.fillInStackTrace();
-            plugin.error(e);
+            plugin.error("Something went wrong using asyncHashSet: ", e);
         }
 
         return null;

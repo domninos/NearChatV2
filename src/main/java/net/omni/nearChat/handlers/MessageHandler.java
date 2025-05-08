@@ -23,7 +23,7 @@ public class MessageHandler {
         this.plugin = plugin;
     }
 
-    public void load() { // TODO ADD MORE MESSAGES
+    public void load() {
         if (this.messageConfig == null)
             this.messageConfig = plugin.getMessageConfig();
 
@@ -37,11 +37,17 @@ public class MessageHandler {
         // load messages to cache
         childToMessage.put("player_only", getConfig().getString("player_only"));
         childToMessage.put("no_permission", getConfig().getString("no_permission"));
-        childToMessage.put("db_connected", getConfig().getString("db_connected"));
-        childToMessage.put("db_disconnected", getConfig().getString("db_disconnected"));
-        childToMessage.put("db_error_connect_disabled", getConfig().getString("db_error_connect_disabled"));
-        childToMessage.put("db_error_connect_already", getConfig().getString("db_error_connect_already"));
+
+        childToMessage.put("db_connected", modifyDBMessage(getConfig().getString("db_connected")));
+        childToMessage.put("db_connected_console", modifyDBMessage(getConfig().getString("db_connected_console")));
+        childToMessage.put("db_disconnected", modifyDBMessage(getConfig().getString("db_disconnected")));
+        childToMessage.put("db_error_credentials_not_found", modifyDBMessage(getConfig().getString("db_error_credentials_not_found")));
+        childToMessage.put("db_error_connect_unsuccessful", modifyDBMessage(getConfig().getString("db_error_connect_unsuccessful")));
+        childToMessage.put("db_error_connect_disabled", modifyDBMessage(getConfig().getString("db_error_connect_disabled")));
+        childToMessage.put("db_error_connect_already", modifyDBMessage(getConfig().getString("db_error_connect_already")));
+
         childToMessage.put("reloaded_config", getConfig().getString("reloaded_config"));
+        childToMessage.put("created_file", getConfig().getString("created_file"));
 
         childToMessage.put("prefix", getConfig().getString("prefix"));
         childToMessage.put("format", getConfig().getString("format"));
@@ -130,13 +136,6 @@ public class MessageHandler {
         return childToMessage.getOrDefault("no_permission", "&c`no_permission`");
     }
 
-    public String getDBConnected() {
-        return childToMessage.getOrDefault("db_connected", "&c`db_connected`");
-    }
-
-    public String getDBDisconnected() {
-        return childToMessage.getOrDefault("db_disconnected", "&c`db_disconnected`");
-    }
 
     public List<String> getHelpTextList() {
         return childToListMessage.getOrDefault("help_text", EMPTY_LIST);
@@ -150,6 +149,26 @@ public class MessageHandler {
         return childToMessage.getOrDefault("format", "&c`format`");
     }
 
+    public String getDBConnected() {
+        return childToMessage.getOrDefault("db_connected", "&c`db_connected`");
+    }
+
+    public String getDBConnectedConsole(String host) {
+        return childToMessage.getOrDefault("db_connected_console", "&c`db_connected_console`").replace("%host%", host);
+    }
+
+    public String getDBDisconnected() {
+        return childToMessage.getOrDefault("db_disconnected", "&c`db_disconnected`");
+    }
+
+    public String getDBErrorConnectUnsuccessful() {
+        return childToMessage.getOrDefault("db_error_connect_unsuccessful", "&c`db_error_connect_unsuccessful`");
+    }
+
+    public String getDBErrorCredentialsNotFound() {
+        return childToMessage.getOrDefault("db_error_credentials_not_found", "&c`db_error_credentials_not_found`");
+    }
+
     public String getDBErrorConnectDisabled() {
         return childToMessage.getOrDefault("db_error_connect_disabled", "&c`db_error_connect_disabled`");
     }
@@ -160,6 +179,10 @@ public class MessageHandler {
 
     public String getReloadedConfig() {
         return childToMessage.getOrDefault("reloaded_config", "&c`reloaded_config`");
+    }
+
+    public String getCreatedFile(String file_name) {
+        return childToMessage.getOrDefault("created_file", "&c`created_file`").replace("%file_name%", file_name);
     }
 
     public List<String> getEnabledMessage() {
@@ -184,12 +207,50 @@ public class MessageHandler {
         }
 
         if (getConfig().getString("db_connected") == null) {
-            messageConfig.setNoSave("db_connected", "&aSuccessfully connected to database!");
+            messageConfig.setNoSave("db_connected", "%db_type% &aSuccessfully connected to database!");
+            def = true;
+        }
+
+        if (getConfig().getString("db_connected_console") == null) {
+            messageConfig.setNoSave("db_connected_console", "%db_type% &aSuccessfully connected to: &3%host%");
             def = true;
         }
 
         if (getConfig().getString("db_disconnected") == null) {
-            messageConfig.setNoSave("db_disconnected", "&aDatabase disconnected.");
+            messageConfig.setNoSave("db_disconnected", "%db_type% &aDatabase disconnected.");
+            def = true;
+        }
+
+        if (getConfig().getString("db_error_credentials_not_found") == null) {
+            messageConfig.setNoSave("db_error_credentials_not_found",
+                    "Database information not found in config.yml. Will not use database...");
+            def = true;
+        }
+
+        if (getConfig().getString("db_error_connect_unsuccessful") == null) {
+            messageConfig.setNoSave("db_error_connect_unsuccessful", "%db_type% &cNot successful.");
+            def = true;
+        }
+
+        if (getConfig().getString("db_error_connect_disabled") == null) {
+            messageConfig.setNoSave("db_error_connect_disabled",
+                    "%db_type% &cCould not connect to database because database is disabled.");
+            def = true;
+        }
+
+        if (getConfig().getString("db_error_connect_already") == null) {
+            messageConfig.setNoSave("db_error_connect_already",
+                    "%db_type% &cCould not connect to database because database is already enabled.");
+            def = true;
+        }
+
+        if (getConfig().getString("reloaded_config") == null) {
+            messageConfig.setNoSave("reloaded_config", "&aReloaded config and messages.yml");
+            def = true;
+        }
+
+        if (getConfig().getString("created_file") == null) {
+            messageConfig.setNoSave("created_file", "&aSuccessfully created %file_name%");
             def = true;
         }
 
@@ -200,21 +261,6 @@ public class MessageHandler {
 
         if (getConfig().getString("format") == null) {
             messageConfig.setNoSave("format", "%prefix% &r%player%&r: %chat%");
-            def = true;
-        }
-
-        if (getConfig().getString("db_error_connect_disabled") == null) {
-            messageConfig.setNoSave("db_error_connect_disabled", "&cCould not connect to database because database is disabled.");
-            def = true;
-        }
-
-        if (getConfig().getString("db_error_connect_already") == null) {
-            messageConfig.setNoSave("db_error_connect_already", "&cCould not connect to database because database is already enabled.");
-            def = true;
-        }
-
-        if (getConfig().getString("reloaded_config") == null) {
-            messageConfig.setNoSave("reloaded_config", "&aReloaded config and messages.yml");
             def = true;
         }
 
@@ -261,6 +307,11 @@ public class MessageHandler {
         }
 
         return def;
+    }
+
+    private String modifyDBMessage(String db_message) {
+        return db_message != null ? db_message
+                .replace("%db_type% ", plugin.getDatabaseHandler().getDatabase().toString()) : "null";
     }
 
     public FileConfiguration getConfig() {

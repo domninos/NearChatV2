@@ -59,8 +59,6 @@ public class ConfigHandler {
     }
 
     public void saveToConfig() {
-        // TODO for host, port, user, password
-
         nearChatConfig.setNoSave("host", this.host);
         nearChatConfig.setNoSave("port", this.port);
         nearChatConfig.setNoSave("user", this.user);

@@ -12,7 +12,6 @@ import java.util.Map;
 
 public class FlatFileAdapter implements DatabaseAdapter {
 
-    private boolean enabled = false;
     private final NearChatPlugin plugin;
     private final FlatFileDatabase database;
 
@@ -34,7 +33,7 @@ public class FlatFileAdapter implements DatabaseAdapter {
         try {
             database.createFile();
         } catch (IOException e) {
-            plugin.error(e);
+            plugin.error("Could not initialize database", e);
             return;
         }
 
@@ -101,17 +100,20 @@ public class FlatFileAdapter implements DatabaseAdapter {
         try {
             if (isEnabled()) {
                 database.close();
-                plugin.sendConsole("&7[FLATFILE] &aDatabase disconnected."); // TODO: messages.yml
-
-                this.enabled = false;
+                plugin.sendConsole(plugin.getMessageHandler().getDBDisconnected());
             }
         } catch (Exception e) {
-            plugin.error("Something went wrong closing database: " + e.getMessage());
+            plugin.error("Something went wrong closing database: ", e);
         }
     }
 
     @Override
     public NearChatDatabase getDatabase() {
-        return this.database; // TODO
+        return this.database;
+    }
+
+    @Override
+    public String toString() {
+        return "FLAT-FILE";
     }
 }

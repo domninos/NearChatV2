@@ -25,7 +25,7 @@ public class FlatFileDatabase implements NearChatDatabase {
 
     public void createFile() throws IOException {
         if (file.createNewFile())
-            plugin.sendConsole("Successfully created " + FILE_NAME); // TODO messages.yml
+            plugin.sendConsole(plugin.getMessageHandler().getCreatedFile(FILE_NAME));
     }
 
     public boolean connect() {
@@ -37,6 +37,7 @@ public class FlatFileDatabase implements NearChatDatabase {
     @Override
     public void close() {
         cache.clear();
+        this.enabled = false;
     }
 
     public boolean has(String playerName) {
@@ -71,7 +72,7 @@ public class FlatFileDatabase implements NearChatDatabase {
                 enabled.put(name, value);
             }
         } catch (IOException e) {
-            plugin.error(e);
+            plugin.error("Something went wrong reading file: ", e);
         }
 
         return enabled;
@@ -81,7 +82,7 @@ public class FlatFileDatabase implements NearChatDatabase {
         try (FileWriter writer = new FileWriter(file)) {
             writer.write(line + "\n");
         } catch (IOException e) {
-            plugin.error(e);
+            plugin.error("Something went wrong writing to file: ", e);
         }
     }
 }
