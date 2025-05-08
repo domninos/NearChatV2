@@ -22,7 +22,7 @@ public class NearbyBroker extends BukkitRunnable {
     public void run() {
         try {
             if (!plugin.getDatabaseHandler().isEnabled()) {
-                plugin.error("Database disabled. Cancelling nearby broker..");
+                plugin.error(plugin.getMessageHandler().getBrokerStop("nearby"));
                 cancel();
                 return;
             }
@@ -41,7 +41,7 @@ public class NearbyBroker extends BukkitRunnable {
             }
 
         } catch (Exception e) {
-            plugin.error(e);
+            plugin.error("Something went wrong during runtime of nearby: ", e);
         }
     }
 }

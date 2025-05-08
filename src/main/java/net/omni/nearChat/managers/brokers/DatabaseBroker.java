@@ -18,11 +18,11 @@ public class DatabaseBroker extends BukkitRunnable {
             if (plugin.getDatabaseHandler().isEnabled())
                 plugin.getPlayerManager().saveToDatabase();
             else {
-                plugin.error("Database disabled. Cancelling database broker..");
+                plugin.error(plugin.getMessageHandler().getBrokerStop("database"));
                 cancel();
             }
         } catch (Exception e) {
-            plugin.error(e);
+            plugin.error("Something went wrong during runtime of database: ", e);
         }
     }
 }

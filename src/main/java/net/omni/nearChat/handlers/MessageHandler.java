@@ -52,6 +52,8 @@ public class MessageHandler {
         childToMessage.put("prefix", getConfig().getString("prefix"));
         childToMessage.put("format", getConfig().getString("format"));
 
+        childToMessage.put("broker_stop", getConfig().getString("broker_stop"));
+
         childToListMessage.put("help_text", getConfig().getStringList("help_text"));
         childToListMessage.put("enabled_message", getConfig().getStringList("enabled_message"));
         childToListMessage.put("disabled_message", getConfig().getStringList("disabled_message"));
@@ -185,6 +187,10 @@ public class MessageHandler {
         return childToMessage.getOrDefault("created_file", "&c`created_file`").replace("%file_name%", file_name);
     }
 
+    public String getBrokerStop(String broker) {
+        return childToMessage.getOrDefault("broker_stop", "&c`broker_stop`").replace("%broker%", broker);
+    }
+
     public List<String> getEnabledMessage() {
         return childToListMessage.getOrDefault("enabled_message", EMPTY_LIST);
     }
@@ -261,6 +267,11 @@ public class MessageHandler {
 
         if (getConfig().getString("format") == null) {
             messageConfig.setNoSave("format", "%prefix% &r%player%&r: %chat%");
+            def = true;
+        }
+
+        if (getConfig().getString("broker_stop") == null) {
+            messageConfig.setNoSave("broker_stop", "Database disabled. Cancelling %broker% broker..");
             def = true;
         }
 

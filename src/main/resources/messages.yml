@@ -1,8 +1,9 @@
-# player messages
+# player/console messages
 # available placeholders
 #  - %db_type% -> either 'FLAT-FILE' or 'REDIS'  (for database-related messages only)
-#  - %host% -> (only applicable if using REDIS) -> host name  (for database-related messages only)
-#  - %file_name% -> the created file's name
+#  - %host% -> (only applicable if using REDIS) -> host name  (for `db_connected_console` only)
+#  - %file_name% -> the created file's name  (for `created_file` only)
+#  - %broker% -> the broker's name (for `broker_stop` only)
 player_only: "&cOnly players can execute this command."
 no_permission: "&cYou do not have permission to use this command."
 db_connected: "%db_type% &aSuccessfully connected to database!"
@@ -14,6 +15,7 @@ db_error_connect_disabled: "%db_type% &cCould not connect to database because da
 db_error_connect_already: "%db_type% &cCould not connect to database because database is already enabled."
 reloaded_config: "&aReloaded config and messages.yml"
 created_file: "&aSuccessfully created %file_name%"
+broker_stop: "Database disabled. Cancelling %broker% broker.."
 
 # set the command prefix
 prefix: "&f[&6Near&eChat&f] &7"
