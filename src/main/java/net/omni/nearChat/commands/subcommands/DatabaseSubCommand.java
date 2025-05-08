@@ -34,7 +34,6 @@ public class DatabaseSubCommand extends SubCommand {
 
             return true;
         } catch (Exception e) {
-            plugin.sendMessage(sender, "&cSomething went wrong loading database: " + e.getMessage());
             plugin.error("Something went wrong loading database: ", e);
         }
 

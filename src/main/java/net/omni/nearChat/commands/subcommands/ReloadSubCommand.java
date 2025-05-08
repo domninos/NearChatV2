@@ -27,6 +27,9 @@ public class ReloadSubCommand extends SubCommand {
         plugin.getMessageConfig().reload();
         plugin.getMessageHandler().load();
 
+        // reload brokers
+        plugin.tryBrokers();
+
         plugin.sendMessage(sender, plugin.getMessageHandler().getReloadedConfig());
         return true;
     }

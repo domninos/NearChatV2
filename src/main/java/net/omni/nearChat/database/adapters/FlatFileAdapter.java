@@ -6,8 +6,6 @@ import net.omni.nearChat.database.NearChatDatabase;
 import net.omni.nearChat.handlers.DatabaseHandler;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 public class FlatFileAdapter implements DatabaseAdapter {
@@ -55,44 +53,47 @@ public class FlatFileAdapter implements DatabaseAdapter {
         return database.has(playerName);
     }
 
+
+    // TODO: test
+    // TODO: possibly just use NearChatConfig for .yml
     @Override
     public void saveToDatabase(Map<String, Boolean> enabledPlayers) {
-        Map<String, Boolean> savedPlayers = database.readFile();
-        List<String> newPlayers = new ArrayList<>();
+        StringBuilder toSave = new StringBuilder();
 
         for (Map.Entry<String, Boolean> entry : enabledPlayers.entrySet()) {
             String name = entry.getKey();
             Boolean value = entry.getValue();
 
-            if (savedPlayers.containsKey(name)) {
-                // in database already, replace
-                savedPlayers.replace(name, value);
-                continue;
-            }
+            System.out.println(name);
 
             // new entry/player
-            newPlayers.add(name + ": " + value.toString());
+            toSave.append(name).append(": ").append(value.toString()).append("\n");
             plugin.sendConsole("[DEBUG] Added " + name + ": " + value);
         }
 
-        // now add everything
-        for (Map.Entry<String, Boolean> entry : savedPlayers.entrySet()) {
-            String name = entry.getKey();
-            Boolean value = entry.getValue();
-
-            database.writeToFile(name + ": " + value.toString());
-        }
-
-        newPlayers.forEach(database::writeToFile); // since newPlayers consists of-  name: boolean
-
-        savedPlayers.clear();
-        newPlayers.clear();
-        plugin.sendConsole("&7[FlatFile] &aSaved to database.");
+        database.writeToFile(toSave.toString());
+        plugin.sendConsole(plugin.getMessageHandler().getDatabaseSaved());
     }
 
     @Override
     public void saveToDatabase(String playerName, Boolean value) {
         database.put(playerName, value);
+
+        Map<String, Boolean> savedPlayers = database.readFile();
+
+        if (savedPlayers.containsKey(playerName)) {
+            // in database already, replace
+            savedPlayers.replace(playerName, value);
+            plugin.sendConsole("[DEBUG] Replaced " + playerName + ": " + value);
+        } else {
+            savedPlayers.put(playerName, value);
+            plugin.sendConsole("[DEBUG] Added  " + playerName + ": " + value);
+        }
+
+        database.writeToFile(playerName + ": " + value);
+
+        savedPlayers.clear();
+        // SAVE TO FILE
     }
 
     @Override

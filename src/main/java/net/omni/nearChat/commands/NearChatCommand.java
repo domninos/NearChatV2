@@ -5,6 +5,7 @@ import net.omni.nearChat.commands.subcommands.DatabaseSubCommand;
 import net.omni.nearChat.commands.subcommands.HelpSubCommand;
 import net.omni.nearChat.commands.subcommands.ReloadSubCommand;
 import net.omni.nearChat.commands.subcommands.SubCommand;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -46,10 +47,17 @@ public class NearChatCommand extends MainCommand {
                 return true;
             }
 
+            if (!plugin.getDatabaseHandler().isEnabled()) {
+                plugin.sendMessage(sender, plugin.getMessageHandler().getDBErrorConnectDisabled());
+                return true;
+            }
+
             plugin.getPlayerManager().toggle(player);
 
             // TODO: open GUI with GUIHandler
         } else {
+            // check subcommands first
+
             for (SubCommand subCommand : getSubCommands()) {
                 if (subCommand == null) continue;
 
@@ -68,6 +76,31 @@ public class NearChatCommand extends MainCommand {
                 if (currentCmd.equalsIgnoreCase(subCmd) ||
                         Arrays.stream(subCommand.getAliases()).anyMatch((sub) -> sub.equalsIgnoreCase(currentCmd)))
                     return subCommand.execute(sender, args);
+            }
+
+            // look for playername
+
+            if (args.length == 1) {
+                if (!plugin.getDatabaseHandler().isEnabled()) {
+                    plugin.sendMessage(sender, plugin.getMessageHandler().getDBErrorConnectDisabled());
+                    return true;
+                }
+
+                Player player = Bukkit.getPlayerExact(args[0]);
+
+                if (player == null) {
+                    plugin.sendMessage(sender, plugin.getMessageHandler().getNearChatPlayerNotFound(args[0]));
+                    return true;
+                }
+
+                plugin.getPlayerManager().toggle(player, false);
+
+                if (plugin.getPlayerManager().isEnabled(player.getName()))
+                    plugin.sendMessage(sender, plugin.getMessageHandler().getNearChatEnabledPlayer(player.getName()));
+                else
+                    plugin.sendMessage(sender, plugin.getMessageHandler().getNearChatDisabledPlayer(player.getName()));
+
+                return true;
             }
 
             sendHelp(sender);

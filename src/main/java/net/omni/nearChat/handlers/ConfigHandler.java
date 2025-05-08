@@ -32,9 +32,6 @@ public class ConfigHandler {
         if (this.nearChatConfig == null)
             this.nearChatConfig = plugin.getNearConfig();
 
-        getConfig().options().copyDefaults(true); //
-        nearChatConfig.save();
-
         boolean def = loadDefaults(); // check if there are empty messages, if so, replace it
 
         // load messages to cache

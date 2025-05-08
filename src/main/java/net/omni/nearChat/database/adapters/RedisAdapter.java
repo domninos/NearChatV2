@@ -31,21 +31,15 @@ public class RedisAdapter implements DatabaseAdapter {
     @Override
     public void initDatabase() {
         // REF: https://redis.io/docs/latest/develop/clients/lettuce/connect/
-
-        if (isEnabled()) {
-            plugin.error("You cannot connect to the database while it is already enabled.");
-            return;
-        }
-
-        redis.connectConfig();
+        plugin.sendConsole("initDatabase");
     }
 
     @Override
     public boolean connect() {
-        if (isEnabled()) {
-            plugin.error("You cannot connect to the database while it is already enabled.");
-            return false;
-        }
+//        if (isEnabled()) {
+//            plugin.error("You cannot connect to the database while it is already enabled.");
+//            return false;
+//        }
 
         return redis.connectConfig();
     }
@@ -70,28 +64,23 @@ public class RedisAdapter implements DatabaseAdapter {
             String name = entry.getKey();
             Boolean value = entry.getValue();
 
-            redis.asyncHashSet(async, name, value.toString())
-                    .whenComplete((action, throwable) -> {
-                        if (throwable != null) {
-                            plugin.error("Could not complete asynchronous hash set: ", throwable);
-                            return;
-                        }
-
-                        RedisFuture<TransactionResult> exec = async.exec();
-
-                        exec.whenComplete((result, throwable2) -> {
-                            if (throwable2 != null) {
-                                plugin.error("Could not complete execution: ", throwable2);
-                                return;
-                            }
-
-                            if (!result.isEmpty())
-                                result.forEach(o -> plugin.sendConsole("[DEBUG] " + o.toString()));
-
-                            plugin.sendConsole("&7[Redis] &aSaved database.");
-                        });
-                    });
+            redis.asyncHashSetNoSave(async, name, value.toString());
         }
+
+        RedisFuture<TransactionResult> exec = async.exec();
+
+        exec.whenComplete((result, throwable) -> {
+            if (throwable != null) {
+                plugin.error("Could not complete execution: ", throwable);
+                return;
+            }
+
+            if (!result.isEmpty())
+                result.forEach(o -> plugin.sendConsole("[DEBUG] " + o.toString()));
+
+            async.save();
+            plugin.sendConsole(plugin.getMessageHandler().getDatabaseSaved());
+        });
     }
 
     @Override

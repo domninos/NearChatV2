@@ -64,6 +64,10 @@ public class PlayerManager {
     }
 
     public void toggle(Player player) {
+        toggle(player, true);
+    }
+
+    public void toggle(Player player, boolean sendLog) {
         String name = player.getName();
 
         if (has(name))
@@ -71,10 +75,16 @@ public class PlayerManager {
         else
             this.enabled.put(name, true);
 
-        if (isEnabled(name))
+        if (isEnabled(name)) {
             setNearby(player);
-        else
+
+            // TODO: this says enabled always. probably because of how it handles async
+            if (sendLog) plugin.sendMessage(player, plugin.getMessageHandler().getNearChatEnabled());
+        } else {
             removeNearby(player);
+
+            if (sendLog) plugin.sendMessage(player, plugin.getMessageHandler().getNearChatDisabled());
+        }
     }
 
     public Set<Player> getNearby(Player player) {

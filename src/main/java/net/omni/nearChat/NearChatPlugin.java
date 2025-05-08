@@ -29,6 +29,10 @@ public final class NearChatPlugin extends JavaPlugin {
     private final DatabaseHandler databaseHandler;
     private PlayerManager playerManager;
 
+    private DatabaseBroker databaseBroker;
+
+    private NearbyBroker nearbyBroker;
+
     public NearChatPlugin() {
         this.databaseHandler = new DatabaseHandler(this);
         this.messageHandler = new MessageHandler(this);
@@ -52,6 +56,7 @@ public final class NearChatPlugin extends JavaPlugin {
         messageHandler.load();
 
         databaseHandler.initDatabase();
+        databaseHandler.connect();
 
         this.playerManager = new PlayerManager(this);
 
@@ -77,6 +82,7 @@ public final class NearChatPlugin extends JavaPlugin {
 
     public void error(String message, Throwable throwable) {
         getLogger().log(Level.SEVERE, ChatColor.stripColor(message), throwable);
+        sendConsole(message + throwable.getMessage());
     }
 
     public void error(String text) {
@@ -141,10 +147,16 @@ public final class NearChatPlugin extends JavaPlugin {
             return;
         }
 
-        sendConsole("&aInitializing broker..");
+        if (databaseBroker != null)
+            databaseBroker.cancel();
 
-        new DatabaseBroker(this);
-        new NearbyBroker(this);
+        if (nearbyBroker != null)
+            nearbyBroker.cancel();
+
+        sendConsole("&aInitializing brokers..");
+
+        this.databaseBroker = new DatabaseBroker(this);
+        this.nearbyBroker = new NearbyBroker(this);
     }
 
     private void flush() {

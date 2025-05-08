@@ -2,6 +2,7 @@ package net.omni.nearChat.handlers;
 
 import net.omni.nearChat.NearChatPlugin;
 import net.omni.nearChat.database.FlatFileDatabase;
+import net.omni.nearChat.database.NearChatDatabase;
 import net.omni.nearChat.database.RedisDatabase;
 import net.omni.nearChat.database.adapters.DatabaseAdapter;
 import net.omni.nearChat.database.adapters.FlatFileAdapter;
@@ -26,9 +27,17 @@ public class DatabaseHandler {
     public void initDatabase() {
         // REF: https://redis.io/docs/latest/develop/clients/lettuce/connect/
 
-        if (isEnabled()) {
-            plugin.error(plugin.getMessageHandler().getDBErrorConnectedAlready());
-            return;
+//        if (isEnabled()) {
+//            plugin.error(plugin.getMessageHandler().getDBErrorConnectedAlready());
+//            return;
+//        }
+
+        if (ADAPTER != null) {
+            ADAPTER.closeDatabase();
+            NearChatDatabase db = ADAPTER.getDatabase();
+
+            if (db != null)
+                db.close();
         }
 
         ADAPTER = plugin.getConfigHandler().isFlatFile()
@@ -39,12 +48,13 @@ public class DatabaseHandler {
     }
 
     public boolean connect() {
-        if (isEnabled()) {
-            plugin.error(plugin.getMessageHandler().getDBErrorConnectedAlready());
-            return false;
-        }
+//        if (isEnabled()) {
+//            plugin.error(plugin.getMessageHandler().getDBErrorConnectedAlready());
+//            return false;
+//        }
 
-        plugin.getPlayerManager().flush();
+        if (plugin.getPlayerManager() != null)
+            plugin.getPlayerManager().flush();
 
         initDatabase();
 
@@ -71,6 +81,8 @@ public class DatabaseHandler {
             plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectDisabled());
             return;
         }
+
+        // TODO put to databaseadapter
 
         String playerName = player.getName();
 
@@ -120,7 +132,7 @@ public class DatabaseHandler {
     }
 
     public boolean checkExistsDB(String playerName) {
-        return ADAPTER.existsInDatabase(playerName);
+        return isEnabled() && ADAPTER.existsInDatabase(playerName);
     }
 
     public DatabaseAdapter getDatabase() {

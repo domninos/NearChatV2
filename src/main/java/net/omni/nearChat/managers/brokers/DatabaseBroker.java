@@ -15,6 +15,8 @@ public class DatabaseBroker extends BukkitRunnable {
     @Override
     public void run() {
         try {
+            plugin.sendConsole(plugin.getMessageHandler().getDBTrySave());
+
             if (plugin.getDatabaseHandler().isEnabled())
                 plugin.getPlayerManager().saveToDatabase();
             else {

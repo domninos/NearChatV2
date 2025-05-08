@@ -56,6 +56,10 @@ public class FlatFileDatabase implements NearChatDatabase {
         return cache.getOrDefault(playerName, false);
     }
 
+    public Map<String, Boolean> getCache() {
+        return cache;
+    }
+
     public Map<String, Boolean> readFile() {
         Map<String, Boolean> enabled = new HashMap<>();
 

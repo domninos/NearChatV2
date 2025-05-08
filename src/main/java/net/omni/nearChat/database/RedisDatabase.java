@@ -3,14 +3,12 @@ package net.omni.nearChat.database;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisFuture;
 import io.lettuce.core.RedisURI;
-import io.lettuce.core.TransactionResult;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
 import io.lettuce.core.api.sync.RedisCommands;
 import net.omni.nearChat.NearChatPlugin;
 import net.omni.nearChat.util.MainUtil;
 
-import java.time.Duration;
 import java.util.Map;
 
 public class RedisDatabase implements NearChatDatabase {
@@ -37,8 +35,8 @@ public class RedisDatabase implements NearChatDatabase {
 
         try {
             RedisURI redisUri = RedisURI.Builder.redis(host, port)
-                    .withTimeout(Duration.ofSeconds(10))
-                    .withAuthentication(user, password).build();
+                    .withAuthentication(user, password)
+                    .build();
 
             client = RedisClient.create(redisUri);
             connection = client.connect();
@@ -84,15 +82,7 @@ public class RedisDatabase implements NearChatDatabase {
     }
 
     public boolean hashExists(String field) {
-        return getSync().hexists(KEY, field);
-    }
-
-    public RedisFuture<String> asyncMulti() {
-        return getAsync().multi();
-    }
-
-    public RedisFuture<TransactionResult> getAsyncExec() {
-        return getAsync().exec();
+        return getSync().hexists(KEY, field) != null;
     }
 
     public String syncGet(String key) {
@@ -152,18 +142,22 @@ public class RedisDatabase implements NearChatDatabase {
         return asyncSet(getAsync(), value);
     }
 
-    public RedisFuture<Boolean> asyncHashSet(RedisAsyncCommands<String, String> async, String field, String value) {
+    public void asyncHashSet(RedisAsyncCommands<String, String> async, String field, String value) {
         try {
             RedisFuture<Boolean> future = async.hset(KEY, field, value);
 
             future.whenComplete((action, throwable) -> async.save());
-
-            return future;
         } catch (Exception e) {
             plugin.error("Something went wrong using asyncHashSet: ", e);
         }
+    }
 
-        return null;
+    public void asyncHashSetNoSave(RedisAsyncCommands<String, String> async, String field, String value) {
+        try {
+            async.hset(KEY, field, value);
+        } catch (Exception e) {
+            plugin.error("Something went wrong using asyncHashSet: ", e);
+        }
     }
 
     public void asyncHashSet(String field, String value) {
@@ -190,9 +184,13 @@ public class RedisDatabase implements NearChatDatabase {
 
     @Override
     public void close() {
-        connection.sync().shutdown(true);
-        client.shutdown();
+        try {
+            getSync().shutdown(true);
+            client.shutdown();
 
-        this.enabled = false;
+            this.enabled = false;
+        } catch (Exception e) {
+            plugin.error("Something went wrong closing database: ", e);
+        }
     }
 }

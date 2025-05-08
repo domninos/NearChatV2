@@ -1,8 +1,10 @@
 package net.omni.nearChat.handlers;
 
 import net.omni.nearChat.NearChatPlugin;
+import net.omni.nearChat.database.adapters.DatabaseAdapter;
 import net.omni.nearChat.util.MainUtil;
 import net.omni.nearChat.util.NearChatConfig;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.Arrays;
@@ -27,9 +29,6 @@ public class MessageHandler {
         if (this.messageConfig == null)
             this.messageConfig = plugin.getMessageConfig();
 
-        getConfig().options().copyDefaults(true);
-        messageConfig.save();
-
         childToMessage.clear();
 
         boolean def = loadDefaults(); // check if there are empty messages, if so, replace it
@@ -38,13 +37,21 @@ public class MessageHandler {
         childToMessage.put("player_only", getConfig().getString("player_only"));
         childToMessage.put("no_permission", getConfig().getString("no_permission"));
 
-        childToMessage.put("db_connected", modifyDBMessage(getConfig().getString("db_connected")));
-        childToMessage.put("db_connected_console", modifyDBMessage(getConfig().getString("db_connected_console")));
-        childToMessage.put("db_disconnected", modifyDBMessage(getConfig().getString("db_disconnected")));
-        childToMessage.put("db_error_credentials_not_found", modifyDBMessage(getConfig().getString("db_error_credentials_not_found")));
-        childToMessage.put("db_error_connect_unsuccessful", modifyDBMessage(getConfig().getString("db_error_connect_unsuccessful")));
-        childToMessage.put("db_error_connect_disabled", modifyDBMessage(getConfig().getString("db_error_connect_disabled")));
-        childToMessage.put("db_error_connect_already", modifyDBMessage(getConfig().getString("db_error_connect_already")));
+        childToMessage.put("nearchat_enabled", getConfig().getString("nearchat_enabled"));
+        childToMessage.put("nearchat_enabled_player", getConfig().getString("nearchat_enabled_player"));
+        childToMessage.put("nearchat_disabled", getConfig().getString("nearchat_disabled"));
+        childToMessage.put("nearchat_disabled_player", getConfig().getString("nearchat_disabled_player"));
+        childToMessage.put("nearchat_player_not_found", getConfig().getString("nearchat_player_not_found"));
+
+        childToMessage.put("db_connected", getConfig().getString("db_connected"));
+        childToMessage.put("db_connected_console", getConfig().getString("db_connected_console"));
+        childToMessage.put("db_disconnected", getConfig().getString("db_disconnected"));
+        childToMessage.put("db_error_credentials_not_found", getConfig().getString("db_error_credentials_not_found"));
+        childToMessage.put("db_error_connect_unsuccessful", getConfig().getString("db_error_connect_unsuccessful"));
+        childToMessage.put("db_error_connect_disabled", getConfig().getString("db_error_connect_disabled"));
+        childToMessage.put("db_error_connect_already", getConfig().getString("db_error_connect_already"));
+        childToMessage.put("db_saved", getConfig().getString("db_saved"));
+        childToMessage.put("db_try_save", getConfig().getString("db_try_save"));
 
         childToMessage.put("reloaded_config", getConfig().getString("reloaded_config"));
         childToMessage.put("created_file", getConfig().getString("created_file"));
@@ -62,143 +69,6 @@ public class MessageHandler {
             plugin.sendConsole("&aLoaded messages");
     }
 
-    public void saveToConfig() {
-        for (Map.Entry<String, String> entry : childToMessage.entrySet()) {
-            String key = entry.getKey();
-            String value = entry.getValue();
-
-            messageConfig.setNoSave(key, value);
-        }
-
-        for (Map.Entry<String, List<String>> entry : childToListMessage.entrySet()) {
-            String key = entry.getKey();
-            List<String> value = entry.getValue();
-
-            messageConfig.setNoSave(key, value);
-        }
-
-        messageConfig.save();
-    }
-
-    public void sendEnabledMessage() {
-        StringBuilder toSend = new StringBuilder("\n");
-
-        for (String line : getEnabledMessage()) {
-            if (line.isBlank()) {
-                toSend.append("\n");
-                continue;
-            }
-
-            if (line.contains("%plugin_name%"))
-                line = line.replace("%plugin_name%", plugin.getConfigHandler().getPluginName());
-            if (line.contains("%plugin_version%"))
-                line = line.replace("%plugin_version%", plugin.getConfigHandler().getPluginVersion());
-            if (line.contains("%plugin_mc_version%"))
-                line = line.replace("%plugin_mc_version%", plugin.getConfigHandler().getPluginMCVersion());
-            if (line.contains("%db_delay%"))
-                line = line.replace("%db_delay%", String.valueOf(plugin.getConfigHandler().getDatabaseSaveDelay()));
-            if (line.contains("%db_converted_ticks%"))
-                line = line.replace("%db_converted_ticks%", MainUtil.convertTicks(plugin.getConfigHandler().getDatabaseSaveDelay()));
-            if (line.contains("%nearby_delay%"))
-                line = line.replace("%nearby_delay%", String.valueOf(plugin.getConfigHandler().getNearbyGetDelay()));
-            if (line.contains("%nearby_converted_ticks%"))
-                line = line.replace("%nearby_converted_ticks%", MainUtil.convertTicks(plugin.getConfigHandler().getNearbyGetDelay()));
-            if (line.contains("%radius%"))
-                line = line.replace("%radius%", String.valueOf(plugin.getConfigHandler().getNearBlockRadius()));
-
-            toSend.append(line).append("&r\n");
-        }
-
-        plugin.sendConsole(plugin.translate(toSend.toString()));
-    }
-
-    public void sendDisabledMessage() {
-        StringBuilder toSend = new StringBuilder("\n");
-
-        for (String line : getDisabledMessage()) {
-            if (line.isBlank()) {
-                toSend.append("\n");
-                continue;
-            }
-
-            if (line.contains("%plugin_name%"))
-                line = line.replace("%plugin_name%", plugin.getConfigHandler().getPluginName());
-
-            toSend.append(line).append("&r\n");
-        }
-
-        plugin.sendConsole(plugin.translate(toSend.toString()));
-    }
-
-    public String getPlayerOnly() {
-        return childToMessage.getOrDefault("player_only", "&c`player_only`");
-    }
-
-    public String getNoPermission() {
-        return childToMessage.getOrDefault("no_permission", "&c`no_permission`");
-    }
-
-
-    public List<String> getHelpTextList() {
-        return childToListMessage.getOrDefault("help_text", EMPTY_LIST);
-    }
-
-    public String getPrefix() {
-        return childToMessage.getOrDefault("prefix", "&f[&6Near&eChat&f] &7");
-    }
-
-    public String getFormat() {
-        return childToMessage.getOrDefault("format", "&c`format`");
-    }
-
-    public String getDBConnected() {
-        return childToMessage.getOrDefault("db_connected", "&c`db_connected`");
-    }
-
-    public String getDBConnectedConsole(String host) {
-        return childToMessage.getOrDefault("db_connected_console", "&c`db_connected_console`").replace("%host%", host);
-    }
-
-    public String getDBDisconnected() {
-        return childToMessage.getOrDefault("db_disconnected", "&c`db_disconnected`");
-    }
-
-    public String getDBErrorConnectUnsuccessful() {
-        return childToMessage.getOrDefault("db_error_connect_unsuccessful", "&c`db_error_connect_unsuccessful`");
-    }
-
-    public String getDBErrorCredentialsNotFound() {
-        return childToMessage.getOrDefault("db_error_credentials_not_found", "&c`db_error_credentials_not_found`");
-    }
-
-    public String getDBErrorConnectDisabled() {
-        return childToMessage.getOrDefault("db_error_connect_disabled", "&c`db_error_connect_disabled`");
-    }
-
-    public String getDBErrorConnectedAlready() {
-        return childToMessage.getOrDefault("db_error_connect_already", "&c`db_error_connect_already`");
-    }
-
-    public String getReloadedConfig() {
-        return childToMessage.getOrDefault("reloaded_config", "&c`reloaded_config`");
-    }
-
-    public String getCreatedFile(String file_name) {
-        return childToMessage.getOrDefault("created_file", "&c`created_file`").replace("%file_name%", file_name);
-    }
-
-    public String getBrokerStop(String broker) {
-        return childToMessage.getOrDefault("broker_stop", "&c`broker_stop`").replace("%broker%", broker);
-    }
-
-    public List<String> getEnabledMessage() {
-        return childToListMessage.getOrDefault("enabled_message", EMPTY_LIST);
-    }
-
-    public List<String> getDisabledMessage() {
-        return childToListMessage.getOrDefault("disabled_message", EMPTY_LIST);
-    }
-
     private boolean loadDefaults() {
         boolean def = false;
 
@@ -209,6 +79,31 @@ public class MessageHandler {
 
         if (getConfig().getString("no_permission") == null) {
             messageConfig.setNoSave("no_permission", "&cYou do not have permission to use this command.");
+            def = true;
+        }
+
+        if (getConfig().getString("nearchat_enabled") == null) {
+            messageConfig.setNoSave("nearchat_enabled", "&aEnabled");
+            def = true;
+        }
+
+        if (getConfig().getString("nearchat_enabled_player") == null) {
+            messageConfig.setNoSave("nearchat_enabled_player", "&aEnabled NearChat for %name%");
+            def = true;
+        }
+
+        if (getConfig().getString("nearchat_disabled") == null) {
+            messageConfig.setNoSave("nearchat_disabled", "&cDisabled");
+            def = true;
+        }
+
+        if (getConfig().getString("nearchat_disabled_player") == null) {
+            messageConfig.setNoSave("nearchat_disabled_player", "&cDisabled NearChat for %name%");
+            def = true;
+        }
+
+        if (getConfig().getString("nearchat_player_not_found") == null) {
+            messageConfig.setNoSave("nearchat_player_not_found", "&cCould not find %name%");
             def = true;
         }
 
@@ -247,6 +142,16 @@ public class MessageHandler {
         if (getConfig().getString("db_error_connect_already") == null) {
             messageConfig.setNoSave("db_error_connect_already",
                     "%db_type% &cCould not connect to database because database is already enabled.");
+            def = true;
+        }
+
+        if (getConfig().getString("db_saved") == null) {
+            messageConfig.setNoSave("db_saved", "[%db_type%] &aSaved database.");
+            def = true;
+        }
+
+        if (getConfig().getString("db_try_save") == null) {
+            messageConfig.setNoSave("db_try_save", "[%db_type%] &cTrying to save database..");
             def = true;
         }
 
@@ -320,9 +225,183 @@ public class MessageHandler {
         return def;
     }
 
-    private String modifyDBMessage(String db_message) {
-        return db_message != null ? db_message
-                .replace("%db_type% ", plugin.getDatabaseHandler().getDatabase().toString()) : "null";
+    public void saveToConfig() {
+        for (Map.Entry<String, String> entry : childToMessage.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+
+            messageConfig.setNoSave(key, value);
+        }
+
+        for (Map.Entry<String, List<String>> entry : childToListMessage.entrySet()) {
+            String key = entry.getKey();
+            List<String> value = entry.getValue();
+
+            messageConfig.setNoSave(key, value);
+        }
+
+        messageConfig.save();
+    }
+
+    public void sendEnabledMessage() {
+        StringBuilder toSend = new StringBuilder("\n");
+
+        for (String line : getEnabledMessage()) {
+            if (line.isBlank()) {
+                toSend.append("\n");
+                continue;
+            }
+
+            if (line.contains("%plugin_name%"))
+                line = line.replace("%plugin_name%", plugin.getConfigHandler().getPluginName());
+            if (line.contains("%plugin_version%"))
+                line = line.replace("%plugin_version%", plugin.getConfigHandler().getPluginVersion());
+            if (line.contains("%plugin_mc_version%"))
+                line = line.replace("%plugin_mc_version%", plugin.getConfigHandler().getPluginMCVersion());
+            if (line.contains("%db_type%"))
+                line = modifyDBMessage(line);
+            if (line.contains("%db_delay%"))
+                line = line.replace("%db_delay%", String.valueOf(plugin.getConfigHandler().getDatabaseSaveDelay()));
+            if (line.contains("%db_converted_ticks%"))
+                line = line.replace("%db_converted_ticks%", MainUtil.convertTicks(plugin.getConfigHandler().getDatabaseSaveDelay()));
+            if (line.contains("%nearby_delay%"))
+                line = line.replace("%nearby_delay%", String.valueOf(plugin.getConfigHandler().getNearbyGetDelay()));
+            if (line.contains("%nearby_converted_ticks%"))
+                line = line.replace("%nearby_converted_ticks%", MainUtil.convertTicks(plugin.getConfigHandler().getNearbyGetDelay()));
+            if (line.contains("%radius%"))
+                line = line.replace("%radius%", String.valueOf(plugin.getConfigHandler().getNearBlockRadius()));
+
+            toSend.append(line).append("&r\n");
+        }
+
+        Bukkit.getConsoleSender().sendMessage(plugin.translate(toSend.toString()));
+    }
+
+    public void sendDisabledMessage() {
+        StringBuilder toSend = new StringBuilder("\n");
+
+        for (String line : getDisabledMessage()) {
+            if (line.isBlank()) {
+                toSend.append("\n");
+                continue;
+            }
+
+            if (line.contains("%plugin_name%"))
+                line = line.replace("%plugin_name%", plugin.getConfigHandler().getPluginName());
+
+            toSend.append(line).append("&r\n");
+        }
+
+        Bukkit.getConsoleSender().sendMessage(plugin.translate(toSend.toString()));
+    }
+
+    public String getNearChatEnabled() {
+        return childToMessage.getOrDefault("nearchat_enabled", "&c`nearchat_enabled`");
+    }
+
+    public String getNearChatEnabledPlayer(String playerName) {
+        return childToMessage.getOrDefault("nearchat_enabled_player", "&c`nearchat_enabled_player`")
+                .replace("%name%", playerName);
+    }
+
+    public String getNearChatDisabled() {
+        return childToMessage.getOrDefault("nearchat_enabled", "&c`nearchat_enabled`");
+    }
+
+    public String getNearChatDisabledPlayer(String playerName) {
+        return childToMessage.getOrDefault("nearchat_enabled_player", "&c`nearchat_enabled_player`")
+                .replace("%name%", playerName);
+    }
+
+    public String getNearChatPlayerNotFound(String playerName) {
+        return childToMessage.getOrDefault("nearchat_player_not_found", "&c`nearchat_player_not_found`")
+                .replace("%name%", playerName);
+    }
+
+    public String getPlayerOnly() {
+        return childToMessage.getOrDefault("player_only", "&c`player_only`");
+    }
+
+    public String getNoPermission() {
+        return childToMessage.getOrDefault("no_permission", "&c`no_permission`");
+    }
+
+    public List<String> getHelpTextList() {
+        return childToListMessage.getOrDefault("help_text", EMPTY_LIST);
+    }
+
+    public String getPrefix() {
+        return childToMessage.getOrDefault("prefix", "&f[&6Near&eChat&f] &7");
+    }
+
+    public String getFormat() {
+        return childToMessage.getOrDefault("format", "&c`format`");
+    }
+
+    public String getDBConnected() {
+        return modifyDBMessage(childToMessage.getOrDefault("db_connected", "&c`db_connected`"));
+    }
+
+    public String getDBConnectedConsole(String host) {
+        return modifyDBMessage(childToMessage.getOrDefault("db_connected_console", "&c`db_connected_console`")
+                .replace("%host%", host));
+    }
+
+    public String getDBDisconnected() {
+        return modifyDBMessage(childToMessage.getOrDefault("db_disconnected", "&c`db_disconnected`"));
+    }
+
+    public String getDBErrorConnectUnsuccessful() {
+        return modifyDBMessage(childToMessage.getOrDefault("db_error_connect_unsuccessful", "&c`db_error_connect_unsuccessful`"));
+    }
+
+    public String getDBErrorCredentialsNotFound() {
+        return modifyDBMessage(childToMessage.getOrDefault("db_error_credentials_not_found", "&c`db_error_credentials_not_found`"));
+    }
+
+    public String getDBErrorConnectDisabled() {
+        return modifyDBMessage(childToMessage.getOrDefault("db_error_connect_disabled", "&c`db_error_connect_disabled`"));
+    }
+
+    public String getDBErrorConnectedAlready() {
+        return modifyDBMessage(childToMessage.getOrDefault("db_error_connect_already", "&c`db_error_connect_already`"));
+    }
+
+    public String getDBTrySave() {
+        return modifyDBMessage(childToMessage.getOrDefault("db_try_save", "&c`db_try_save`"));
+    }
+
+    public String getDatabaseSaved() {
+        return modifyDBMessage(childToMessage.getOrDefault("db_saved", "&c`db_saved`"));
+    }
+
+    public String getReloadedConfig() {
+        return modifyDBMessage(childToMessage.getOrDefault("reloaded_config", "&c`reloaded_config`"));
+    }
+
+    public String getCreatedFile(String file_name) {
+        return childToMessage.getOrDefault("created_file", "&c`created_file`").replace("%file_name%", file_name);
+    }
+
+    public String getBrokerStop(String broker) {
+        return modifyDBMessage(childToMessage.getOrDefault("broker_stop", "&c`broker_stop`").replace("%broker%", broker));
+    }
+
+    public List<String> getEnabledMessage() {
+        return childToListMessage.getOrDefault("enabled_message", EMPTY_LIST);
+    }
+
+    public List<String> getDisabledMessage() {
+        return childToListMessage.getOrDefault("disabled_message", EMPTY_LIST);
+    }
+
+    public String modifyDBMessage(String db_message) {
+        DatabaseAdapter db = plugin.getDatabaseHandler().getDatabase();
+
+        if (db == null)
+            return db_message != null ? db_message.replace("%db_type%", "NONE") : "null";
+        else
+            return db_message != null ? db_message.replace("%db_type%", db.toString()) : "null";
     }
 
     public FileConfiguration getConfig() {
