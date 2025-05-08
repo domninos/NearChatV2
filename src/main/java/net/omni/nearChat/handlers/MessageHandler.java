@@ -1,6 +1,7 @@
 package net.omni.nearChat.handlers;
 
 import net.omni.nearChat.NearChatPlugin;
+import net.omni.nearChat.util.MainUtil;
 import net.omni.nearChat.util.NearChatConfig;
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -10,6 +11,9 @@ import java.util.List;
 import java.util.Map;
 
 public class MessageHandler {
+
+    private static final List<String> EMPTY_LIST = List.of();
+
     private final NearChatPlugin plugin;
     private final Map<String, String> childToMessage = new HashMap<>();
     private final Map<String, List<String>> childToListMessage = new HashMap<>();
@@ -41,6 +45,8 @@ public class MessageHandler {
         childToMessage.put("format", getConfig().getString("format"));
 
         childToListMessage.put("help_text", getConfig().getStringList("help_text"));
+        childToListMessage.put("enabled_message", getConfig().getStringList("enabled_message"));
+        childToListMessage.put("disabled_message", getConfig().getStringList("disabled_message"));
 
         if (!def)
             plugin.sendConsole("&aLoaded messages");
@@ -64,6 +70,56 @@ public class MessageHandler {
         messageConfig.save();
     }
 
+    public void sendEnabledMessage() {
+        StringBuilder toSend = new StringBuilder("\n");
+
+        for (String line : getEnabledMessage()) {
+            if (line.isBlank()) {
+                toSend.append("\n");
+                continue;
+            }
+
+            if (line.contains("%plugin_name%"))
+                line = line.replace("%plugin_name%", plugin.getConfigHandler().getPluginName());
+            if (line.contains("%plugin_version%"))
+                line = line.replace("%plugin_version%", plugin.getConfigHandler().getPluginVersion());
+            if (line.contains("%plugin_mc_version%"))
+                line = line.replace("%plugin_mc_version%", plugin.getConfigHandler().getPluginMCVersion());
+            if (line.contains("%db_delay%"))
+                line = line.replace("%db_delay%", String.valueOf(plugin.getConfigHandler().getDatabaseSaveDelay()));
+            if (line.contains("%db_converted_ticks%"))
+                line = line.replace("%db_converted_ticks%", MainUtil.convertTicks(plugin.getConfigHandler().getDatabaseSaveDelay()));
+            if (line.contains("%nearby_delay%"))
+                line = line.replace("%nearby_delay%", String.valueOf(plugin.getConfigHandler().getNearbyGetDelay()));
+            if (line.contains("%nearby_converted_ticks%"))
+                line = line.replace("%nearby_converted_ticks%", MainUtil.convertTicks(plugin.getConfigHandler().getNearbyGetDelay()));
+            if (line.contains("%radius%"))
+                line = line.replace("%radius%", String.valueOf(plugin.getConfigHandler().getNearBlockRadius()));
+
+            toSend.append(line).append("&r\n");
+        }
+
+        plugin.sendConsole(plugin.translate(toSend.toString()));
+    }
+
+    public void sendDisabledMessage() {
+        StringBuilder toSend = new StringBuilder("\n");
+
+        for (String line : getDisabledMessage()) {
+            if (line.isBlank()) {
+                toSend.append("\n");
+                continue;
+            }
+
+            if (line.contains("%plugin_name%"))
+                line = line.replace("%plugin_name%", plugin.getConfigHandler().getPluginName());
+
+            toSend.append(line).append("&r\n");
+        }
+
+        plugin.sendConsole(plugin.translate(toSend.toString()));
+    }
+
     public String getPlayerOnly() {
         return childToMessage.getOrDefault("player_only", "&c`player_only`");
     }
@@ -77,7 +133,7 @@ public class MessageHandler {
     }
 
     public List<String> getHelpTextList() {
-        return childToListMessage.getOrDefault("help_text", List.of("null"));
+        return childToListMessage.getOrDefault("help_text", EMPTY_LIST);
     }
 
     public String getPrefix() {
@@ -94,6 +150,14 @@ public class MessageHandler {
 
     public String getReloadedConfig() {
         return childToMessage.getOrDefault("reloaded_config", "&c`reloaded_config`");
+    }
+
+    public List<String> getEnabledMessage() {
+        return childToListMessage.getOrDefault("enabled_message", EMPTY_LIST);
+    }
+
+    public List<String> getDisabledMessage() {
+        return childToListMessage.getOrDefault("disabled_message", EMPTY_LIST);
     }
 
     private boolean loadDefaults() {
@@ -114,23 +178,6 @@ public class MessageHandler {
             def = true;
         }
 
-        if (getConfig().getStringList("help_text").isEmpty()) {
-            messageConfig.setNoSave("help_text", Arrays.asList(
-                    "&7-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-",
-                    "&a/nearchat >> Opens the NearChat GUI.",
-                    "&a/nearchat help >> Opens this menu.",
-                    "<nearchat.db> &a/nearchat database >> Reconnects to the database.",
-                    "<nearchat.reload> &a/nearchat reload >> Reloads config.yml and messages.yml.",
-                    "",
-                    "&bDISCORD: discord.gg/nearchat",
-                    "",
-                    "&6%plugin_name% running %plugin_version% for MC %plugin_mc_version%",
-                    "&7-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
-            ));
-
-            def = true;
-        }
-
         if (getConfig().getString("prefix") == null) {
             messageConfig.setNoSave("prefix", "&f[&6Near&eChat&f] &7");
             def = true;
@@ -148,6 +195,43 @@ public class MessageHandler {
 
         if (getConfig().getString("reloaded_config") == null) {
             messageConfig.setNoSave("reloaded_config", "&aReloaded config and messages.yml");
+            def = true;
+        }
+
+        if (getConfig().getStringList("help_text").isEmpty()) {
+            messageConfig.setNoSave("help_text", Arrays.asList(
+                    "&7-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-",
+                    "&a/nearchat >> Opens the NearChat GUI.",
+                    "&a/nearchat help >> Opens this menu.",
+                    "<nearchat.db> &a/nearchat database >> Reconnects to the database.",
+                    "<nearchat.reload> &a/nearchat reload >> Reloads config.yml and messages.yml.",
+                    "",
+                    "&bDISCORD: discord.gg/nearchat",
+                    "",
+                    "&6%plugin_name% running %plugin_version% for MC %plugin_mc_version%",
+                    "&7-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
+            ));
+
+            def = true;
+        }
+
+        if (getConfig().getStringList("enabled_message").isEmpty()) {
+            messageConfig.setNoSave("enabled_message", Arrays.asList(
+                    "&aSuccessfully enabled %plugin_name% [%plugin_mc_version%]",
+                    "&bSettings:",
+                    "  %dDatabase Saving Delay: %db_delay%ms (%db_converted_ticks%)",
+                    "  %dNearby Get Delay: %nearby_delay%ms (%nearby_converted_ticks%)",
+                    "  %dNearby Radius: %radius% blocks"
+            ));
+
+            def = true;
+        }
+
+        if (getConfig().getStringList("disabled_message").isEmpty()) {
+            messageConfig.setNoSave("disabled_message", List.of(
+                    "&aSuccessfully disabled %plugin_name% [%plugin_mc_version%]"
+            ));
+
             def = true;
         }
 

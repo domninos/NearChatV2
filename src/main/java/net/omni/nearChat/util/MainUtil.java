@@ -1,5 +1,7 @@
 package net.omni.nearChat.util;
 
+import java.util.Arrays;
+
 public class MainUtil {
 
     public static String convertTicks(long ticks) {
@@ -12,5 +14,9 @@ public class MainUtil {
                 : minutes > 0 ? String.format("%02d minutes", minutes)
                 : seconds > 0 ? String.format("%02d seconds", seconds)
                 : String.format("%d milliseconds", millis);
+    }
+
+    public static boolean isNullOrBlank(String... strings) {
+        return Arrays.stream(strings).anyMatch(string -> string == null || string.isBlank());
     }
 }

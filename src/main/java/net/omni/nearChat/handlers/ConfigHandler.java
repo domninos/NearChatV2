@@ -18,10 +18,11 @@ public class ConfigHandler {
     private int near_block_radius;
 
     private String host, user, password;
+    private int port;
 
     private boolean log_messages;
 
-    private int port;
+    private boolean use_flat_file;
 
     public ConfigHandler(NearChatPlugin plugin) {
         this.plugin = plugin;
@@ -42,6 +43,7 @@ public class ConfigHandler {
         this.near_block_radius = getConfig().getInt("near-block-radius");
 
         this.log_messages = getConfig().getBoolean("log-messages");
+        this.use_flat_file = getConfig().getBoolean("use-flat-file");
 
         this.host = getConfig().getString("host");
         this.port = getConfig().getInt("port");
@@ -53,7 +55,7 @@ public class ConfigHandler {
         this.plugin_mc_version = plugin.getDescription().getAPIVersion();
 
         if (!def)
-            plugin.sendConsole("&aLoaded config");
+            plugin.sendConsole("&aLoaded config.");
     }
 
     public void saveToConfig() {
@@ -112,7 +114,11 @@ public class ConfigHandler {
 
         if (getConfig().getString("log-messages") == null) {
             nearChatConfig.setNoSave("log-messages", true);
+            def = true;
+        }
 
+        if (getConfig().getString("use-flat-file") == null) {
+            nearChatConfig.setNoSave("use-flat-file", false);
             def = true;
         }
 
@@ -122,6 +128,10 @@ public class ConfigHandler {
         }
 
         return def;
+    }
+
+    public boolean isFlatFile() {
+        return use_flat_file;
     }
 
     public boolean isLogging() {

@@ -1,4 +1,4 @@
-package net.omni.nearChat.handlers;
+package net.omni.nearChat.database.adapters;
 
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisFuture;
@@ -8,25 +8,35 @@ import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
 import io.lettuce.core.api.sync.RedisCommands;
 import net.omni.nearChat.NearChatPlugin;
+import net.omni.nearChat.database.DatabaseHandler;
+import net.omni.nearChat.util.MainUtil;
 import org.bukkit.ChatColor;
 
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.Map;
 
-public class DatabaseHandler {
+public class RedisAdapter implements DatabaseAdapter {
     private final NearChatPlugin plugin;
-
-    private boolean enabled = false;
 
     private RedisClient client;
 
     private StatefulRedisConnection<String, String> connection;
 
-    public DatabaseHandler(NearChatPlugin plugin) {
+    private boolean enabled = false;
+
+    public RedisAdapter(NearChatPlugin plugin) {
         this.plugin = plugin;
     }
 
+    public static RedisAdapter from(DatabaseAdapter adapter) {
+        return adapter instanceof RedisAdapter ? ((RedisAdapter) adapter) : null;
+    }
+
+    public static RedisAdapter adapt() {
+        return from(DatabaseHandler.ADAPTER);
+    }
+
+    @Override
     public void initDatabase() {
         // REF: https://redis.io/docs/latest/develop/clients/lettuce/connect/
 
@@ -38,46 +48,25 @@ public class DatabaseHandler {
         connectConfig();
     }
 
-    private boolean checkDev() {
-        String devS = plugin.getNearConfig().getString("dev");
-
-        return devS != null && !devS.isBlank() && plugin.getNearConfig().getBool("dev");
-    }
-
-    public boolean connectConfig() {
-        String host, user, password;
-        int port;
-
-        if (checkDev()) {
-            host = "redis-13615.crce178.ap-east-1-1.ec2.redns.redis-cloud.com";
-            port = 13615;
-            user = "default";
-            password = "UMnqdMOz9GpF3LktR4hqKAO6rbJslpmS"; // TODO: REMOVE AFTER FINISHING PLUGIN
-
-            plugin.sendConsole("&b[DEV] &aEnabled.");
-        } else {
-            host = plugin.getConfigHandler().getHost();
-            port = plugin.getConfigHandler().getPort();
-            user = plugin.getConfigHandler().getUser();
-            password = plugin.getConfigHandler().getPassword();
-
-            if (isNullOrBlank(host, user, password)) {
-                plugin.error("Database information not found in config.yml. Will not use database...");
-                return false;
-            }
+    @Override
+    public boolean connect() {
+        if (isEnabled()) {
+            plugin.error(ChatColor.stripColor(plugin.getMessageHandler().getDBErrorConnectDisabled()));
+            return false;
         }
 
-        return connect(host, port, user, password.toCharArray());
+        connectConfig();
+        return true;
     }
 
-    public boolean connect(String host, int portInt, String user, char[] password) {
+    public boolean connect(String host, int port, String user, char[] password) {
         if (isEnabled()) {
             plugin.error(ChatColor.stripColor(plugin.getMessageHandler().getDBErrorConnectDisabled()));
             return false;
         }
 
         try {
-            RedisURI redisUri = RedisURI.Builder.redis(host, portInt)
+            RedisURI redisUri = RedisURI.Builder.redis(host, port)
                     .withTimeout(Duration.ofSeconds(10))
                     .withAuthentication(user, password).build();
 
@@ -108,12 +97,52 @@ public class DatabaseHandler {
         return true;
     }
 
-    public boolean hashExists(String key, String field) {
-        return getSync().hexists(key, field);
+    public boolean connectConfig() {
+        String host, user, password;
+        int port;
+
+        if (checkDev()) {
+            host = "redis-13615.crce178.ap-east-1-1.ec2.redns.redis-cloud.com";
+            port = 13615;
+            user = "default";
+            password = "UMnqdMOz9GpF3LktR4hqKAO6rbJslpmS"; // TODO: REMOVE AFTER FINISHING PLUGIN
+
+            plugin.sendConsole("&b[DEV] &aEnabled.");
+        } else {
+            host = plugin.getConfigHandler().getHost();
+            port = plugin.getConfigHandler().getPort();
+            user = plugin.getConfigHandler().getUser();
+            password = plugin.getConfigHandler().getPassword();
+
+            if (MainUtil.isNullOrBlank(host, user, password)) {
+                plugin.error("Database information not found in config.yml. Will not use database...");
+                return false;
+            }
+        }
+
+        return connect(host, port, user, password.toCharArray());
     }
 
+    @Override
     public boolean isEnabled() {
-        return this.enabled && client != null;
+        return this.enabled;
+    }
+
+    @Override
+    public void closeDatabase() {
+        try {
+            if (isEnabled()) {
+                connection.sync().shutdown(true);
+                client.shutdown();
+                plugin.sendConsole("&aDatabase disconnected."); // TODO: messages.yml
+            }
+        } catch (Exception e) {
+            plugin.error("Something went wrong closing database: " + e.getMessage());
+        }
+    }
+
+    public boolean hashExists(String key, String field) {
+        return getSync().hexists(key, field);
     }
 
     public RedisFuture<String> asyncMulti() {
@@ -204,19 +233,9 @@ public class DatabaseHandler {
         return connection.sync();
     }
 
-    private boolean isNullOrBlank(String... strings) {
-        return Arrays.stream(strings).anyMatch(string -> string == null || string.isBlank());
-    }
+    private boolean checkDev() {
+        String devS = plugin.getNearConfig().getString("dev");
 
-    public void closeDatabase() {
-        try {
-            if (isEnabled()) {
-                connection.sync().shutdown(true);
-                client.shutdown();
-                plugin.sendConsole("&aDatabase disconnected.");
-            }
-        } catch (Exception e) {
-            plugin.error("Something went wrong closing database: " + e.getMessage());
-        }
+        return devS != null && !devS.isBlank() && plugin.getNearConfig().getBool("dev");
     }
 }

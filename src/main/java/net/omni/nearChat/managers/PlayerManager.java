@@ -4,6 +4,8 @@ import io.lettuce.core.RedisFuture;
 import io.lettuce.core.TransactionResult;
 import io.lettuce.core.api.async.RedisAsyncCommands;
 import net.omni.nearChat.NearChatPlugin;
+import net.omni.nearChat.database.adapters.FlatFileAdapter;
+import net.omni.nearChat.database.adapters.RedisAdapter;
 import net.omni.nearChat.util.PlayerUtil;
 import org.bukkit.entity.Player;
 
@@ -34,22 +36,42 @@ public class PlayerManager {
 
         String playerName = player.getName();
 
-        if (!plugin.getDatabaseHandler().hashExists(KEY, playerName))
-            plugin.getDatabaseHandler().asyncHashSet(KEY, playerName, "false");
+        if (plugin.getDatabaseHandler().isFlatFile()) {
+            FlatFileAdapter flatFile = FlatFileAdapter.adapt();
+
+            // TODO
+        } else {
+            RedisAdapter redis = RedisAdapter.adapt();
+
+            if (!redis.hashExists(KEY, playerName))
+                redis.asyncHashSet(KEY, playerName, "false");
+        }
 
         if (!has(playerName)) {
             // put into cache
-            plugin.getDatabaseHandler().asyncHashGet(KEY, playerName).thenAcceptAsync((string) -> {
-                enabled.put(playerName, Boolean.valueOf(string));
-                plugin.sendConsole("[DEBUG] Set " + playerName + " | " + Boolean.valueOf(string));
 
-                setNearby(player);
-            });
+            if (plugin.getDatabaseHandler().isFlatFile()) {
+                FlatFileAdapter flatFile = FlatFileAdapter.adapt();
+
+                // TODO
+
+            } else {
+                RedisAdapter redis = RedisAdapter.adapt();
+
+                redis.asyncHashGet(KEY, playerName).thenAcceptAsync((string) -> {
+                    enabled.put(playerName, Boolean.valueOf(string));
+                    plugin.sendConsole("[DEBUG] Set " + playerName + " | " + Boolean.valueOf(string));
+
+                    setNearby(player);
+                });
+            }
+
         } else if (isEnabled(player.getName()))
             setNearby(player);
     }
 
     public void saveToDatabase(Player player) {
+        // TODO: for flat-file
         if (!plugin.getDatabaseHandler().isEnabled()) {
             plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectDisabled());
             return;
@@ -58,36 +80,50 @@ public class PlayerManager {
         if (has(player.getName())) {
             Boolean val = enabled.get(player.getName());
 
-            plugin.getDatabaseHandler().asyncHashSet(KEY, player.getName(), val.toString());
+            if (plugin.getDatabaseHandler().isFlatFile()) {
+                // TODO: save to .txt file
+            } else {
+                RedisAdapter redis = RedisAdapter.adapt();
+
+                redis.asyncHashSet(KEY, player.getName(), val.toString());
+            }
         }
     }
 
     public void saveToDatabase() {
+        // TODO: for flat-file
         if (!plugin.getDatabaseHandler().isEnabled()) {
             plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectDisabled());
             return;
         }
 
-        RedisAsyncCommands<String, String> async = plugin.getDatabaseHandler().getAsync();
+        if (plugin.getDatabaseHandler().isFlatFile()) {
+            // TODO
 
-        async.multi();
+        } else {
+            RedisAdapter redis = RedisAdapter.adapt();
 
-        enabled.forEach(((name, value) ->
-                plugin.getDatabaseHandler().asyncHashSet(async, KEY, name, value.toString())));
+            RedisAsyncCommands<String, String> async = redis.getAsync();
 
-        RedisFuture<TransactionResult> exec = async.exec();
+            async.multi();
 
-        exec.whenComplete((result, throwable) -> {
-            if (throwable != null) {
-                plugin.error(throwable.getMessage());
-                return;
-            }
+            enabled.forEach(((name, value) ->
+                    redis.asyncHashSet(async, KEY, name, value.toString())));
 
-            if (!result.isEmpty())
-                result.forEach(o -> plugin.sendConsole("[DEBUG] " + o.toString()));
+            RedisFuture<TransactionResult> exec = async.exec();
 
-            plugin.sendConsole("&aSaved database.");
-        });
+            exec.whenComplete((result, throwable) -> {
+                if (throwable != null) {
+                    plugin.error(throwable.getMessage());
+                    return;
+                }
+
+                if (!result.isEmpty())
+                    result.forEach(o -> plugin.sendConsole("[DEBUG] " + o.toString()));
+
+                plugin.sendConsole("&aSaved database.");
+            });
+        }
     }
 
     public void toggle(Player player) {

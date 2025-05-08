@@ -9,9 +9,18 @@ reloaded_config: "&aReloaded config and messages.yml"
 prefix: "&f[&6Near&eChat&f] &7"
 
 # set the format for chat messaging on nearchat.
+# available placeholders:
+#  - %prefix% -> the set prefix above
+#  - %player% -> the player's name
+#  - %chat% -> the player's chat to send to all nearby players.
 format: "%prefix% &r%player%&r: %chat%"
 
 # what to send when player uses /nearchat help
+# use <(permission here)> to only send help usage to players with certain permissions.
+# available placeholders:
+#  - %plugin_name% -> NearChat
+#  - %plugin_version% -> version of the plugin installed
+#  - %plugin_mc_version% -> minecraft version support of the current plugin
 help_text:
   - "&7-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
   - "&a/nearchat >> Opens the NearChat GUI."
@@ -23,3 +32,28 @@ help_text:
   - ""
   - "&6%plugin_name% running %plugin_version% for MC %plugin_mc_version%"
   - "&7-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
+
+# message to send on plugin enable
+# available placeholders:
+#  - %plugin_name% -> NearChat
+#  - %plugin_version% -> version of the plugin installed
+#  - %plugin_mc_version% -> minecraft version support of the current plugin
+#  - %db_delay% -> the delay on saving to database (set on config.yml - milliseconds)
+#  - %db_converted_ticks% -> converts %db_delay% to human language
+#  - %nearby_delay% -> the delay on getting nearby players (set on config.yml - milliseconds)
+#  - %nearby_converted_ticks% -> converts %nearby_delay% to human language
+#  - %radius% -> the radius to get nearby players (e.g. 30 blocks)
+enabled_message:
+  - "&aSuccessfully enabled %plugin_name% v-%plugin_version% [MC %plugin_mc_version%]"
+  - "&bSettings:"
+  - "  %dDatabase Saving Delay: %db_delay%ms (%db_converted_ticks%)"
+  - "  %dNearby Get Delay: %nearby_delay%ms (%nearby_converted_ticks%)"
+  - "  %dNearby Radius: %radius% blocks"
+
+
+# message to send on plugin disable
+# available placeholders:
+#  - %plugin_name% -> NearChat
+disabled_message:
+  - "&aSuccessfully disabled %plugin_name% [%plugin_mc_version%]"
+

@@ -3,11 +3,10 @@ package net.omni.nearChat;
 import net.omni.nearChat.commands.MainCommand;
 import net.omni.nearChat.commands.NearChatCommand;
 import net.omni.nearChat.handlers.ConfigHandler;
-import net.omni.nearChat.handlers.DatabaseHandler;
+import net.omni.nearChat.database.DatabaseHandler;
 import net.omni.nearChat.handlers.MessageHandler;
 import net.omni.nearChat.listeners.NCPlayerListener;
 import net.omni.nearChat.managers.PlayerManager;
-import net.omni.nearChat.util.MainUtil;
 import net.omni.nearChat.util.NearChatConfig;
 import net.omni.nearChat.util.brokers.DatabaseBroker;
 import net.omni.nearChat.util.brokers.NearbyBroker;
@@ -41,6 +40,7 @@ public final class NearChatPlugin extends JavaPlugin {
         * Add /nearchat gui
           * Possibly create inventory handler.
         * Add database integration (set toggled on database for UUID) # why
+        * Add option for flat-file database
      */
 
     @Override
@@ -59,15 +59,7 @@ public final class NearChatPlugin extends JavaPlugin {
 
         tryBrokers();
 
-        // TODO: messages.yml on start
-        sendConsole("&aSuccessfully enabled "
-                + getDescription().getFullName() + " [" + getDescription().getAPIVersion() + "]");
-
-        sendConsole("&dDatabase delay settings: "
-                + getConfigHandler().getDatabaseSaveDelay() + "ms (" + MainUtil.convertTicks(getConfigHandler().getDatabaseSaveDelay()) + ")");
-        sendConsole("&dNearby Get delay settings: "
-                + getConfigHandler().getNearbyGetDelay() + "ms (" + MainUtil.convertTicks(getConfigHandler().getNearbyGetDelay()) + ")");
-        sendConsole("&dNearby Radius settings: " + getConfigHandler().getNearBlockRadius());
+        messageHandler.sendEnabledMessage();
     }
 
     @Override
@@ -79,9 +71,7 @@ public final class NearChatPlugin extends JavaPlugin {
 
         flush();
 
-        // TODO: messages.yml on disable
-
-        sendConsole("&cSuccessfully disabled " + getDescription().getFullName() + " [" + getDescription().getAPIVersion() + "]");
+        messageHandler.sendDisabledMessage();
     }
 
     public void error(Exception e) {
