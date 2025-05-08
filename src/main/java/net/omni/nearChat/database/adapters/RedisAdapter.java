@@ -11,12 +11,15 @@ import net.omni.nearChat.NearChatPlugin;
 import net.omni.nearChat.database.DatabaseHandler;
 import net.omni.nearChat.util.MainUtil;
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 
 import java.time.Duration;
 import java.util.Map;
 
 public class RedisAdapter implements DatabaseAdapter {
     private final NearChatPlugin plugin;
+
+    public static final String KEY = "enabled";
 
     private RedisClient client;
 
@@ -126,6 +129,35 @@ public class RedisAdapter implements DatabaseAdapter {
     @Override
     public boolean isEnabled() {
         return this.enabled;
+    }
+
+    @Override
+    public void saveToDatabase(Map<String, Boolean> enabledPlayers) {
+        RedisAsyncCommands<String, String> async = getAsync();
+
+        async.multi();
+
+        enabledPlayers.forEach(((name, value) ->
+                asyncHashSet(async, KEY, name, value.toString())));
+
+        RedisFuture<TransactionResult> exec = async.exec();
+
+        exec.whenComplete((result, throwable) -> {
+            if (throwable != null) {
+                plugin.error(throwable.getMessage());
+                return;
+            }
+
+            if (!result.isEmpty())
+                result.forEach(o -> plugin.sendConsole("[DEBUG] " + o.toString()));
+
+            plugin.sendConsole("&aSaved database.");
+        });
+    }
+
+    @Override
+    public void saveToDatabase(Player player, Boolean value) {
+        asyncHashSet(KEY, player.getName(), value.toString());
     }
 
     @Override

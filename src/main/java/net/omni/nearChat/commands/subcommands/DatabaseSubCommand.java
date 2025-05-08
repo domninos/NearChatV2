@@ -2,8 +2,6 @@ package net.omni.nearChat.commands.subcommands;
 
 import net.omni.nearChat.NearChatPlugin;
 import net.omni.nearChat.commands.MainCommand;
-import net.omni.nearChat.database.adapters.FlatFileAdapter;
-import net.omni.nearChat.database.adapters.RedisAdapter;
 import org.bukkit.command.CommandSender;
 
 public class DatabaseSubCommand extends SubCommand {
@@ -28,25 +26,15 @@ public class DatabaseSubCommand extends SubCommand {
             plugin.getNearConfig().reload();
 
             // TODO: /nearchat database switch
+            if (plugin.getDatabaseHandler().connect())
+                plugin.sendMessage(sender, plugin.getMessageHandler().getDBConnected());
+            else
+                plugin.sendMessage(sender, "&cNot successful."); // TODO: messages.yml
 
-            if (plugin.getConfigHandler().isFlatFile()) {
-                FlatFileAdapter flatFile = FlatFileAdapter.adapt();
-
-                // TODO: connect to db config (reload .txt file)
-            } else {
-                RedisAdapter redis = RedisAdapter.adapt();
-                // not null cause checked
-
-                if (redis.connectConfig()) {
-                    plugin.sendMessage(sender, plugin.getMessageHandler().getDBConnected());
-                    return true;
-                }
-            }
+            return true;
         } catch (Exception e) {
             plugin.sendMessage(sender, "&cSomething went wrong loading database: " + e.getMessage());
         }
-
-        // TODO: /nearchat database set <host,port,user,password> <value>
 
         return true;
     }

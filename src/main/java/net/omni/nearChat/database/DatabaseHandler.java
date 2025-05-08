@@ -5,6 +5,9 @@ import net.omni.nearChat.database.adapters.DatabaseAdapter;
 import net.omni.nearChat.database.adapters.FlatFileAdapter;
 import net.omni.nearChat.database.adapters.RedisAdapter;
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
+
+import java.util.Map;
 
 public class DatabaseHandler {
     private final NearChatPlugin plugin;
@@ -40,6 +43,58 @@ public class DatabaseHandler {
         }
 
         return ADAPTER.connect();
+    }
+
+    public boolean checkExists(String playerName) {
+        // TODO
+        if (isFlatFile()) {
+
+        } else {
+            RedisAdapter redis = RedisAdapter.adapt();
+
+            return redis.hashExists(RedisAdapter.KEY, playerName);
+        }
+
+        return false;
+    }
+
+    public void set(String playerName, String value) {
+        // TODO
+        if (isFlatFile()) {
+
+        } else {
+            RedisAdapter redis = RedisAdapter.adapt();
+
+            if (!checkExists(playerName))
+                redis.asyncHashSet(RedisAdapter.KEY, playerName, value);
+        }
+    }
+
+    public void putToCache(Player player) {
+        String playerName = player.getName();
+
+        if (isFlatFile()) {
+            // TODO
+        } else {
+            RedisAdapter redis = RedisAdapter.adapt();
+
+            redis.asyncHashGet(RedisAdapter.KEY, playerName).thenAcceptAsync((string) -> {
+                plugin.getPlayerManager().getEnabledPlayers().put(playerName, Boolean.valueOf(string));
+                plugin.sendConsole("[DEBUG] Set " + playerName + " | " + Boolean.valueOf(string));
+
+                plugin.getPlayerManager().setNearby(player);
+            });
+        }
+    }
+
+    public void saveToDatabase(Map<String, Boolean> enabledPlayers) {
+        if (isFlatFile()) FlatFileAdapter.adapt().saveToDatabase(enabledPlayers);
+        else RedisAdapter.adapt().saveToDatabase(enabledPlayers);
+    }
+
+    public void saveToDatabase(Player player, Boolean value) {
+        if (isFlatFile()) FlatFileAdapter.adapt().saveToDatabase(player, value);
+        else RedisAdapter.adapt().saveToDatabase(player, value);
     }
 
     // TODO: getters and setters

@@ -1,5 +1,9 @@
 package net.omni.nearChat.database.adapters;
 
+import org.bukkit.entity.Player;
+
+import java.util.Map;
+
 public interface DatabaseAdapter {
 
     void initDatabase();
@@ -7,6 +11,10 @@ public interface DatabaseAdapter {
     boolean connect();
 
     boolean isEnabled();
+
+    void saveToDatabase(Map<String, Boolean> enabledPlayers);
+
+    void saveToDatabase(Player player, Boolean value);
 
     void closeDatabase();
 }
