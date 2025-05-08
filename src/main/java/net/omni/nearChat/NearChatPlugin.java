@@ -3,13 +3,13 @@ package net.omni.nearChat;
 import net.omni.nearChat.commands.MainCommand;
 import net.omni.nearChat.commands.NearChatCommand;
 import net.omni.nearChat.handlers.ConfigHandler;
-import net.omni.nearChat.database.DatabaseHandler;
+import net.omni.nearChat.handlers.DatabaseHandler;
 import net.omni.nearChat.handlers.MessageHandler;
 import net.omni.nearChat.listeners.NCPlayerListener;
 import net.omni.nearChat.managers.PlayerManager;
+import net.omni.nearChat.managers.brokers.DatabaseBroker;
+import net.omni.nearChat.managers.brokers.NearbyBroker;
 import net.omni.nearChat.util.NearChatConfig;
-import net.omni.nearChat.util.brokers.DatabaseBroker;
-import net.omni.nearChat.util.brokers.NearbyBroker;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -50,6 +50,7 @@ public final class NearChatPlugin extends JavaPlugin {
 
         configHandler.load();
         messageHandler.load();
+
         databaseHandler.initDatabase();
 
         this.playerManager = new PlayerManager(this);
@@ -74,12 +75,12 @@ public final class NearChatPlugin extends JavaPlugin {
         messageHandler.sendDisabledMessage();
     }
 
-    public void error(Exception e) {
-        error(e.getMessage());
+    public void error(Throwable throwable) {
+        getLogger().log(Level.SEVERE, throwable.getMessage(), throwable);
     }
 
     public void error(String text) {
-        getLogger().log(Level.SEVERE, "ERROR! Something went wrong: " + text);
+        sendConsole("&cERROR! Something went wrong: " + text);
     }
 
     public void sendConsole(String text) {

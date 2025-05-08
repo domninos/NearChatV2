@@ -26,6 +26,7 @@ public class DatabaseSubCommand extends SubCommand {
             plugin.getNearConfig().reload();
 
             // TODO: /nearchat database switch
+
             if (plugin.getDatabaseHandler().connect())
                 plugin.sendMessage(sender, plugin.getMessageHandler().getDBConnected());
             else

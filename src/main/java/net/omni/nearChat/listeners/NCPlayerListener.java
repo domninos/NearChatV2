@@ -10,7 +10,7 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import java.util.List;
+import java.util.Set;
 
 public class NCPlayerListener implements Listener {
     private final NearChatPlugin plugin;
@@ -29,7 +29,7 @@ public class NCPlayerListener implements Listener {
     public void onPlayerQuit(PlayerQuitEvent event) {
         if (!plugin.getDatabaseHandler().isEnabled()) return;
 
-        plugin.getPlayerManager().saveToDatabase(event.getPlayer());
+        plugin.getPlayerManager().saveToDatabase(event.getPlayer().getName());
         plugin.getPlayerManager().removeNearby(event.getPlayer());
     }
 
@@ -41,7 +41,7 @@ public class NCPlayerListener implements Listener {
 
         if (!plugin.getPlayerManager().isEnabled(player.getName())) return;
 
-        List<Player> nearbyPlayers = plugin.getPlayerManager().getNearby(player);
+        Set<Player> nearbyPlayers = plugin.getPlayerManager().getNearby(player);
 
         if (nearbyPlayers == null || nearbyPlayers.isEmpty())
             return;
@@ -59,10 +59,9 @@ public class NCPlayerListener implements Listener {
 
         format = plugin.translate(format);
 
-        for (Player nearbyPlayer : nearbyPlayers) {
-            if (plugin.getPlayerManager().isEnabled(nearbyPlayer.getName()))
-                nearbyPlayer.sendMessage(format);
-        }
+        String finalFormat = format;
+
+        nearbyPlayers.forEach(nearbyPlayer -> nearbyPlayer.sendMessage(finalFormat));
 
         if (plugin.getConfigHandler().isLogging())
             Bukkit.getConsoleSender().sendMessage(format);

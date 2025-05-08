@@ -48,8 +48,6 @@ public class NearChatCommand extends MainCommand {
 
             plugin.getPlayerManager().toggle(player);
 
-            plugin.sendMessage(sender, "" + plugin.getPlayerManager().isEnabled(player.getName()));
-
             // TODO: open GUI with GUIHandler
         } else {
             for (SubCommand subCommand : getSubCommands()) {

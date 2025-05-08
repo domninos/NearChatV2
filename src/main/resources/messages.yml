@@ -2,7 +2,9 @@
 player_only: "&cOnly players can execute this command."
 no_permission: "&cYou do not have permission to use this command."
 db_connected: "&aSuccessfully connected to database!"
-db_error_connect_disabled: "&cCould not save to database because database is disabled."
+db_disconnected: "&aDatabase disconnected."
+db_error_connect_disabled: "&cCould not connect to database because database is disabled."
+db_error_connect_already: "&cCould not connect to database because database is already enabled."
 reloaded_config: "&aReloaded config and messages.yml"
 
 # set the command prefix
@@ -13,7 +15,7 @@ prefix: "&f[&6Near&eChat&f] &7"
 #  - %prefix% -> the set prefix above
 #  - %player% -> the player's name
 #  - %chat% -> the player's chat to send to all nearby players.
-format: "%prefix% &r%player%&r: %chat%"
+format: "%prefix% %player%&r: %chat%"
 
 # what to send when player uses /nearchat help
 # use <(permission here)> to only send help usage to players with certain permissions.
@@ -46,9 +48,9 @@ help_text:
 enabled_message:
   - "&aSuccessfully enabled %plugin_name% v-%plugin_version% [MC %plugin_mc_version%]"
   - "&bSettings:"
-  - "  %dDatabase Saving Delay: %db_delay%ms (%db_converted_ticks%)"
-  - "  %dNearby Get Delay: %nearby_delay%ms (%nearby_converted_ticks%)"
-  - "  %dNearby Radius: %radius% blocks"
+  - "  &dDatabase Saving Delay: %db_delay%ms (%db_converted_ticks%)"
+  - "  &dNearby Get Delay: %nearby_delay%ms (%nearby_converted_ticks%)"
+  - "  &dNearby Radius: %radius% blocks"
 
 
 # message to send on plugin disable

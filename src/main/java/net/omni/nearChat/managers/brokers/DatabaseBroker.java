@@ -1,4 +1,4 @@
-package net.omni.nearChat.util.brokers;
+package net.omni.nearChat.managers.brokers;
 
 import net.omni.nearChat.NearChatPlugin;
 import org.bukkit.scheduler.BukkitRunnable;

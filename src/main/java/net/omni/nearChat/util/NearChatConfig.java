@@ -40,7 +40,7 @@ public class NearChatConfig {
                 try {
                     file.createNewFile();
                 } catch (IOException e) {
-                    plugin.error("Could not create file: " + e.getMessage());
+                    plugin.error(e);
                 }
             }
 

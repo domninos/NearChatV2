@@ -5,12 +5,12 @@ import net.omni.nearChat.util.PlayerUtil;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class PlayerManager {
     private final Map<String, Boolean> enabled = new HashMap<>();
-    private final Map<Player, List<Player>> nearby = new HashMap<>();
+    private final Map<Player, Set<Player>> nearby = new HashMap<>();
 
     private final NearChatPlugin plugin;
 
@@ -30,27 +30,27 @@ public class PlayerManager {
         String playerName = player.getName();
 
         // if not in database
-        if (!plugin.getDatabaseHandler().checkExists(playerName))
-            plugin.getDatabaseHandler().set(playerName, "false");
+        if (!plugin.getDatabaseHandler().checkExistsDB(playerName))
+            plugin.getDatabaseHandler().setToDatabase(playerName, "false");
 
         // not in cache
         if (!has(playerName))
-            plugin.getDatabaseHandler().putToCache(player);
+            plugin.getDatabaseHandler().setToCache(player);
 
         if (isEnabled(player.getName()))
             setNearby(player);
     }
 
-    public void saveToDatabase(Player player) {
+    public void saveToDatabase(String playerName) {
         if (!plugin.getDatabaseHandler().isEnabled()) {
             plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectDisabled());
             return;
         }
 
-        if (has(player.getName())) {
-            Boolean val = enabled.get(player.getName());
+        if (has(playerName)) {
+            Boolean val = enabled.get(playerName);
 
-            plugin.getDatabaseHandler().saveToDatabase(player, val);
+            plugin.getDatabaseHandler().saveToDatabase(playerName, val);
         }
     }
 
@@ -77,7 +77,7 @@ public class PlayerManager {
             removeNearby(player);
     }
 
-    public List<Player> getNearby(Player player) {
+    public Set<Player> getNearby(Player player) {
         return nearby.getOrDefault(player, null);
     }
 
@@ -95,12 +95,13 @@ public class PlayerManager {
     }
 
     public void setNearby(Player player) {
-        List<Player> nearbyPlayers = PlayerUtil.getNearbyPlayers(player.getLocation(), plugin.getConfigHandler().getNearBlockRadius());
+        Set<Player> nearbyPlayers = PlayerUtil
+                .getNearbyPlayers(this, player.getLocation(), plugin.getConfigHandler().getNearBlockRadius());
 
         this.nearby.put(player, nearbyPlayers);
     }
 
-    public Map<Player, List<Player>> getNearbyPlayers() {
+    public Map<Player, Set<Player>> getNearbyPlayers() {
         return nearby;
     }
 

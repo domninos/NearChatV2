@@ -1,4 +1,4 @@
-package net.omni.nearChat.util.brokers;
+package net.omni.nearChat.managers.brokers;
 
 import net.omni.nearChat.NearChatPlugin;
 import net.omni.nearChat.util.PlayerUtil;
@@ -6,8 +6,8 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class NearbyBroker extends BukkitRunnable {
     private final NearChatPlugin plugin;
@@ -27,7 +27,7 @@ public class NearbyBroker extends BukkitRunnable {
                 return;
             }
 
-            for (Map.Entry<Player, List<Player>> entry : plugin.getPlayerManager().getNearbyPlayers().entrySet()) {
+            for (Map.Entry<Player, Set<Player>> entry : plugin.getPlayerManager().getNearbyPlayers().entrySet()) {
                 Player key = entry.getKey();
                 if (key == null) continue;
                 if (!plugin.getPlayerManager().isEnabled(key.getName())) continue;
@@ -35,7 +35,7 @@ public class NearbyBroker extends BukkitRunnable {
                 Location playerLoc = key.getLocation();
                 int block_radius = plugin.getConfigHandler().getNearBlockRadius();
 
-                List<Player> nearbyPlayers = PlayerUtil.getNearbyPlayers(playerLoc, block_radius);
+                Set<Player> nearbyPlayers = PlayerUtil.getNearbyPlayers(plugin.getPlayerManager(), playerLoc, block_radius);
 
                 entry.setValue(nearbyPlayers);
             }

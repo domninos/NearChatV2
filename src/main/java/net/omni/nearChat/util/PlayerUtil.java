@@ -1,19 +1,21 @@
 package net.omni.nearChat.util;
 
 
+import net.omni.nearChat.managers.PlayerManager;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 public class PlayerUtil {
 
-    public static List<Player> getNearbyPlayers(Location loc, double base) {
+    // returns nearby players who have nearchat enabled
+    public static Set<Player> getNearbyPlayers(PlayerManager playerManager, Location loc, double base) {
         // REF: https://www.spigotmc.org/threads/performance-friendly-entity-finding.504599/
 
-        List<Player> nearbyPlayers = new ArrayList<>();
+        Set<Player> nearbyPlayers = new HashSet<>();
 
         if (loc == null || loc.getWorld() == null)
             return nearbyPlayers;
@@ -21,7 +23,8 @@ public class PlayerUtil {
         Chunk chunk = loc.getChunk();
 
         for (Player p : chunk.getPlayersSeeingChunk()) {
-            if (p != null && p.getLocation().distanceSquared(loc) <= Math.pow(base, 2))
+            if (p != null && playerManager.isEnabled(p.getName()) &&
+                    p.getLocation().distanceSquared(loc) <= Math.pow(base, 2))
                 nearbyPlayers.add(p);
         }
 

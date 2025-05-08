@@ -38,7 +38,9 @@ public class MessageHandler {
         childToMessage.put("player_only", getConfig().getString("player_only"));
         childToMessage.put("no_permission", getConfig().getString("no_permission"));
         childToMessage.put("db_connected", getConfig().getString("db_connected"));
+        childToMessage.put("db_disconnected", getConfig().getString("db_disconnected"));
         childToMessage.put("db_error_connect_disabled", getConfig().getString("db_error_connect_disabled"));
+        childToMessage.put("db_error_connect_already", getConfig().getString("db_error_connect_already"));
         childToMessage.put("reloaded_config", getConfig().getString("reloaded_config"));
 
         childToMessage.put("prefix", getConfig().getString("prefix"));
@@ -132,6 +134,10 @@ public class MessageHandler {
         return childToMessage.getOrDefault("db_connected", "&c`db_connected`");
     }
 
+    public String getDBDisconnected() {
+        return childToMessage.getOrDefault("db_disconnected", "&c`db_disconnected`");
+    }
+
     public List<String> getHelpTextList() {
         return childToListMessage.getOrDefault("help_text", EMPTY_LIST);
     }
@@ -146,6 +152,10 @@ public class MessageHandler {
 
     public String getDBErrorConnectDisabled() {
         return childToMessage.getOrDefault("db_error_connect_disabled", "&c`db_error_connect_disabled`");
+    }
+
+    public String getDBErrorConnectedAlready() {
+        return childToMessage.getOrDefault("db_error_connect_already", "&c`db_error_connect_already`");
     }
 
     public String getReloadedConfig() {
@@ -178,6 +188,11 @@ public class MessageHandler {
             def = true;
         }
 
+        if (getConfig().getString("db_disconnected") == null) {
+            messageConfig.setNoSave("db_disconnected", "&aDatabase disconnected.");
+            def = true;
+        }
+
         if (getConfig().getString("prefix") == null) {
             messageConfig.setNoSave("prefix", "&f[&6Near&eChat&f] &7");
             def = true;
@@ -189,7 +204,12 @@ public class MessageHandler {
         }
 
         if (getConfig().getString("db_error_connect_disabled") == null) {
-            messageConfig.setNoSave("db_error_connect_disabled", "&cCould not save to database because database is disabled.");
+            messageConfig.setNoSave("db_error_connect_disabled", "&cCould not connect to database because database is disabled.");
+            def = true;
+        }
+
+        if (getConfig().getString("db_error_connect_already") == null) {
+            messageConfig.setNoSave("db_error_connect_already", "&cCould not connect to database because database is already enabled.");
             def = true;
         }
 
@@ -257,4 +277,5 @@ public class MessageHandler {
 
         childToListMessage.clear();
     }
+
 }
