@@ -43,6 +43,7 @@ public class MessageHandler {
         childToMessage.put("nearchat_disabled_player", getConfig().getString("nearchat_disabled_player"));
         childToMessage.put("nearchat_player_not_found", getConfig().getString("nearchat_player_not_found"));
 
+        childToMessage.put("db_init", getConfig().getString("db_init"));
         childToMessage.put("db_connected", getConfig().getString("db_connected"));
         childToMessage.put("db_connected_console", getConfig().getString("db_connected_console"));
         childToMessage.put("db_disconnected", getConfig().getString("db_disconnected"));
@@ -104,6 +105,11 @@ public class MessageHandler {
 
         if (getConfig().getString("nearchat_player_not_found") == null) {
             messageConfig.setNoSave("nearchat_player_not_found", "&cCould not find %name%");
+            def = true;
+        }
+
+        if (getConfig().getString("db_init") == null) {
+            messageConfig.setNoSave("db_init", "&aInitializing &7%db_type%");
             def = true;
         }
 
@@ -244,7 +250,7 @@ public class MessageHandler {
     }
 
     public void sendEnabledMessage() {
-        StringBuilder toSend = new StringBuilder("\n");
+        StringBuilder toSend = new StringBuilder();
 
         for (String line : getEnabledMessage()) {
             if (line.isBlank()) {
@@ -278,7 +284,7 @@ public class MessageHandler {
     }
 
     public void sendDisabledMessage() {
-        StringBuilder toSend = new StringBuilder("\n");
+        StringBuilder toSend = new StringBuilder();
 
         for (String line : getDisabledMessage()) {
             if (line.isBlank()) {
@@ -286,8 +292,12 @@ public class MessageHandler {
                 continue;
             }
 
+            if (line.contains("%prefix%"))
+                line = line.replace("%prefix%", plugin.getMessageHandler().getPrefix());
             if (line.contains("%plugin_name%"))
                 line = line.replace("%plugin_name%", plugin.getConfigHandler().getPluginName());
+            if (line.contains("%plugin_mc_version%"))
+                line = line.replace("%plugin_mc_version%", plugin.getConfigHandler().getPluginMCVersion());
 
             toSend.append(line).append("&r\n");
         }
@@ -338,6 +348,10 @@ public class MessageHandler {
         return childToMessage.getOrDefault("format", "&c`format`");
     }
 
+    public String getDBInit() {
+        return modifyDBMessage(childToMessage.getOrDefault("db_init", "&c`db_init`"));
+    }
+
     public String getDBConnected() {
         return modifyDBMessage(childToMessage.getOrDefault("db_connected", "&c`db_connected`"));
     }
@@ -372,7 +386,7 @@ public class MessageHandler {
     }
 
     public String getDatabaseSaved() {
-        return modifyDBMessage(childToMessage.getOrDefault("db_saved", "&c`db_saved`"));
+        return modifyDBMessage(childToMessage.getOrDefault("db_saved", "[%db_type%] &aSaved database."));
     }
 
     public String getReloadedConfig() {
@@ -380,7 +394,8 @@ public class MessageHandler {
     }
 
     public String getCreatedFile(String file_name) {
-        return childToMessage.getOrDefault("created_file", "&c`created_file`").replace("%file_name%", file_name);
+        return childToMessage.getOrDefault("created_file",
+                "&aSuccessfully created %file_name%").replace("%file_name%", file_name);
     }
 
     public String getBrokerStop(String broker) {

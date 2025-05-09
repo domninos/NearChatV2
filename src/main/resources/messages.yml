@@ -12,6 +12,7 @@ nearchat_disabled: "&cDisabled"
 nearchat_disabled_player: "&cDisabled NearChat for %name%"
 nearchat_player_not_found: "&cCould not find %name%"
 no_permission: "&cYou do not have permission to use this command."
+db_init: "&aInitializing &7%db_type%"
 db_connected: "[%db_type%] &aSuccessfully connected to database!"
 db_connected_console: "[%db_type%] &aSuccessfully connected to: &3%host%"
 db_disconnected: "[%db_type%] &aDatabase disconnected."
@@ -19,17 +20,17 @@ db_error_credentials_not_found: "Database information not found in config.yml. W
 db_error_connect_unsuccessful: "[%db_type%] &cNot successful."
 db_error_connect_disabled: "[%db_type%] &cCould not connect to database because database is disabled."
 db_error_connect_already: "[%db_type%] &cCould not connect to database because database is already enabled."
-db_saved: "[%db_type%] &aSaved database."
+db_saved: "[%db_type%] &aSaved database." # _MAY_ produce the default value
 db_try_save: "[%db_type%] &cTrying to save database.."
 reloaded_config: "&aReloaded config and messages.yml"
-created_file: "&aSuccessfully created %file_name%"
+created_file: "&aSuccessfully created %file_name%" # _MAY_ produce the default value
 broker_stop: "[%db_type%] Database disabled. Cancelling %broker% broker.."
 
 
 
 
 # set the command prefix
-prefix: "&f[&6Near&eChat&f] &7"
+prefix: "&f[&6Near&eChat&f] &7" # _MAY_ produce the default value
 
 
 # set the format for chat messaging on nearchat.
@@ -74,6 +75,7 @@ help_text:
 #  - %nearby_converted_ticks% -> converts %nearby_delay% to human language
 #  - %radius% -> the radius to get nearby players (e.g. 30 blocks)
 enabled_message:
+  - ""
   - "&aSuccessfully enabled %plugin_name% v-%plugin_version% [MC %plugin_mc_version%]"
   - "&bSettings:"
   - "  &dDatabase: %db_type%"
@@ -84,6 +86,8 @@ enabled_message:
 
 # message to send on plugin disable
 # available placeholders:
+#  - %prefix% -> the set prefix above
 #  - %plugin_name% -> NearChat
+#  - %plugin_mc_version% -> minecraft version support of the current plugin
 disabled_message:
-  - "&aSuccessfully disabled %plugin_name% [%plugin_mc_version%]"
+  - "%prefix% &cSuccessfully disabled &6%plugin_name% &c[%plugin_mc_version%]"

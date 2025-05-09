@@ -11,9 +11,11 @@ import net.omni.nearChat.managers.brokers.DatabaseBroker;
 import net.omni.nearChat.managers.brokers.NearbyBroker;
 import net.omni.nearChat.util.MainUtil;
 import net.omni.nearChat.util.NearChatConfig;
+import net.omni.nearChat.util.RedisSaveThread;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
@@ -53,14 +55,12 @@ public final class NearChatPlugin extends JavaPlugin {
     public void onEnable() {
         MainUtil.loadLibraries(this);
 
-
         this.messageConfig = new NearChatConfig(this, "messages.yml", true);
         this.nearConfig = new NearChatConfig(this, "config.yml", true);
 
         configHandler.load();
         messageHandler.load();
 
-        databaseHandler.initDatabase();
         databaseHandler.connect();
 
         this.playerManager = new PlayerManager(this);
@@ -69,6 +69,8 @@ public final class NearChatPlugin extends JavaPlugin {
         registerCommands();
 
         tryBrokers();
+
+        addRedisHook();
 
         messageHandler.sendEnabledMessage();
     }
@@ -169,7 +171,6 @@ public final class NearChatPlugin extends JavaPlugin {
         nearConfig.save();
         messageConfig.save();
 
-        messageHandler.flush();
         databaseHandler.closeDatabase();
 
         if (!mainCommands.isEmpty()) {
@@ -182,5 +183,14 @@ public final class NearChatPlugin extends JavaPlugin {
 
         if (playerManager != null)
             playerManager.flush();
+
+        messageHandler.flush();
+
+        Bukkit.getScheduler().cancelTasks(this);
+        HandlerList.unregisterAll(this);
+    }
+
+    public void addRedisHook() {
+        Runtime.getRuntime().addShutdownHook(new RedisSaveThread());
     }
 }

@@ -6,7 +6,7 @@ user: ""
 password: ""
 
 # whether to use a flat-file database or redis database
-# (use and fill credentials above to use a redis database)
+# (use and fill credentials above to use a redis database) TODO: database: 'redis' | 'flat-file' | 'mongodb'
 use-flat-file: false
 
 # in ticks (millis). 6000 - 5 mins. 20 * 60 = 1200 (60 seconds) * 5 = 6000 milliseconds.
@@ -14,13 +14,13 @@ use-flat-file: false
 database-save-delay: 6000
 
 # in minecraft ticks (millis). delay between getting nearby players. 20 * 3 = 60 (3 seconds)
-# default: 3 seconds
+# default: 3
 nearby-get-delay: 60
 
 # block radius to check for nearby players for nearchat.
 # default: 30
 near-block-radius: 30
 
-# check whether to log messages to console.
+# check whether to log nearchat messages to console.
 # default: true
 log-messages: true

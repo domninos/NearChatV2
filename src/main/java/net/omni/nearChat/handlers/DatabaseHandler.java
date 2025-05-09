@@ -40,6 +40,7 @@ public class DatabaseHandler {
                 : new RedisAdapter(plugin, new RedisDatabase(plugin));
 
         ADAPTER.initDatabase();
+        plugin.sendConsole(plugin.getMessageHandler().getDBInit());
     }
 
     public boolean connect() {

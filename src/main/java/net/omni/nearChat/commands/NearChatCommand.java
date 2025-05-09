@@ -95,6 +95,7 @@ public class NearChatCommand extends MainCommand {
 
                 plugin.getPlayerManager().toggle(player, false);
 
+                // TODO: this says enabled always. probably because of how it handles async
                 if (plugin.getPlayerManager().isEnabled(player.getName()))
                     plugin.sendMessage(sender, plugin.getMessageHandler().getNearChatEnabledPlayer(player.getName()));
                 else

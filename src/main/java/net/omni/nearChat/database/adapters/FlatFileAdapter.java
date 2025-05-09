@@ -58,20 +58,23 @@ public class FlatFileAdapter implements DatabaseAdapter {
     // TODO: possibly just use NearChatConfig for .yml
     @Override
     public void saveToDatabase(Map<String, Boolean> enabledPlayers) {
-        StringBuilder toSave = new StringBuilder();
+        if (enabledPlayers.isEmpty()) {
+            StringBuilder toSave = new StringBuilder();
 
-        for (Map.Entry<String, Boolean> entry : enabledPlayers.entrySet()) {
-            String name = entry.getKey();
-            Boolean value = entry.getValue();
+            for (Map.Entry<String, Boolean> entry : enabledPlayers.entrySet()) {
+                String name = entry.getKey();
+                Boolean value = entry.getValue();
 
-            System.out.println(name);
+                System.out.println(name);
 
-            // new entry/player
-            toSave.append(name).append(": ").append(value.toString()).append("\n");
-            plugin.sendConsole("[DEBUG] Added " + name + ": " + value);
+                // new entry/player
+                toSave.append(name).append(": ").append(value.toString()).append("\n");
+                plugin.sendConsole("[DEBUG] Added " + name + ": " + value);
+            }
+
+            database.writeToFile(toSave.toString());
         }
 
-        database.writeToFile(toSave.toString());
         plugin.sendConsole(plugin.getMessageHandler().getDatabaseSaved());
     }
 

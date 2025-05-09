@@ -18,7 +18,6 @@ public class RedisDatabase implements NearChatDatabase {
     protected static final String KEY = "enabled";
 
     private RedisClient client;
-
     private StatefulRedisConnection<String, String> connection;
 
     private boolean enabled = false;
@@ -90,7 +89,7 @@ public class RedisDatabase implements NearChatDatabase {
     }
 
     public String syncHashGet(String key, String field) {
-        return isEnabled() ? connection.sync().hget(key, field) : "NULL";
+        return isEnabled() ? getSync().hget(key, field) : "NULL";
     }
 
     public void syncSet(RedisCommands<String, String> sync, String key, String value) {
@@ -115,20 +114,24 @@ public class RedisDatabase implements NearChatDatabase {
         sync.hset(key, field, value);
     }
 
+    public void syncHashSet(RedisCommands<String, String> sync, String field, String value) {
+        syncHashSet(sync, KEY, field, value);
+    }
+
     public void syncHashSet(String key, String field, String value) {
         syncHashSet(getSync(), key, field, value);
     }
 
     public RedisFuture<String> asyncGet(String key) {
-        return isEnabled() ? connection.async().get(key) : null;
+        return isEnabled() ? getAsync().get(key) : null;
     }
 
     public RedisFuture<String> asyncHashGet(String field) {
-        return isEnabled() ? connection.async().hget(KEY, field) : null;
+        return isEnabled() ? getAsync().hget(KEY, field) : null;
     }
 
     public RedisFuture<Map<String, String>> asyncHashGetAll(String key) {
-        return isEnabled() ? connection.async().hgetall(key) : null;
+        return isEnabled() ? getAsync().hgetall(key) : null;
     }
 
     public RedisFuture<String> asyncSet(RedisAsyncCommands<String, String> async, String value) {
@@ -182,13 +185,21 @@ public class RedisDatabase implements NearChatDatabase {
         return devS != null && !devS.isBlank() && plugin.getNearConfig().getBool("dev");
     }
 
+    public RedisClient getClient() {
+        return client;
+    }
+
+    public StatefulRedisConnection<String, String> getConnection() {
+        return connection;
+    }
+
     @Override
     public void close() {
         try {
             if (!isEnabled())
                 return;
 
-            getSync().shutdown(true);
+            connection.close();
             client.shutdown();
 
             this.enabled = false;
