@@ -27,11 +27,6 @@ public class DatabaseHandler {
     public void initDatabase() {
         // REF: https://redis.io/docs/latest/develop/clients/lettuce/connect/
 
-//        if (isEnabled()) {
-//            plugin.error(plugin.getMessageHandler().getDBErrorConnectedAlready());
-//            return;
-//        }
-
         if (ADAPTER != null) {
             ADAPTER.closeDatabase();
             NearChatDatabase db = ADAPTER.getDatabase();
@@ -48,11 +43,6 @@ public class DatabaseHandler {
     }
 
     public boolean connect() {
-//        if (isEnabled()) {
-//            plugin.error(plugin.getMessageHandler().getDBErrorConnectedAlready());
-//            return false;
-//        }
-
         if (plugin.getPlayerManager() != null)
             plugin.getPlayerManager().flush();
 

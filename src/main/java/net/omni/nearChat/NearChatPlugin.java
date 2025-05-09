@@ -81,9 +81,9 @@ public final class NearChatPlugin extends JavaPlugin {
         if (playerManager != null)
             playerManager.saveToDatabase();
 
-        flush();
-
         messageHandler.sendDisabledMessage();
+
+        flush();
     }
 
     public void error(String message, Throwable throwable) {

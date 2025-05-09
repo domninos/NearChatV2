@@ -37,11 +37,6 @@ public class RedisAdapter implements DatabaseAdapter {
 
     @Override
     public boolean connect() {
-//        if (isEnabled()) {
-//            plugin.error("You cannot connect to the database while it is already enabled.");
-//            return false;
-//        }
-
         return redis.connectConfig();
     }
 
