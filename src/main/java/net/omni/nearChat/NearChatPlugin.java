@@ -9,6 +9,7 @@ import net.omni.nearChat.listeners.NCPlayerListener;
 import net.omni.nearChat.managers.PlayerManager;
 import net.omni.nearChat.managers.brokers.DatabaseBroker;
 import net.omni.nearChat.managers.brokers.NearbyBroker;
+import net.omni.nearChat.util.MainUtil;
 import net.omni.nearChat.util.NearChatConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -44,11 +45,15 @@ public final class NearChatPlugin extends JavaPlugin {
         * Add /nearchat gui
           * Possibly create inventory handler.
         * Add database integration (set toggled on database for UUID) # why
-        * Add option for flat-file database
+        * Add option for flat-file database # test more
+        * Add option for mongodb
      */
 
     @Override
     public void onEnable() {
+        MainUtil.loadLibraries(this);
+
+
         this.messageConfig = new NearChatConfig(this, "messages.yml", true);
         this.nearConfig = new NearChatConfig(this, "config.yml", true);
 
@@ -73,7 +78,8 @@ public final class NearChatPlugin extends JavaPlugin {
         configHandler.saveToConfig();
         messageHandler.saveToConfig();
 
-        playerManager.saveToDatabase();
+        if (playerManager != null)
+            playerManager.saveToDatabase();
 
         flush();
 
@@ -174,6 +180,7 @@ public final class NearChatPlugin extends JavaPlugin {
             mainCommands.clear();
         }
 
-        playerManager.flush();
+        if (playerManager != null)
+            playerManager.flush();
     }
 }

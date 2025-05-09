@@ -11,6 +11,7 @@ import net.omni.nearChat.handlers.DatabaseHandler;
 import java.util.Map;
 
 public class RedisAdapter implements DatabaseAdapter {
+
     private final NearChatPlugin plugin;
 
     private final RedisDatabase redis;
@@ -31,7 +32,7 @@ public class RedisAdapter implements DatabaseAdapter {
     @Override
     public void initDatabase() {
         // REF: https://redis.io/docs/latest/develop/clients/lettuce/connect/
-        plugin.sendConsole("initDatabase");
+        plugin.sendConsole("Initializing Redis...");
     }
 
     @Override

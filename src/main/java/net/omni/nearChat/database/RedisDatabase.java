@@ -185,6 +185,9 @@ public class RedisDatabase implements NearChatDatabase {
     @Override
     public void close() {
         try {
+            if (!isEnabled())
+                return;
+
             getSync().shutdown(true);
             client.shutdown();
 

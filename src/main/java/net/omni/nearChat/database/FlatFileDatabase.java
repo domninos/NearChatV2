@@ -66,6 +66,10 @@ public class FlatFileDatabase implements NearChatDatabase {
         try (Scanner scanner = new Scanner(file)) {
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
+
+                if (line.isBlank())
+                    continue;
+
                 String[] split = line.split(":");
 
                 // name: boolean

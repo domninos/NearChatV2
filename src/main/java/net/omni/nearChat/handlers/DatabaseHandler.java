@@ -21,7 +21,7 @@ public class DatabaseHandler {
     }
 
     public boolean isFlatFile() {
-        return plugin.getConfigHandler().isFlatFile() && ADAPTER instanceof FlatFileAdapter;
+        return ADAPTER != null && plugin.getConfigHandler().isFlatFile() && ADAPTER instanceof FlatFileAdapter;
     }
 
     public void initDatabase() {
@@ -113,8 +113,14 @@ public class DatabaseHandler {
             return;
         }
 
-        if (isFlatFile()) FlatFileAdapter.adapt().saveToDatabase(enabledPlayers);
-        else RedisAdapter.adapt().saveToDatabase(enabledPlayers);
+        DatabaseAdapter adapter = isFlatFile() ? FlatFileAdapter.adapt() : RedisAdapter.adapt();
+
+        if (adapter == null) {
+            plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectUnsuccessful());
+            return;
+        }
+
+        adapter.saveToDatabase(enabledPlayers);
     }
 
     public void saveToDatabase(String playerName, Boolean value) {
