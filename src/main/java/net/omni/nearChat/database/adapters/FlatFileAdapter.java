@@ -5,6 +5,7 @@ import net.omni.nearChat.database.FlatFileDatabase;
 import net.omni.nearChat.database.NearChatDatabase;
 import net.omni.nearChat.handlers.DatabaseHandler;
 
+
 import java.io.IOException;
 import java.util.Map;
 
@@ -67,6 +68,7 @@ public class FlatFileAdapter implements DatabaseAdapter {
 
                 System.out.println(name);
 
+
                 // new entry/player
                 toSave.append(name).append(": ").append(value.toString()).append("\n");
                 plugin.sendConsole("[DEBUG] Added " + name + ": " + value);
@@ -84,14 +86,17 @@ public class FlatFileAdapter implements DatabaseAdapter {
 
         Map<String, Boolean> savedPlayers = database.readFile();
 
+        // in database already, replace
         if (savedPlayers.containsKey(playerName)) {
-            // in database already, replace
             savedPlayers.replace(playerName, value);
             plugin.sendConsole("[DEBUG] Replaced " + playerName + ": " + value);
-        } else {
+        } else { // new to database
             savedPlayers.put(playerName, value);
             plugin.sendConsole("[DEBUG] Added  " + playerName + ": " + value);
         }
+
+        // TODO find line from file and replace
+
 
         database.writeToFile(playerName + ": " + value);
 

@@ -261,7 +261,7 @@ public class MessageHandler {
             if (line.contains("%plugin_name%"))
                 line = line.replace("%plugin_name%", plugin.getConfigHandler().getPluginName());
             if (line.contains("%plugin_version%"))
-                line = line.replace("%plugin_version%", plugin.getConfigHandler().getPluginVersion());
+                line = line.replace("%plugin_version%", plugin.getConfigHandler().getPluginVersion()); // TODO: get server version
             if (line.contains("%plugin_mc_version%"))
                 line = line.replace("%plugin_mc_version%", plugin.getConfigHandler().getPluginMCVersion());
             if (line.contains("%db_type%"))
@@ -297,7 +297,7 @@ public class MessageHandler {
             if (line.contains("%plugin_name%"))
                 line = line.replace("%plugin_name%", plugin.getConfigHandler().getPluginName());
             if (line.contains("%plugin_mc_version%"))
-                line = line.replace("%plugin_mc_version%", plugin.getConfigHandler().getPluginMCVersion());
+                line = line.replace("%plugin_mc_version%", plugin.getConfigHandler().getPluginMCVersion()); // TODO: get server version
 
             toSend.append(line).append("&r\n");
         }

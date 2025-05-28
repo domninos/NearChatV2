@@ -35,6 +35,8 @@ public class NCPlayerListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerChat(AsyncPlayerChatEvent event) {
+        // i believe this was introduced on newer versions (1.18+ ?)
+
         if (!plugin.getDatabaseHandler().isEnabled()) return;
 
         Player player = event.getPlayer();

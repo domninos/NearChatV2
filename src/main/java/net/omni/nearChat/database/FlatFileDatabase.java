@@ -87,7 +87,7 @@ public class FlatFileDatabase implements NearChatDatabase {
     }
 
     public void writeToFile(String line) {
-        try (FileWriter writer = new FileWriter(file)) {
+        try (FileWriter writer = new FileWriter(file, true)) {
             writer.write(line + "\n");
         } catch (IOException e) {
             plugin.error("Something went wrong writing to file: ", e);

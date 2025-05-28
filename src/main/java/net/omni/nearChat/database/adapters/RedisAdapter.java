@@ -1,8 +1,10 @@
 package net.omni.nearChat.database.adapters;
 
+import io.lettuce.core.RedisException;
 import io.lettuce.core.RedisFuture;
 import io.lettuce.core.TransactionResult;
 import io.lettuce.core.api.async.RedisAsyncCommands;
+import io.lettuce.core.api.sync.RedisCommands;
 import net.omni.nearChat.NearChatPlugin;
 import net.omni.nearChat.database.NearChatDatabase;
 import net.omni.nearChat.database.RedisDatabase;
@@ -32,7 +34,6 @@ public class RedisAdapter implements DatabaseAdapter {
     @Override
     public void initDatabase() {
         // REF: https://redis.io/docs/latest/develop/clients/lettuce/connect/
-        plugin.sendConsole("Initializing Redis...");
     }
 
     @Override
@@ -52,31 +53,66 @@ public class RedisAdapter implements DatabaseAdapter {
 
     @Override
     public void saveToDatabase(Map<String, Boolean> enabledPlayers) {
-        RedisAsyncCommands<String, String> async = redis.getAsync();
+        try {
+            if (!enabledPlayers.isEmpty()) {
+                RedisAsyncCommands<String, String> async = redis.getAsync();
 
-        async.multi();
+                async.multi();
 
-        for (Map.Entry<String, Boolean> entry : enabledPlayers.entrySet()) {
-            String name = entry.getKey();
-            Boolean value = entry.getValue();
+                for (Map.Entry<String, Boolean> entry : enabledPlayers.entrySet()) {
+                    String name = entry.getKey();
+                    Boolean value = entry.getValue();
 
-            redis.asyncHashSetNoSave(async, name, value.toString());
-        }
+                    redis.asyncHashSetNoSave(async, name, value.toString());
+                }
 
-        RedisFuture<TransactionResult> exec = async.exec();
+                RedisFuture<TransactionResult> exec = async.exec();
 
-        exec.whenComplete((result, throwable) -> {
-            if (throwable != null) {
-                plugin.error("Could not complete execution: ", throwable);
-                return;
+                exec.whenComplete((result, throwable) -> {
+                    if (throwable != null) {
+                        plugin.error("Could not complete execution: ", throwable);
+                        return;
+                    }
+
+                    async.save();
+                    plugin.sendConsole(plugin.getMessageHandler().getDatabaseSaved());
+                });
             }
 
-            if (!result.isEmpty())
-                result.forEach(o -> plugin.sendConsole("[DEBUG] " + o.toString()));
-
-            async.save();
             plugin.sendConsole(plugin.getMessageHandler().getDatabaseSaved());
-        });
+        } catch (RedisException e) {
+            plugin.error("Could not save async properly");
+        }
+    }
+
+    public void saveSyncDB() {
+        try {
+            Map<String, Boolean> enabledPlayers = plugin.getPlayerManager().getEnabledPlayers();
+
+            if (!enabledPlayers.isEmpty()) {
+                RedisCommands<String, String> sync = redis.getSync();
+
+                try {
+                    sync.multi();
+
+                    for (Map.Entry<String, Boolean> entry : enabledPlayers.entrySet()) {
+                        String name = entry.getKey();
+                        Boolean value = entry.getValue();
+
+                        redis.syncHashSet(sync, name, value.toString());
+                    }
+
+                    sync.exec();
+                    sync.save();
+                } catch (RedisException e) {
+                    plugin.error("Could not exec properly");
+                }
+            }
+
+            plugin.sendConsole(plugin.getMessageHandler().getDatabaseSaved());
+        } catch (RedisException e) {
+            plugin.error("Could not save properly");
+        }
     }
 
     @Override

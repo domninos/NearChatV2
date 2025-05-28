@@ -45,10 +45,16 @@ public final class NearChatPlugin extends JavaPlugin {
     /*
     TODO:
         * Add /nearchat gui
-          * Possibly create inventory handler.
-        * Add database integration (set toggled on database for UUID) # why
-        * Add option for flat-file database # test more
-        * Add option for mongodb
+          * Possibly create inventory handler. (necessary ?)
+        * Fix flat-file storing
+        *
+        *
+        *
+        * Add option for mongodb, mysql, nosql, postgresql
+        *
+        *
+        *
+        * make plugin available 1.8-1.21
      */
 
     @Override

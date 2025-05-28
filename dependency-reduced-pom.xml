@@ -64,6 +64,24 @@
   </repositories>
   <dependencies>
     <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.13.2</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-common</artifactId>
+      <version>4.1.118.Final</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-handler</artifactId>
+      <version>4.1.118.Final</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>org.spigotmc</groupId>
       <artifactId>spigot-api</artifactId>
       <version>1.21-R0.1-SNAPSHOT</version>
@@ -72,7 +90,7 @@
     <dependency>
       <groupId>io.lettuce</groupId>
       <artifactId>lettuce-core</artifactId>
-      <version>6.5.5.RELEASE</version>
+      <version>6.6.0.RELEASE</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>

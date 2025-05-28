@@ -12,7 +12,7 @@ public class RedisSaveThread extends Thread {
         if (DatabaseHandler.ADAPTER == null)
             return;
 
-        RedisAdapter redis = RedisAdapter.adapt();
+        RedisAdapter redis = RedisAdapter.adapt(); // todo: java.lang.IllegalStateException: zip file close 
 
         if (redis == null)
             return;
@@ -25,6 +25,6 @@ public class RedisSaveThread extends Thread {
         RedisClient client = ((RedisDatabase) redis.getDatabase()).getClient();
 
         if (client != null)
-            client.shutdown();
+            redis.closeDatabase();
     }
 }
