@@ -14,6 +14,27 @@ public class MainUtil {
 
         BukkitLibraryManager libraryManager = new BukkitLibraryManager(plugin);
 
+        Library hikaricp = Library.builder()
+                .groupId("com{}zaxxer")
+                .artifactId("HikariCP")
+                .version("6.3.0")
+                .relocate("com{}zaxxer{}hikari", "net{}omni{}nearChat{}libs{}com{}zaxxer{}hikari") // "{}" is replaced with ".", useful to avoid unwanted changes made by maven-shade-plugin
+                .build();
+
+        Library reactive_streams = Library.builder()
+                .groupId("org{}reactivestreams")
+                .artifactId("reactive-streams")
+                .version("1.0.4")
+                .build();
+
+        Library reactor_core = Library.builder()
+                .groupId("io{}projectreactor")
+                .artifactId("reactor-core")
+                .version("3.6.4")
+                .build();
+
+        // TODO load only when choosing sql
+
         Library lettuce = Library.builder()
                 .groupId("io{}lettuce") // "{}" is replaced with ".", useful to avoid unwanted changes made by maven-shade-plugin
                 .artifactId("lettuce-core")
@@ -27,23 +48,30 @@ public class MainUtil {
                 .relocate("io{}lettuce{}core", "net{}omni{}nearChat{}libs{}io{}lettuce{}core") // "{}" is replaced with ".", useful to avoid unwanted changes made by maven-shade-plugin
                 .build();
 
-        Library reactive_streams = Library.builder()
-                .groupId("org{}reactivestreams")
-                .artifactId("reactive-streams")
-                .version("1.0.4")
+        Library postgres = Library.builder()
+                .groupId("org{}postgresql")
+                .artifactId("postgresql")
+                .version("42.7.5")
+                .relocate("org{}postgresql", "net{}omni{}nearChat{}libs{}org{}postgresql") // "{}" is replaced with ".", useful to avoid unwanted changes made by maven-shade-plugin
                 .build();
 
-
-        Library reactor_core = Library.builder()
-                .groupId("io{}projectreactor")
-                .artifactId("reactor-core")
-                .version("3.6.4")
+        Library sqlite = Library.builder()
+                .groupId("org{}xerial")
+                .artifactId("sqlite-jdbc")
+                .version("3.49.1.0")
+                .relocate("org{}sqlite", "net{}omni{}nearChat{}libs{}org{}sqlite") // "{}" is replaced with ".", useful to avoid unwanted changes made by maven-shade-plugin
                 .build();
 
         libraryManager.addMavenCentral();
+        libraryManager.loadLibrary(hikaricp);
         libraryManager.loadLibrary(reactor_core);
         libraryManager.loadLibrary(reactive_streams);
+
+        // TODO load only when choosing sql
+
         libraryManager.loadLibrary(lettuce);
+        libraryManager.loadLibrary(postgres);
+        libraryManager.loadLibrary(sqlite);
     }
 
     public static String convertTicks(long ticks) {

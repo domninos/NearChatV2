@@ -1,6 +1,4 @@
-package net.omni.nearChat.database.adapters;
-
-import net.omni.nearChat.database.NearChatDatabase;
+package net.omni.nearChat.database;
 
 import java.util.Map;
 

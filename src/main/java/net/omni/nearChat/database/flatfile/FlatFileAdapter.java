@@ -1,8 +1,8 @@
-package net.omni.nearChat.database.adapters;
+package net.omni.nearChat.database.flatfile;
 
 import net.omni.nearChat.NearChatPlugin;
-import net.omni.nearChat.database.FlatFileDatabase;
 import net.omni.nearChat.database.NearChatDatabase;
+import net.omni.nearChat.database.DatabaseAdapter;
 import net.omni.nearChat.handlers.DatabaseHandler;
 
 
@@ -59,7 +59,7 @@ public class FlatFileAdapter implements DatabaseAdapter {
     // TODO: possibly just use NearChatConfig for .yml
     @Override
     public void saveToDatabase(Map<String, Boolean> enabledPlayers) {
-        if (enabledPlayers.isEmpty()) {
+        if (!enabledPlayers.isEmpty()) {
             StringBuilder toSave = new StringBuilder();
 
             for (Map.Entry<String, Boolean> entry : enabledPlayers.entrySet()) {

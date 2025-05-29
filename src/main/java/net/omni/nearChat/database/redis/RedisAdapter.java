@@ -1,4 +1,4 @@
-package net.omni.nearChat.database.adapters;
+package net.omni.nearChat.database.redis;
 
 import io.lettuce.core.RedisException;
 import io.lettuce.core.RedisFuture;
@@ -7,7 +7,7 @@ import io.lettuce.core.api.async.RedisAsyncCommands;
 import io.lettuce.core.api.sync.RedisCommands;
 import net.omni.nearChat.NearChatPlugin;
 import net.omni.nearChat.database.NearChatDatabase;
-import net.omni.nearChat.database.RedisDatabase;
+import net.omni.nearChat.database.DatabaseAdapter;
 import net.omni.nearChat.handlers.DatabaseHandler;
 
 import java.util.Map;
@@ -21,6 +21,8 @@ public class RedisAdapter implements DatabaseAdapter {
     public RedisAdapter(NearChatPlugin plugin, RedisDatabase redis) {
         this.plugin = plugin;
         this.redis = redis;
+
+        // make sure redis is loaded in MainUtil
     }
 
     public static RedisAdapter from(DatabaseAdapter adapter) {

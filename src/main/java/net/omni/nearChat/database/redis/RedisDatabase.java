@@ -1,4 +1,4 @@
-package net.omni.nearChat.database;
+package net.omni.nearChat.database.redis;
 
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisFuture;
@@ -7,6 +7,7 @@ import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
 import io.lettuce.core.api.sync.RedisCommands;
 import net.omni.nearChat.NearChatPlugin;
+import net.omni.nearChat.database.NearChatDatabase;
 import net.omni.nearChat.util.MainUtil;
 
 import java.util.Map;
@@ -58,7 +59,7 @@ public class RedisDatabase implements NearChatDatabase {
         String host, user, password;
         int port;
 
-        if (checkDev()) {
+        if (plugin.getConfigHandler().checkDev()) {
             host = "redis-13615.crce178.ap-east-1-1.ec2.redns.redis-cloud.com";
             port = 13615;
             user = "default";
@@ -175,14 +176,9 @@ public class RedisDatabase implements NearChatDatabase {
         return connection.sync();
     }
 
+    @Override
     public boolean isEnabled() {
         return this.enabled && connection != null;
-    }
-
-    private boolean checkDev() {
-        String devS = plugin.getNearConfig().getString("dev");
-
-        return devS != null && !devS.isBlank() && plugin.getNearConfig().getBool("dev");
     }
 
     public RedisClient getClient() {

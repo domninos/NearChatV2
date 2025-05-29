@@ -1,7 +1,7 @@
 package net.omni.nearChat.handlers;
 
 import net.omni.nearChat.NearChatPlugin;
-import net.omni.nearChat.database.adapters.DatabaseAdapter;
+import net.omni.nearChat.database.DatabaseAdapter;
 import net.omni.nearChat.util.MainUtil;
 import net.omni.nearChat.util.NearChatConfig;
 import org.bukkit.Bukkit;

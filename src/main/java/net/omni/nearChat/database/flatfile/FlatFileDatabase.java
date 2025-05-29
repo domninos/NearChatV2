@@ -1,6 +1,7 @@
-package net.omni.nearChat.database;
+package net.omni.nearChat.database.flatfile;
 
 import net.omni.nearChat.NearChatPlugin;
+import net.omni.nearChat.database.NearChatDatabase;
 
 import java.io.File;
 import java.io.FileWriter;

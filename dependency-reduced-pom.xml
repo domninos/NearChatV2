@@ -39,10 +39,6 @@
               <pattern>net.byteflux.libby</pattern>
               <shadedPattern>net.omni.nearChat.libs.net.byteflux.libby</shadedPattern>
             </relocation>
-            <relocation>
-              <pattern>io.lettuce.core</pattern>
-              <shadedPattern>net.omni.nearChat.libs.io.lettuce.core</shadedPattern>
-            </relocation>
           </relocations>
         </configuration>
       </plugin>
@@ -91,6 +87,18 @@
       <groupId>io.lettuce</groupId>
       <artifactId>lettuce-core</artifactId>
       <version>6.6.0.RELEASE</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>42.7.5</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.zaxxer</groupId>
+      <artifactId>HikariCP</artifactId>
+      <version>LATEST</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>

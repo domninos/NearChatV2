@@ -1,6 +1,7 @@
 package net.omni.nearChat.handlers;
 
 import net.omni.nearChat.NearChatPlugin;
+import net.omni.nearChat.database.NearChatDatabase;
 import net.omni.nearChat.util.NearChatConfig;
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -17,12 +18,12 @@ public class ConfigHandler {
 
     private int near_block_radius;
 
-    private String host, user, password;
+    private String host, user, database_name, password;
     private int port;
 
     private boolean log_messages;
 
-    private boolean use_flat_file;
+    private String database_type;
 
     public ConfigHandler(NearChatPlugin plugin) {
         this.plugin = plugin;
@@ -40,10 +41,11 @@ public class ConfigHandler {
         this.near_block_radius = getConfig().getInt("near-block-radius");
 
         this.log_messages = getConfig().getBoolean("log-messages");
-        this.use_flat_file = getConfig().getBoolean("use-flat-file");
+        this.database_type = getConfig().getString("database-type");
 
         this.host = getConfig().getString("host");
         this.port = getConfig().getInt("port");
+        this.database_name = getConfig().getString("database-name");
         this.user = getConfig().getString("user");
         this.password = getConfig().getString("password");
 
@@ -82,6 +84,11 @@ public class ConfigHandler {
             def = true;
         }
 
+        if (getConfig().getString("database-name") == null) {
+            nearChatConfig.setNoSave("database-name", "<put database name here>");
+            def = true;
+        }
+
         if (getConfig().getString("password") == null) {
             nearChatConfig.setNoSave("password", "<put database password here>");
             def = true;
@@ -112,8 +119,8 @@ public class ConfigHandler {
             def = true;
         }
 
-        if (getConfig().getString("use-flat-file") == null) {
-            nearChatConfig.setNoSave("use-flat-file", false);
+        if (getConfig().getString("database-type") == null) {
+            nearChatConfig.setNoSave("database-type", "flat-file");
             def = true;
         }
 
@@ -125,8 +132,14 @@ public class ConfigHandler {
         return def;
     }
 
-    public boolean isFlatFile() {
-        return use_flat_file;
+    public NearChatDatabase.Type getDatabaseType() {
+        return NearChatDatabase.Type.valueOf(this.database_type.toLowerCase());
+    }
+
+    public boolean checkDev() {
+        String devS = nearChatConfig.getString("dev");
+
+        return devS != null && !devS.isBlank() && nearChatConfig.getBool("dev");
     }
 
     public boolean isLogging() {
@@ -163,6 +176,10 @@ public class ConfigHandler {
 
     public String getUser() {
         return user;
+    }
+
+    public String getDatabaseName() {
+        return database_name;
     }
 
     public String getPassword() {

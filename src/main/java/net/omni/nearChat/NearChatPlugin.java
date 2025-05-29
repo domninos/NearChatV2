@@ -6,6 +6,7 @@ import net.omni.nearChat.handlers.ConfigHandler;
 import net.omni.nearChat.handlers.DatabaseHandler;
 import net.omni.nearChat.handlers.MessageHandler;
 import net.omni.nearChat.listeners.NCPlayerListener;
+import net.omni.nearChat.managers.HikariManager;
 import net.omni.nearChat.managers.PlayerManager;
 import net.omni.nearChat.managers.brokers.DatabaseBroker;
 import net.omni.nearChat.managers.brokers.NearbyBroker;
@@ -25,12 +26,16 @@ import java.util.logging.Level;
 public final class NearChatPlugin extends JavaPlugin {
 
     private final List<MainCommand> mainCommands = new ArrayList<>();
-    private final MessageHandler messageHandler;
+
     private NearChatConfig nearConfig;
     private NearChatConfig messageConfig;
+
     private final ConfigHandler configHandler;
+    private final MessageHandler messageHandler;
     private final DatabaseHandler databaseHandler;
+
     private PlayerManager playerManager;
+    private HikariManager hikariManager;
 
     private DatabaseBroker databaseBroker;
 
@@ -50,9 +55,9 @@ public final class NearChatPlugin extends JavaPlugin {
         *
         *
         *
-        * Add option for mongodb, mysql, nosql, postgresql
+        * Add option for mongodb, mysql, nosql, postgresql, sqlite
         *
-        *
+        * /database switch (mongo, mysql, nosql, postgresql, sqlite)
         *
         * make plugin available 1.8-1.21
      */
@@ -66,6 +71,8 @@ public final class NearChatPlugin extends JavaPlugin {
 
         configHandler.load();
         messageHandler.load();
+
+        this.hikariManager = new HikariManager();
 
         databaseHandler.connect();
 
@@ -129,6 +136,10 @@ public final class NearChatPlugin extends JavaPlugin {
 
     public PlayerManager getPlayerManager() {
         return playerManager;
+    }
+
+    public HikariManager getHikariManager() {
+        return hikariManager;
     }
 
     public List<MainCommand> getCommands() {

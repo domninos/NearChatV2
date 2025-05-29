@@ -1,12 +1,14 @@
 package net.omni.nearChat.handlers;
 
 import net.omni.nearChat.NearChatPlugin;
-import net.omni.nearChat.database.FlatFileDatabase;
+import net.omni.nearChat.database.DatabaseAdapter;
 import net.omni.nearChat.database.NearChatDatabase;
-import net.omni.nearChat.database.RedisDatabase;
-import net.omni.nearChat.database.adapters.DatabaseAdapter;
-import net.omni.nearChat.database.adapters.FlatFileAdapter;
-import net.omni.nearChat.database.adapters.RedisAdapter;
+import net.omni.nearChat.database.flatfile.FlatFileAdapter;
+import net.omni.nearChat.database.flatfile.FlatFileDatabase;
+import net.omni.nearChat.database.postgres.PostgresAdapter;
+import net.omni.nearChat.database.postgres.PostgresDatabase;
+import net.omni.nearChat.database.redis.RedisAdapter;
+import net.omni.nearChat.database.redis.RedisDatabase;
 import org.bukkit.entity.Player;
 
 import java.util.Map;
@@ -21,7 +23,15 @@ public class DatabaseHandler {
     }
 
     public boolean isFlatFile() {
-        return ADAPTER != null && plugin.getConfigHandler().isFlatFile() && ADAPTER instanceof FlatFileAdapter;
+        return ADAPTER != null && plugin.getConfigHandler().getDatabaseType() == NearChatDatabase.Type.FLAT_FILE && ADAPTER instanceof FlatFileAdapter;
+    }
+
+    public boolean isRedis() {
+        return ADAPTER != null && plugin.getConfigHandler().getDatabaseType() == NearChatDatabase.Type.REDIS && ADAPTER instanceof RedisAdapter;
+    }
+
+    public boolean isPostgreSQL() {
+        return ADAPTER != null && plugin.getConfigHandler().getDatabaseType() == NearChatDatabase.Type.POSTGRESQL && ADAPTER instanceof PostgresAdapter;
     }
 
     public void initDatabase() {
@@ -35,10 +45,19 @@ public class DatabaseHandler {
                 db.close();
         }
 
-        ADAPTER = plugin.getConfigHandler().isFlatFile()
-                ? new FlatFileAdapter(plugin, new FlatFileDatabase(plugin))
-                : new RedisAdapter(plugin, new RedisDatabase(plugin));
+        switch (plugin.getConfigHandler().getDatabaseType()) {
+            case REDIS:
+                ADAPTER = new RedisAdapter(plugin, new RedisDatabase(plugin));
+                break;
+            case POSTGRESQL:
+                ADAPTER = new PostgresAdapter(plugin, new PostgresDatabase(plugin));
+                break;
+            case FLAT_FILE:
+                ADAPTER = new FlatFileAdapter(plugin, new FlatFileDatabase(plugin));
+                break;
+        }
 
+        // TODO other databases
         ADAPTER.initDatabase();
         plugin.sendConsole(plugin.getMessageHandler().getDBInit());
     }
@@ -58,13 +77,19 @@ public class DatabaseHandler {
             return;
         }
 
-        if (isFlatFile()) {
-            FlatFileAdapter flatFIle = FlatFileAdapter.adapt();
-            flatFIle.saveToDatabase(playerName, Boolean.valueOf(value));
-        } else {
-            RedisAdapter redis = RedisAdapter.adapt();
-            redis.saveToDatabase(playerName, Boolean.valueOf(value));
+        // TODO other DB
+        DatabaseAdapter adapter = switch (plugin.getConfigHandler().getDatabaseType()) {
+            case REDIS -> RedisAdapter.adapt();
+            case POSTGRESQL -> PostgresAdapter.adapt();
+            case FLAT_FILE -> FlatFileAdapter.adapt();
+        };
+
+        if (adapter == null) {
+            plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectUnsuccessful());
+            return;
         }
+
+        adapter.saveToDatabase(playerName, Boolean.valueOf(value));
     }
 
     public void setToCache(Player player) {
@@ -104,7 +129,12 @@ public class DatabaseHandler {
             return;
         }
 
-        DatabaseAdapter adapter = isFlatFile() ? FlatFileAdapter.adapt() : RedisAdapter.adapt();
+        // TODO postgres mongo nosql
+        DatabaseAdapter adapter = switch (plugin.getConfigHandler().getDatabaseType()) {
+            case REDIS -> RedisAdapter.adapt();
+            case POSTGRESQL -> PostgresAdapter.adapt();
+            case FLAT_FILE -> FlatFileAdapter.adapt();
+        };
 
         if (adapter == null) {
             plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectUnsuccessful());
