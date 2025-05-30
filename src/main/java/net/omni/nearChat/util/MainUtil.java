@@ -14,11 +14,18 @@ public class MainUtil {
 
         BukkitLibraryManager libraryManager = new BukkitLibraryManager(plugin);
 
-        Library hikaricp = Library.builder()
-                .groupId("com{}zaxxer")
-                .artifactId("HikariCP")
-                .version("6.3.0")
-                .relocate("com{}zaxxer{}hikari", "net{}omni{}nearChat{}libs{}com{}zaxxer{}hikari") // "{}" is replaced with ".", useful to avoid unwanted changes made by maven-shade-plugin
+        // TODO load only when choosing sql
+        // "{}" is replaced with ".", useful to avoid unwanted changes m ade by maven-shade-plugin
+
+        Library lettuce = Library.builder()
+                .groupId("io{}lettuce")
+                .artifactId("lettuce-core")
+                .version("6.6.0.RELEASE")
+                .id("AlessioDP")
+                .repository("https://repo.alessiodp.com/releases/")
+                // Sets an id for the library
+                // Relocation is applied to the downloaded jar before loading it
+                .relocate("io{}lettuce{}core", "net{}omni{}nearChat{}libs{}io{}lettuce{}core")
                 .build();
 
         Library reactive_streams = Library.builder()
@@ -30,48 +37,41 @@ public class MainUtil {
         Library reactor_core = Library.builder()
                 .groupId("io{}projectreactor")
                 .artifactId("reactor-core")
-                .version("3.6.4")
-                .build();
-
-        // TODO load only when choosing sql
-
-        Library lettuce = Library.builder()
-                .groupId("io{}lettuce") // "{}" is replaced with ".", useful to avoid unwanted changes made by maven-shade-plugin
-                .artifactId("lettuce-core")
-                .version("6.5.5.RELEASE")
-                .id("AlessioDP")
-                .repository("https://repo.alessiodp.com/releases/")
-                // The following are optional
-
-                // Sets an id for the library
-                // Relocation is applied to the downloaded jar before loading it
-                .relocate("io{}lettuce{}core", "net{}omni{}nearChat{}libs{}io{}lettuce{}core") // "{}" is replaced with ".", useful to avoid unwanted changes made by maven-shade-plugin
+                .version("3.6.6")
                 .build();
 
         Library postgres = Library.builder()
                 .groupId("org{}postgresql")
                 .artifactId("postgresql")
                 .version("42.7.5")
-                .relocate("org{}postgresql", "net{}omni{}nearChat{}libs{}org{}postgresql") // "{}" is replaced with ".", useful to avoid unwanted changes made by maven-shade-plugin
+                .relocate("org{}postgresql", "net{}omni{}nearChat{}libs{}org{}postgresql")
                 .build();
+//
+//        Library sqlite = Library.builder()
+//                .groupId("org{}xerial")
+//                .artifactId("sqlite-jdbc")
+//                .version("3.49.1.0")
+//                .relocate("org{}sqlite", "net{}omni{}nearChat{}libs{}org{}sqlite")
+//                .build();
 
-        Library sqlite = Library.builder()
-                .groupId("org{}xerial")
-                .artifactId("sqlite-jdbc")
-                .version("3.49.1.0")
-                .relocate("org{}sqlite", "net{}omni{}nearChat{}libs{}org{}sqlite") // "{}" is replaced with ".", useful to avoid unwanted changes made by maven-shade-plugin
+        Library hikaricp = Library.builder()
+                .groupId("com{}zaxxer")
+                .artifactId("HikariCP")
+                .version("6.3.0")
+                .relocate("com{}zaxxer{}hikari", "net{}omni{}nearChat{}libs{}com{}zaxxer{}hikari")
                 .build();
 
         libraryManager.addMavenCentral();
-        libraryManager.loadLibrary(hikaricp);
+        // TODO load only when choosing sql
         libraryManager.loadLibrary(reactor_core);
         libraryManager.loadLibrary(reactive_streams);
-
-        // TODO load only when choosing sql
-
         libraryManager.loadLibrary(lettuce);
+
         libraryManager.loadLibrary(postgres);
-        libraryManager.loadLibrary(sqlite);
+//        libraryManager.loadLibrary(sqlite);
+        libraryManager.loadLibrary(hikaricp);
+
+        plugin.sendConsole("Loaded libraries"); // TODO messages.yml
     }
 
     public static String convertTicks(long ticks) {

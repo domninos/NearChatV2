@@ -1,10 +1,9 @@
 package net.omni.nearChat.database.flatfile;
 
 import net.omni.nearChat.NearChatPlugin;
-import net.omni.nearChat.database.NearChatDatabase;
 import net.omni.nearChat.database.DatabaseAdapter;
+import net.omni.nearChat.database.NearChatDatabase;
 import net.omni.nearChat.handlers.DatabaseHandler;
-
 
 import java.io.IOException;
 import java.util.Map;
@@ -66,9 +65,6 @@ public class FlatFileAdapter implements DatabaseAdapter {
                 String name = entry.getKey();
                 Boolean value = entry.getValue();
 
-                System.out.println(name);
-
-
                 // new entry/player
                 toSave.append(name).append(": ").append(value.toString()).append("\n");
                 plugin.sendConsole("[DEBUG] Added " + name + ": " + value);
@@ -102,6 +98,14 @@ public class FlatFileAdapter implements DatabaseAdapter {
 
         savedPlayers.clear();
         // SAVE TO FILE
+    }
+
+    @Override
+    public void save() {
+        Map<String, Boolean> enabledPlayers = plugin.getPlayerManager().getEnabledPlayers();
+
+        if (!enabledPlayers.isEmpty())
+            saveToDatabase(enabledPlayers);
     }
 
     @Override

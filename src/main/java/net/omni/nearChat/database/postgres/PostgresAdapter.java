@@ -29,11 +29,7 @@ public class PostgresAdapter implements DatabaseAdapter {
 
     @Override
     public void initDatabase() {
-        try {
-            Class.forName("org.postgresql.Driver");
-        } catch (ClassNotFoundException e) {
-            plugin.error("Something went wrong initializing PostgreSQL.", e);
-        }
+        // empty; ignore
     }
 
     @Override
@@ -48,26 +44,58 @@ public class PostgresAdapter implements DatabaseAdapter {
 
     @Override
     public boolean existsInDatabase(String playerName) {
-        return false;
+        return this.database.exists(playerName);
     }
 
     @Override
     public void saveToDatabase(Map<String, Boolean> enabledPlayers) {
+        try {
+            if (!enabledPlayers.isEmpty())
+                this.database.save(enabledPlayers);
 
+            plugin.sendConsole(plugin.getMessageHandler().getDatabaseSaved());
+        } catch (Exception e) {
+            plugin.error("Could not save database properly", e);
+        }
     }
 
     @Override
     public void saveToDatabase(String playerName, Boolean value) {
+        try {
+            this.database.save(playerName, value);
+            plugin.sendConsole(plugin.getMessageHandler().getDatabaseSaved());
+        } catch (Exception e) {
+            plugin.error("Could not save database properly", e);
+        }
+    }
 
+    @Override
+    public void save() {
+        Map<String, Boolean> enabledPlayers = plugin.getPlayerManager().getEnabledPlayers();
+
+        if (!enabledPlayers.isEmpty())
+            saveToDatabase(enabledPlayers);
     }
 
     @Override
     public void closeDatabase() {
-
+        try {
+            if (isEnabled()) {
+                database.close();
+                plugin.sendConsole(plugin.getMessageHandler().getDBDisconnected());
+            }
+        } catch (Exception e) {
+            plugin.error("Something went wrong closing database connection: ", e);
+        }
     }
 
     @Override
     public NearChatDatabase getDatabase() {
-        return null;
+        return this.database;
+    }
+
+    @Override
+    public String toString() {
+        return "PostgreSQL";
     }
 }

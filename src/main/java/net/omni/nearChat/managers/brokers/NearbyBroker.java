@@ -22,7 +22,7 @@ public class NearbyBroker extends BukkitRunnable {
     public void run() {
         try {
             if (!plugin.getDatabaseHandler().isEnabled()) {
-                plugin.error(plugin.getMessageHandler().getBrokerStop("nearby"));
+                plugin.sendConsole(plugin.getMessageHandler().getBrokerStop("nearby"));
                 cancel();
                 return;
             }

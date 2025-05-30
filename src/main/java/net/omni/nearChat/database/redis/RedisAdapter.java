@@ -87,7 +87,8 @@ public class RedisAdapter implements DatabaseAdapter {
         }
     }
 
-    public void saveSyncDB() {
+    @Override
+    public void save() {
         try {
             Map<String, Boolean> enabledPlayers = plugin.getPlayerManager().getEnabledPlayers();
 

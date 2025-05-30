@@ -20,7 +20,7 @@ public class DatabaseBroker extends BukkitRunnable {
             if (plugin.getDatabaseHandler().isEnabled())
                 plugin.getPlayerManager().saveToDatabase();
             else {
-                plugin.error(plugin.getMessageHandler().getBrokerStop("database"));
+                plugin.sendConsole(plugin.getMessageHandler().getBrokerStop("database"));
                 cancel();
             }
         } catch (Exception e) {

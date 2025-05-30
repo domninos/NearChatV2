@@ -16,10 +16,11 @@ public interface DatabaseAdapter {
 
     void saveToDatabase(String playerName, Boolean value);
 
+    void save();
+
     void closeDatabase();
 
     NearChatDatabase getDatabase();
 
-    @Override
     String toString();
 }

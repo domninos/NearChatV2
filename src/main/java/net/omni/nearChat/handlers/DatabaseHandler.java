@@ -23,15 +23,21 @@ public class DatabaseHandler {
     }
 
     public boolean isFlatFile() {
-        return ADAPTER != null && plugin.getConfigHandler().getDatabaseType() == NearChatDatabase.Type.FLAT_FILE && ADAPTER instanceof FlatFileAdapter;
+        return ADAPTER != null
+                && plugin.getConfigHandler().getDatabaseType() == NearChatDatabase.Type.FLAT_FILE
+                && ADAPTER instanceof FlatFileAdapter;
     }
 
     public boolean isRedis() {
-        return ADAPTER != null && plugin.getConfigHandler().getDatabaseType() == NearChatDatabase.Type.REDIS && ADAPTER instanceof RedisAdapter;
+        return ADAPTER != null
+                && plugin.getConfigHandler().getDatabaseType() == NearChatDatabase.Type.REDIS
+                && ADAPTER instanceof RedisAdapter;
     }
 
     public boolean isPostgreSQL() {
-        return ADAPTER != null && plugin.getConfigHandler().getDatabaseType() == NearChatDatabase.Type.POSTGRESQL && ADAPTER instanceof PostgresAdapter;
+        return ADAPTER != null
+                && plugin.getConfigHandler().getDatabaseType() == NearChatDatabase.Type.POSTGRESQL
+                && ADAPTER instanceof PostgresAdapter;
     }
 
     public void initDatabase() {
@@ -45,7 +51,9 @@ public class DatabaseHandler {
                 db.close();
         }
 
-        switch (plugin.getConfigHandler().getDatabaseType()) {
+        NearChatDatabase.Type type = plugin.getConfigHandler().getDatabaseType();
+
+        switch (type) {
             case REDIS:
                 ADAPTER = new RedisAdapter(plugin, new RedisDatabase(plugin));
                 break;
@@ -55,9 +63,15 @@ public class DatabaseHandler {
             case FLAT_FILE:
                 ADAPTER = new FlatFileAdapter(plugin, new FlatFileDatabase(plugin));
                 break;
+
+        }
+        // TODO other databases
+
+        if (ADAPTER == null) {
+            plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectUnsuccessful());
+            return;
         }
 
-        // TODO other databases
         ADAPTER.initDatabase();
         plugin.sendConsole(plugin.getMessageHandler().getDBInit());
     }
@@ -71,27 +85,6 @@ public class DatabaseHandler {
         return ADAPTER.connect();
     }
 
-    public void setToDatabase(String playerName, String value) {
-        if (!isEnabled()) {
-            plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectDisabled());
-            return;
-        }
-
-        // TODO other DB
-        DatabaseAdapter adapter = switch (plugin.getConfigHandler().getDatabaseType()) {
-            case REDIS -> RedisAdapter.adapt();
-            case POSTGRESQL -> PostgresAdapter.adapt();
-            case FLAT_FILE -> FlatFileAdapter.adapt();
-        };
-
-        if (adapter == null) {
-            plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectUnsuccessful());
-            return;
-        }
-
-        adapter.saveToDatabase(playerName, Boolean.valueOf(value));
-    }
-
     public void setToCache(Player player) {
         if (!isEnabled()) {
             plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectDisabled());
@@ -102,22 +95,29 @@ public class DatabaseHandler {
 
         String playerName = player.getName();
 
-        if (isFlatFile()) {
-            FlatFileAdapter flatFile = FlatFileAdapter.adapt();
-            FlatFileDatabase database = (FlatFileDatabase) flatFile.getDatabase();
+        switch (plugin.getConfigHandler().getDatabaseType()) {
+            case REDIS:
+                RedisAdapter redis = RedisAdapter.adapt();
+                RedisDatabase redisDatabase = (RedisDatabase) redis.getDatabase();
 
-            boolean fromDatabase = database.getValue(player.getName());
+                redisDatabase.asyncHashGet(playerName).thenAcceptAsync((string) -> {
+                    plugin.getPlayerManager().getEnabledPlayers().put(playerName, Boolean.valueOf(string));
+                    plugin.sendConsole("[DEBUG] Set " + playerName + " | " + Boolean.valueOf(string));
+                });
+                break;
+            case FLAT_FILE:
+                FlatFileAdapter flatFile = FlatFileAdapter.adapt();
+                FlatFileDatabase flatFileDatabase = (FlatFileDatabase) flatFile.getDatabase();
 
-            plugin.getPlayerManager().getEnabledPlayers().put(playerName, fromDatabase);
-            plugin.sendConsole("[DEBUG] Set " + playerName + " | " + fromDatabase);
-        } else {
-            RedisAdapter redis = RedisAdapter.adapt();
-            RedisDatabase database = (RedisDatabase) redis.getDatabase();
+                boolean fromDatabase = flatFileDatabase.getValue(player.getName());
 
-            database.asyncHashGet(playerName).thenAcceptAsync((string) -> {
-                plugin.getPlayerManager().getEnabledPlayers().put(playerName, Boolean.valueOf(string));
-                plugin.sendConsole("[DEBUG] Set " + playerName + " | " + Boolean.valueOf(string));
-            });
+                plugin.getPlayerManager().getEnabledPlayers().put(playerName, fromDatabase);
+                plugin.sendConsole("[DEBUG] Set " + playerName + " | " + fromDatabase);
+            case POSTGRESQL:
+                PostgresAdapter postgres = PostgresAdapter.adapt();
+                PostgresDatabase postgresDatabase = (PostgresDatabase) postgres.getDatabase();
+
+                // TODO
         }
 
         plugin.getPlayerManager().setNearby(player);
@@ -129,19 +129,12 @@ public class DatabaseHandler {
             return;
         }
 
-        // TODO postgres mongo nosql
-        DatabaseAdapter adapter = switch (plugin.getConfigHandler().getDatabaseType()) {
-            case REDIS -> RedisAdapter.adapt();
-            case POSTGRESQL -> PostgresAdapter.adapt();
-            case FLAT_FILE -> FlatFileAdapter.adapt();
-        };
-
-        if (adapter == null) {
+        if (ADAPTER == null) {
             plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectUnsuccessful());
             return;
         }
 
-        adapter.saveToDatabase(enabledPlayers);
+        ADAPTER.saveToDatabase(enabledPlayers);
     }
 
     public void saveToDatabase(String playerName, Boolean value) {
@@ -150,8 +143,16 @@ public class DatabaseHandler {
             return;
         }
 
-        if (isFlatFile()) FlatFileAdapter.adapt().saveToDatabase(playerName, value);
-        else RedisAdapter.adapt().saveToDatabase(playerName, value);
+        if (ADAPTER == null) {
+            plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectUnsuccessful());
+            return;
+        }
+
+        ADAPTER.saveToDatabase(playerName, value);
+    }
+
+    public void saveToDatabase(String playerName, String value) {
+        saveToDatabase(playerName, Boolean.getBoolean(value));
     }
 
     public boolean isEnabled() {

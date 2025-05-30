@@ -12,7 +12,7 @@ import net.omni.nearChat.managers.brokers.DatabaseBroker;
 import net.omni.nearChat.managers.brokers.NearbyBroker;
 import net.omni.nearChat.util.MainUtil;
 import net.omni.nearChat.util.NearChatConfig;
-import net.omni.nearChat.util.RedisSaveThread;
+import net.omni.nearChat.util.DatabaseSaveThread;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -52,12 +52,15 @@ public final class NearChatPlugin extends JavaPlugin {
         * Add /nearchat gui
           * Possibly create inventory handler. (necessary ?)
         * Fix flat-file storing
+        * Fix postgresql persistence (on load enabled)
         *
         *
         *
         * Add option for mongodb, mysql, nosql, postgresql, sqlite
         *
         * /database switch (mongo, mysql, nosql, postgresql, sqlite)
+        *
+        *
         *
         * make plugin available 1.8-1.21
      */
@@ -72,7 +75,7 @@ public final class NearChatPlugin extends JavaPlugin {
         configHandler.load();
         messageHandler.load();
 
-        this.hikariManager = new HikariManager();
+        this.hikariManager = new HikariManager(this);
 
         databaseHandler.connect();
 
@@ -95,6 +98,9 @@ public final class NearChatPlugin extends JavaPlugin {
 
         if (playerManager != null)
             playerManager.saveToDatabase();
+
+        if (hikariManager.getHikari() != null)
+            hikariManager.getHikari().close();
 
         messageHandler.sendDisabledMessage();
 
@@ -208,6 +214,6 @@ public final class NearChatPlugin extends JavaPlugin {
     }
 
     public void addRedisHook() {
-        Runtime.getRuntime().addShutdownHook(new RedisSaveThread());
+        Runtime.getRuntime().addShutdownHook(new DatabaseSaveThread());
     }
 }

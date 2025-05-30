@@ -1,6 +1,7 @@
 package net.omni.nearChat.managers;
 
 import net.omni.nearChat.NearChatPlugin;
+import net.omni.nearChat.database.ISQLDatabase;
 import net.omni.nearChat.util.PlayerUtil;
 import org.bukkit.entity.Player;
 
@@ -29,9 +30,16 @@ public class PlayerManager {
 
         String playerName = player.getName();
 
+
+        // TODO async checks for non existent for sql
+
         // if not in database
-        if (!plugin.getDatabaseHandler().checkExistsDB(playerName))
-            plugin.getDatabaseHandler().setToDatabase(playerName, "false");
+        if (!plugin.getDatabaseHandler().checkExistsDB(playerName)) {
+            if (plugin.getDatabaseHandler().getDatabase().getDatabase() instanceof ISQLDatabase sqlDatabase) // SQL database
+                sqlDatabase.saveNonExists(playerName, false);
+            else
+                plugin.getDatabaseHandler().saveToDatabase(playerName, "false");
+        }
 
         // not in cache
         if (!has(playerName))
