@@ -57,7 +57,7 @@ public class FlatFileAdapter implements DatabaseAdapter {
     // TODO: test
     // TODO: possibly just use NearChatConfig for .yml
     @Override
-    public void saveToDatabase(Map<String, Boolean> enabledPlayers) {
+    public void saveMap(Map<String, Boolean> enabledPlayers) {
         if (!enabledPlayers.isEmpty()) {
             StringBuilder toSave = new StringBuilder();
 
@@ -77,7 +77,7 @@ public class FlatFileAdapter implements DatabaseAdapter {
     }
 
     @Override
-    public void saveToDatabase(String playerName, Boolean value) {
+    public void savePlayer(String playerName, Boolean value) {
         database.put(playerName, value);
 
         Map<String, Boolean> savedPlayers = database.readFile();
@@ -101,11 +101,11 @@ public class FlatFileAdapter implements DatabaseAdapter {
     }
 
     @Override
-    public void save() {
+    public void lastSaveMap() {
         Map<String, Boolean> enabledPlayers = plugin.getPlayerManager().getEnabledPlayers();
 
         if (!enabledPlayers.isEmpty())
-            saveToDatabase(enabledPlayers);
+            saveMap(enabledPlayers);
     }
 
     @Override

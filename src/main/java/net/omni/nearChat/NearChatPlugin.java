@@ -1,5 +1,7 @@
 package net.omni.nearChat;
 
+import net.omni.nearChat.brokers.DatabaseBroker;
+import net.omni.nearChat.brokers.NearbyBroker;
 import net.omni.nearChat.commands.MainCommand;
 import net.omni.nearChat.commands.NearChatCommand;
 import net.omni.nearChat.handlers.ConfigHandler;
@@ -8,9 +10,6 @@ import net.omni.nearChat.handlers.MessageHandler;
 import net.omni.nearChat.listeners.NCPlayerListener;
 import net.omni.nearChat.managers.HikariManager;
 import net.omni.nearChat.managers.PlayerManager;
-import net.omni.nearChat.brokers.DatabaseBroker;
-import net.omni.nearChat.brokers.NearbyBroker;
-import net.omni.nearChat.util.DatabaseSaveThread;
 import net.omni.nearChat.util.MainUtil;
 import net.omni.nearChat.util.NearChatConfig;
 import org.bukkit.Bukkit;
@@ -52,15 +51,11 @@ public final class NearChatPlugin extends JavaPlugin {
         * Add /nearchat gui
           * Possibly create inventory handler. (necessary ?)
         * Fix flat-file storing
-        * Fix postgresql persistence (on load enabled)
-        *
         *
         *
         * Add option for mongodb, mysql, nosql, postgresql, sqlite
         *
         * /database switch (mongo, mysql, nosql, postgresql, sqlite)
-        *
-        *
         *
         * make plugin available 1.8-1.21
      */
@@ -86,7 +81,7 @@ public final class NearChatPlugin extends JavaPlugin {
 
         tryBrokers();
 
-        addRedisHook();
+        addHook();
 
         messageHandler.sendEnabledMessage();
     }
@@ -97,10 +92,9 @@ public final class NearChatPlugin extends JavaPlugin {
         messageHandler.saveToConfig();
 
         if (playerManager != null)
-            playerManager.saveToDatabase();
+            playerManager.saveMap(false);
 
-        if (hikariManager.getHikari() != null)
-            hikariManager.getHikari().close();
+        hikariManager.close();
 
         messageHandler.sendDisabledMessage();
 
@@ -213,7 +207,10 @@ public final class NearChatPlugin extends JavaPlugin {
         HandlerList.unregisterAll(this);
     }
 
-    public void addRedisHook() {
-        Runtime.getRuntime().addShutdownHook(new DatabaseSaveThread());
+    public void addHook() {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            if (DatabaseHandler.ADAPTER != null && DatabaseHandler.ADAPTER.getDatabase() != null)
+                DatabaseHandler.ADAPTER.lastSaveMap();
+        }));
     }
 }

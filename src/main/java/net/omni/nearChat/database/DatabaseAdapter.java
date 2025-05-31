@@ -12,11 +12,11 @@ public interface DatabaseAdapter {
 
     boolean existsInDatabase(String playerName);
 
-    void saveToDatabase(Map<String, Boolean> enabledPlayers);
+    void saveMap(Map<String, Boolean> enabledPlayers);
 
-    void saveToDatabase(String playerName, Boolean value);
+    void savePlayer(String playerName, Boolean value);
 
-    void save();
+    void lastSaveMap();
 
     void closeDatabase();
 

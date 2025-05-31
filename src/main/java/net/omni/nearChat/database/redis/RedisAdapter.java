@@ -6,8 +6,8 @@ import io.lettuce.core.TransactionResult;
 import io.lettuce.core.api.async.RedisAsyncCommands;
 import io.lettuce.core.api.sync.RedisCommands;
 import net.omni.nearChat.NearChatPlugin;
-import net.omni.nearChat.database.NearChatDatabase;
 import net.omni.nearChat.database.DatabaseAdapter;
+import net.omni.nearChat.database.NearChatDatabase;
 import net.omni.nearChat.handlers.DatabaseHandler;
 
 import java.util.Map;
@@ -54,7 +54,7 @@ public class RedisAdapter implements DatabaseAdapter {
     }
 
     @Override
-    public void saveToDatabase(Map<String, Boolean> enabledPlayers) {
+    public void saveMap(Map<String, Boolean> enabledPlayers) {
         try {
             if (!enabledPlayers.isEmpty()) {
                 RedisAsyncCommands<String, String> async = redis.getAsync();
@@ -88,7 +88,8 @@ public class RedisAdapter implements DatabaseAdapter {
     }
 
     @Override
-    public void save() {
+    public void lastSaveMap() {
+        // needs to be sync
         try {
             Map<String, Boolean> enabledPlayers = plugin.getPlayerManager().getEnabledPlayers();
 
@@ -119,7 +120,7 @@ public class RedisAdapter implements DatabaseAdapter {
     }
 
     @Override
-    public void saveToDatabase(String playerName, Boolean value) {
+    public void savePlayer(String playerName, Boolean value) {
         redis.asyncHashSet(playerName, value.toString());
     }
 

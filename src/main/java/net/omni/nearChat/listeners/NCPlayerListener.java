@@ -31,8 +31,10 @@ public class NCPlayerListener implements Listener {
 
         Player player = event.getPlayer();
 
+        // only save to database if in cache
+        // only save if player executed /nearchat once
         if (plugin.getPlayerManager().has(player.getName())) {
-            plugin.getPlayerManager().saveToDatabase(player.getName());
+            plugin.getPlayerManager().save(player.getName());
             plugin.getPlayerManager().removeNearby(player);
         }
     }
@@ -65,6 +67,7 @@ public class NCPlayerListener implements Listener {
 
         format = plugin.translate(format);
 
+        // TODO: FIX format
         String finalFormat = format;
 
         nearbyPlayers.forEach(nearbyPlayer -> nearbyPlayer.sendMessage(finalFormat));

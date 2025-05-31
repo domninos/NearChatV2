@@ -20,14 +20,13 @@ public class PlayerManager {
         this.plugin = plugin;
     }
 
+    // TODO: database have hashset (redis) structure
+    //  * KEY,uuid,owner,value (NearChat 2.0)
     public void loadEnabled(Player player) {
         if (!plugin.getDatabaseHandler().isEnabled()) {
             plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectDisabled());
             return;
         }
-
-        // TODO: database have hashset structure
-        //  * KEY,uuid,owner,value (NearChat 2.0)
 
         String playerName = player.getName();
 
@@ -42,7 +41,7 @@ public class PlayerManager {
                 sqlDb.saveNonExists(playerName, false);
         } else {
             if (!plugin.getDatabaseHandler().checkExistsDB(playerName))
-                plugin.getDatabaseHandler().saveToDatabase(playerName, "false");
+                plugin.getDatabaseHandler().savePlayer(playerName, "false");
         }
 
         // not in cache
@@ -53,7 +52,7 @@ public class PlayerManager {
             setNearby(player);
     }
 
-    public void saveToDatabase(String playerName) {
+    public void save(String playerName) {
         if (!plugin.getDatabaseHandler().isEnabled()) {
             plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectDisabled());
             return;
@@ -61,18 +60,15 @@ public class PlayerManager {
 
         if (has(playerName)) {
             Boolean val = enabled.get(playerName);
-
-            plugin.getDatabaseHandler().saveToDatabase(playerName, val);
+            plugin.getDatabaseHandler().savePlayer(playerName, val, true);
         }
     }
 
-    public void saveToDatabase() {
-        if (!plugin.getDatabaseHandler().isEnabled()) {
+    public void saveMap(boolean async) {
+        if (!plugin.getDatabaseHandler().isEnabled())
             plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectDisabled());
-            return;
-        }
-
-        plugin.getDatabaseHandler().saveToDatabase(this.enabled);
+        else
+            plugin.getDatabaseHandler().saveMap(this.enabled, async);
     }
 
     public void toggle(Player player) {
@@ -90,7 +86,6 @@ public class PlayerManager {
         if (isEnabled(name)) {
             setNearby(player);
 
-            // TODO: this says enabled always. probably because of how it handles async
             if (sendLog) plugin.sendMessage(player, plugin.getMessageHandler().getNearChatEnabled());
         } else {
             removeNearby(player);

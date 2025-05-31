@@ -41,6 +41,7 @@ public class DatabaseHandler {
                 && ADAPTER instanceof PostgresAdapter;
     }
 
+    // TODO other databases
     public void initDatabase() {
         // REF: https://redis.io/docs/latest/develop/clients/lettuce/connect/
 
@@ -66,7 +67,6 @@ public class DatabaseHandler {
                 break;
 
         }
-        // TODO other databases
 
         if (ADAPTER == null) {
             plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectUnsuccessful());
@@ -115,36 +115,44 @@ public class DatabaseHandler {
         plugin.getPlayerManager().setNearby(player);
     }
 
-    public void saveToDatabase(Map<String, Boolean> enabledPlayers) {
+    public void saveMap(Map<String, Boolean> enabledPlayers, boolean async) {
         if (!isEnabled()) {
             plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectDisabled());
             return;
         }
-
         if (ADAPTER == null) {
             plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectUnsuccessful());
             return;
         }
 
-        ADAPTER.saveToDatabase(enabledPlayers);
+        // sql async
+        if (isSQL()) {
+            ISQLDatabase sqlDb = (ISQLDatabase) getAdapter().getDatabase();
+            sqlDb.saveMap(enabledPlayers, async);
+        } else
+            ADAPTER.saveMap(enabledPlayers);
     }
 
-    public void saveToDatabase(String playerName, Boolean value) {
+    public void savePlayer(String playerName, Boolean value, boolean async) {
         if (!isEnabled()) {
             plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectDisabled());
             return;
         }
-
         if (ADAPTER == null) {
             plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectUnsuccessful());
             return;
         }
 
-        ADAPTER.saveToDatabase(playerName, value);
+        // sql async
+        if (isSQL()) {
+            ISQLDatabase sqlDb = (ISQLDatabase) getAdapter().getDatabase();
+            sqlDb.savePlayer(playerName, value, async);
+        } else
+            ADAPTER.savePlayer(playerName, value);
     }
 
-    public void saveToDatabase(String playerName, String value) {
-        saveToDatabase(playerName, Boolean.getBoolean(value));
+    public void savePlayer(String playerName, String value) {
+        savePlayer(playerName, Boolean.getBoolean(value), true);
     }
 
     public boolean isEnabled() {

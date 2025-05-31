@@ -46,7 +46,6 @@ public class NearChatCommand extends MainCommand {
                 plugin.sendMessage(sender, plugin.getMessageHandler().getPlayerOnly());
                 return true;
             }
-
             if (!plugin.getDatabaseHandler().isEnabled()) {
                 plugin.sendMessage(sender, plugin.getMessageHandler().getDBErrorConnectDisabled());
                 return true;
@@ -79,7 +78,6 @@ public class NearChatCommand extends MainCommand {
             }
 
             // look for playername
-
             if (args.length == 1) {
                 if (!plugin.getDatabaseHandler().isEnabled()) {
                     plugin.sendMessage(sender, plugin.getMessageHandler().getDBErrorConnectDisabled());
@@ -95,7 +93,6 @@ public class NearChatCommand extends MainCommand {
 
                 plugin.getPlayerManager().toggle(player, false);
 
-                // TODO: this says enabled always. probably because of how it handles async
                 if (plugin.getPlayerManager().isEnabled(player.getName()))
                     plugin.sendMessage(sender, plugin.getMessageHandler().getNearChatEnabledPlayer(player.getName()));
                 else

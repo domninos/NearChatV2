@@ -48,10 +48,10 @@ public class PostgresAdapter implements DatabaseAdapter {
     }
 
     @Override
-    public void saveToDatabase(Map<String, Boolean> enabledPlayers) {
+    public void saveMap(Map<String, Boolean> enabledPlayers) {
         try {
             if (!enabledPlayers.isEmpty())
-                this.database.save(enabledPlayers);
+                this.database.saveMap(enabledPlayers, true);
 
             plugin.sendConsole(plugin.getMessageHandler().getDatabaseSaved());
         } catch (Exception e) {
@@ -60,21 +60,24 @@ public class PostgresAdapter implements DatabaseAdapter {
     }
 
     @Override
-    public void saveToDatabase(String playerName, Boolean value) {
+    public void savePlayer(String playerName, Boolean value) {
         try {
-            this.database.save(playerName, value);
-            plugin.sendConsole(plugin.getMessageHandler().getDatabaseSaved());
+            this.database.savePlayer(playerName, value, true);
         } catch (Exception e) {
             plugin.error("Could not save database properly", e);
         }
     }
 
     @Override
-    public void save() {
-        Map<String, Boolean> enabledPlayers = plugin.getPlayerManager().getEnabledPlayers();
+    public void lastSaveMap() {
+        try {
+            Map<String, Boolean> enabledPlayers = plugin.getPlayerManager().getEnabledPlayers();
 
-        if (!enabledPlayers.isEmpty())
-            saveToDatabase(enabledPlayers);
+            if (!enabledPlayers.isEmpty())
+                this.database.saveMap(enabledPlayers, false);
+        } catch (Exception e) {
+            plugin.error("Could not save database properly", e);
+        }
     }
 
     @Override

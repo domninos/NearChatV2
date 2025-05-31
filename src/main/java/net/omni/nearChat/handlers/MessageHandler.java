@@ -317,11 +317,11 @@ public class MessageHandler {
     }
 
     public String getNearChatDisabled() {
-        return childToMessage.getOrDefault("nearchat_enabled", "&c`nearchat_enabled`");
+        return childToMessage.getOrDefault("nearchat_disabled", "&c`nearchat_disabled`");
     }
 
     public String getNearChatDisabledPlayer(String playerName) {
-        return childToMessage.getOrDefault("nearchat_enabled_player", "&c`nearchat_enabled_player`")
+        return childToMessage.getOrDefault("nearchat_disabled_player", "&c`nearchat_disabled_player`")
                 .replace("%name%", playerName);
     }
 

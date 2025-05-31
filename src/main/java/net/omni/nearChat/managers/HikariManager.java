@@ -46,6 +46,11 @@ public class HikariManager {
         // TODO sql postgresql mysql
     }
 
+    public void close() {
+        if (hikari != null)
+            hikari.close();
+    }
+
     public Connection getConnection() throws SQLException {
         return hikari.getConnection();
     }

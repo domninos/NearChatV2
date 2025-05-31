@@ -1,6 +1,5 @@
 package net.omni.nearChat.database.postgres;
 
-import com.zaxxer.hikari.HikariDataSource;
 import net.omni.nearChat.NearChatPlugin;
 import net.omni.nearChat.database.ISQLDatabase;
 import net.omni.nearChat.database.NearChatDatabase;
@@ -34,6 +33,7 @@ public class PostgresDatabase implements NearChatDatabase, ISQLDatabase {
         this.plugin = plugin;
     }
 
+    @Override
     public boolean connect(String host, int port, String database_name, String user, String password) {
         if (isEnabled()) {
             plugin.error(plugin.getMessageHandler().getDBErrorConnectedAlready());
@@ -62,6 +62,7 @@ public class PostgresDatabase implements NearChatDatabase, ISQLDatabase {
         return true;
     }
 
+    @Override
     public boolean connectConfig() {
         String host, user, password, database_name;
         int port;
@@ -90,7 +91,8 @@ public class PostgresDatabase implements NearChatDatabase, ISQLDatabase {
         return connect(host, port, database_name, user, password);
     }
 
-    private CompletableFuture<Boolean> exists(String playerName) {
+    @Override
+    public CompletableFuture<Boolean> exists(String playerName) {
         if (!isEnabled()) {
             plugin.error(plugin.getMessageHandler().getDBErrorConnectUnsuccessful());
             return null;
@@ -119,60 +121,62 @@ public class PostgresDatabase implements NearChatDatabase, ISQLDatabase {
         return future;
     }
 
-    public void save(Map<String, Boolean> enabledPlayers) {
+    @Override
+    public void savePlayer(String playerName, Boolean value, boolean async) {
         if (!isEnabled()) {
             plugin.error(plugin.getMessageHandler().getDBErrorConnectDisabled());
             return;
         }
 
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            String query = "UPDATE " + TABLE_NAME + " SET enabled=? WHERE player_name=?;";
-
-            try (Connection connection = plugin.getHikariManager().getConnection();
-                 PreparedStatement stmt = connection.prepareStatement(query)) {
-                connection.setAutoCommit(false);
-
-                for (Map.Entry<String, Boolean> entry : enabledPlayers.entrySet()) {
-                    String name = entry.getKey();
-                    Boolean value = entry.getValue();
-
-                    stmt.setBoolean(1, value);
-                    stmt.setString(2, name);
-                    stmt.addBatch();
-                }
-
-                stmt.executeBatch();
-                connection.commit();
-            } catch (SQLException e) {
-                plugin.error("Something went wrong saving database.", e);
-            }
-        });
+        if (async)
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> saveCallback(playerName, value));
+        else
+            saveCallback(playerName, value);
     }
 
-    public void save(String playerName, Boolean value) {
-        if (!isEnabled()) {
-            plugin.error(plugin.getMessageHandler().getDBErrorConnectDisabled());
-            return;
-        }
+    @Override
+    public void saveCallbackMap(Map<String, Boolean> enabledPlayers) {
+        final String query = "UPDATE " + TABLE_NAME + " SET enabled=? WHERE player_name=?;";
 
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            String query = "UPDATE " + TABLE_NAME + " SET enabled=? WHERE player_name=?;";
+        try (Connection connection = plugin.getHikariManager().getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            connection.setAutoCommit(false);
 
-            try (Connection connection = plugin.getHikariManager().getConnection();
-                 PreparedStatement stmt = connection.prepareStatement(query)) {
+            for (Map.Entry<String, Boolean> entry : enabledPlayers.entrySet()) {
+                String name = entry.getKey();
+                Boolean value = entry.getValue();
+
                 stmt.setBoolean(1, value);
-                stmt.setString(2, playerName);
-
-                stmt.executeUpdate();
-
-                plugin.sendConsole("saving " + playerName + ": " + value);
-            } catch (SQLException e) {
-                plugin.error("Something went wrong saving database.", e);
+                stmt.setString(2, name);
+                stmt.addBatch();
             }
-        });
+
+            stmt.executeBatch();
+            connection.commit();
+
+            plugin.sendConsole(plugin.getMessageHandler().getDatabaseSaved());
+        } catch (SQLException e) {
+            plugin.error("Something went wrong saving database.", e);
+        }
     }
 
-    private void insert(String playerName, Boolean value) {
+    @Override
+    public void saveCallback(String playerName, Boolean value) {
+        String query = "UPDATE " + TABLE_NAME + " SET enabled=? WHERE player_name=?;";
+
+        try (Connection connection = plugin.getHikariManager().getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setBoolean(1, value);
+            stmt.setString(2, playerName);
+
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            plugin.error("Something went wrong saving database.", e);
+        }
+    }
+
+    @Override
+    public void insert(String playerName, Boolean value) {
         if (!isEnabled()) {
             plugin.error(plugin.getMessageHandler().getDBErrorConnectDisabled());
             return;
@@ -191,7 +195,8 @@ public class PostgresDatabase implements NearChatDatabase, ISQLDatabase {
         }
     }
 
-    private CompletableFuture<Boolean> get(String playerName) {
+    @Override
+    public CompletableFuture<Boolean> get(String playerName) {
         if (!isEnabled()) {
             plugin.error(plugin.getMessageHandler().getDBErrorConnectDisabled());
             return null;
@@ -241,6 +246,19 @@ public class PostgresDatabase implements NearChatDatabase, ISQLDatabase {
     }
 
     @Override
+    public void saveMap(Map<String, Boolean> enabledPlayers, boolean async) {
+        if (!isEnabled()) {
+            plugin.error(plugin.getMessageHandler().getDBErrorConnectDisabled());
+            return;
+        }
+
+        if (async)
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> saveCallbackMap(enabledPlayers));
+        else
+            saveCallbackMap(enabledPlayers);
+    }
+
+    @Override
     public void saveNonExists(String playerName, Boolean value) {
         insert(playerName, value);
     }
@@ -271,11 +289,7 @@ public class PostgresDatabase implements NearChatDatabase, ISQLDatabase {
             if (!isEnabled())
                 return;
 
-            HikariDataSource hikari = plugin.getHikariManager().getHikari();
-
-            if (hikari != null)
-                hikari.close();
-
+            plugin.getHikariManager().close();
             this.enabled = false;
         } catch (Exception e) {
             plugin.error("Something went wrong closing database: ", e);
