@@ -177,7 +177,7 @@ public class MessageHandler {
         }
 
         if (getConfig().getString("format") == null) {
-            messageConfig.setNoSave("format", "%prefix% &r%player%&r: %chat%");
+            messageConfig.setNoSave("format", "%prefix% %player%&r: %chat%");
             def = true;
         }
 
@@ -205,8 +205,10 @@ public class MessageHandler {
 
         if (getConfig().getStringList("enabled_message").isEmpty()) {
             messageConfig.setNoSave("enabled_message", Arrays.asList(
+                    "",
                     "&aSuccessfully enabled %plugin_name% [%plugin_mc_version%]",
                     "&bSettings:",
+                    "  &dDatabase: %db_type%",
                     "  %dDatabase Saving Delay: %db_delay%ms (%db_converted_ticks%)",
                     "  %dNearby Get Delay: %nearby_delay%ms (%nearby_converted_ticks%)",
                     "  %dNearby Radius: %radius% blocks"
@@ -411,7 +413,7 @@ public class MessageHandler {
     }
 
     public String modifyDBMessage(String db_message) {
-        DatabaseAdapter db = plugin.getDatabaseHandler().getDatabase();
+        DatabaseAdapter db = plugin.getDatabaseHandler().getAdapter();
 
         if (db == null)
             return db_message != null ? db_message.replace("%db_type%", "NONE") : "null";

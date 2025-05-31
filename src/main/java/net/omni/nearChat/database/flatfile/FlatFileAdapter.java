@@ -121,6 +121,11 @@ public class FlatFileAdapter implements DatabaseAdapter {
     }
 
     @Override
+    public boolean getValue(String playerName) {
+        return this.database.getValue(playerName);
+    }
+
+    @Override
     public NearChatDatabase getDatabase() {
         return this.database;
     }

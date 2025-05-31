@@ -136,6 +136,11 @@ public class RedisAdapter implements DatabaseAdapter {
     }
 
     @Override
+    public boolean getValue(String playerName) {
+        return Boolean.parseBoolean(redis.syncGet(playerName));
+    }
+
+    @Override
     public NearChatDatabase getDatabase() {
         return this.redis;
     }

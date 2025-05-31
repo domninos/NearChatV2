@@ -8,11 +8,11 @@ import net.omni.nearChat.handlers.MessageHandler;
 import net.omni.nearChat.listeners.NCPlayerListener;
 import net.omni.nearChat.managers.HikariManager;
 import net.omni.nearChat.managers.PlayerManager;
-import net.omni.nearChat.managers.brokers.DatabaseBroker;
-import net.omni.nearChat.managers.brokers.NearbyBroker;
+import net.omni.nearChat.brokers.DatabaseBroker;
+import net.omni.nearChat.brokers.NearbyBroker;
+import net.omni.nearChat.util.DatabaseSaveThread;
 import net.omni.nearChat.util.MainUtil;
 import net.omni.nearChat.util.NearChatConfig;
-import net.omni.nearChat.util.DatabaseSaveThread;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -109,7 +109,7 @@ public final class NearChatPlugin extends JavaPlugin {
 
     public void error(String message, Throwable throwable) {
         getLogger().log(Level.SEVERE, ChatColor.stripColor(message), throwable);
-        sendConsole(message + throwable.getMessage());
+        sendConsole(message + " " + throwable.getMessage());
     }
 
     public void error(String text) {

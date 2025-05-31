@@ -2,6 +2,7 @@ package net.omni.nearChat.handlers;
 
 import net.omni.nearChat.NearChatPlugin;
 import net.omni.nearChat.database.DatabaseAdapter;
+import net.omni.nearChat.database.ISQLDatabase;
 import net.omni.nearChat.database.NearChatDatabase;
 import net.omni.nearChat.database.flatfile.FlatFileAdapter;
 import net.omni.nearChat.database.flatfile.FlatFileDatabase;
@@ -91,8 +92,6 @@ public class DatabaseHandler {
             return;
         }
 
-        // TODO put to databaseadapter
-
         String playerName = player.getName();
 
         switch (plugin.getConfigHandler().getDatabaseType()) {
@@ -100,24 +99,17 @@ public class DatabaseHandler {
                 RedisAdapter redis = RedisAdapter.adapt();
                 RedisDatabase redisDatabase = (RedisDatabase) redis.getDatabase();
 
-                redisDatabase.asyncHashGet(playerName).thenAcceptAsync((string) -> {
-                    plugin.getPlayerManager().getEnabledPlayers().put(playerName, Boolean.valueOf(string));
-                    plugin.sendConsole("[DEBUG] Set " + playerName + " | " + Boolean.valueOf(string));
-                });
+                redisDatabase.asyncHashGet(playerName).thenAcceptAsync((string)
+                        -> plugin.getPlayerManager().set(playerName, Boolean.parseBoolean(string)));
                 break;
             case FLAT_FILE:
                 FlatFileAdapter flatFile = FlatFileAdapter.adapt();
-                FlatFileDatabase flatFileDatabase = (FlatFileDatabase) flatFile.getDatabase();
-
-                boolean fromDatabase = flatFileDatabase.getValue(player.getName());
-
-                plugin.getPlayerManager().getEnabledPlayers().put(playerName, fromDatabase);
-                plugin.sendConsole("[DEBUG] Set " + playerName + " | " + fromDatabase);
+                plugin.getPlayerManager().set(playerName, flatFile.getValue(playerName));
+                break;
             case POSTGRESQL:
                 PostgresAdapter postgres = PostgresAdapter.adapt();
-                PostgresDatabase postgresDatabase = (PostgresDatabase) postgres.getDatabase();
-
-                // TODO
+                plugin.getPlayerManager().set(playerName, postgres.getValue(playerName));
+                break;
         }
 
         plugin.getPlayerManager().setNearby(player);
@@ -163,8 +155,12 @@ public class DatabaseHandler {
         return isEnabled() && ADAPTER.existsInDatabase(playerName);
     }
 
-    public DatabaseAdapter getDatabase() {
+    public DatabaseAdapter getAdapter() {
         return ADAPTER;
+    }
+
+    public boolean isSQL() {
+        return ADAPTER != null && ADAPTER.getDatabase() instanceof ISQLDatabase;
     }
 
     public void closeDatabase() {

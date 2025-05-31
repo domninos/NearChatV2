@@ -1,6 +1,7 @@
 package net.omni.nearChat.managers;
 
 import net.omni.nearChat.NearChatPlugin;
+import net.omni.nearChat.database.DatabaseAdapter;
 import net.omni.nearChat.database.ISQLDatabase;
 import net.omni.nearChat.util.PlayerUtil;
 import org.bukkit.entity.Player;
@@ -30,14 +31,17 @@ public class PlayerManager {
 
         String playerName = player.getName();
 
-
-        // TODO async checks for non existent for sql
-
         // if not in database
-        if (!plugin.getDatabaseHandler().checkExistsDB(playerName)) {
-            if (plugin.getDatabaseHandler().getDatabase().getDatabase() instanceof ISQLDatabase sqlDatabase) // SQL database
-                sqlDatabase.saveNonExists(playerName, false);
-            else
+        if (plugin.getDatabaseHandler().isSQL()) {
+            DatabaseAdapter adapter = plugin.getDatabaseHandler().getAdapter();
+            ISQLDatabase sqlDb = (ISQLDatabase) adapter.getDatabase();
+
+            boolean exists = sqlDb.fetchExists(playerName);
+
+            if (!exists)
+                sqlDb.saveNonExists(playerName, false);
+        } else {
+            if (!plugin.getDatabaseHandler().checkExistsDB(playerName))
                 plugin.getDatabaseHandler().saveToDatabase(playerName, "false");
         }
 
@@ -93,6 +97,10 @@ public class PlayerManager {
 
             if (sendLog) plugin.sendMessage(player, plugin.getMessageHandler().getNearChatDisabled());
         }
+    }
+
+    public void set(String playerName, boolean val) {
+        this.enabled.put(playerName, val);
     }
 
     public Set<Player> getNearby(Player player) {

@@ -44,7 +44,7 @@ public class PostgresAdapter implements DatabaseAdapter {
 
     @Override
     public boolean existsInDatabase(String playerName) {
-        return this.database.exists(playerName);
+        return this.database.fetchExists(playerName);
     }
 
     @Override
@@ -87,6 +87,11 @@ public class PostgresAdapter implements DatabaseAdapter {
         } catch (Exception e) {
             plugin.error("Something went wrong closing database connection: ", e);
         }
+    }
+
+    @Override
+    public boolean getValue(String playerName) {
+        return this.database.fetchEnabled(playerName);
     }
 
     @Override

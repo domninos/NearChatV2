@@ -20,6 +20,8 @@ public interface DatabaseAdapter {
 
     void closeDatabase();
 
+    boolean getValue(String playerName);
+
     NearChatDatabase getDatabase();
 
     String toString();

@@ -29,8 +29,12 @@ public class NCPlayerListener implements Listener {
     public void onPlayerQuit(PlayerQuitEvent event) {
         if (!plugin.getDatabaseHandler().isEnabled()) return;
 
-        plugin.getPlayerManager().saveToDatabase(event.getPlayer().getName());
-        plugin.getPlayerManager().removeNearby(event.getPlayer());
+        Player player = event.getPlayer();
+
+        if (plugin.getPlayerManager().has(player.getName())) {
+            plugin.getPlayerManager().saveToDatabase(player.getName());
+            plugin.getPlayerManager().removeNearby(player);
+        }
     }
 
     @EventHandler(priority = EventPriority.LOW)
