@@ -5,7 +5,6 @@ import net.omni.nearChat.database.DatabaseAdapter;
 import net.omni.nearChat.database.NearChatDatabase;
 import net.omni.nearChat.handlers.DatabaseHandler;
 
-import java.io.IOException;
 import java.util.Map;
 
 public class FlatFileAdapter implements DatabaseAdapter {
@@ -28,13 +27,7 @@ public class FlatFileAdapter implements DatabaseAdapter {
 
     @Override
     public void initDatabase() {
-        try {
-            database.createFile();
-        } catch (IOException e) {
-            plugin.error("Could not initialize database", e);
-            return;
-        }
-
+        database.checkFile();
         connect();
     }
 
@@ -58,45 +51,13 @@ public class FlatFileAdapter implements DatabaseAdapter {
     // TODO: possibly just use NearChatConfig for .yml
     @Override
     public void saveMap(Map<String, Boolean> enabledPlayers) {
-        if (!enabledPlayers.isEmpty()) {
-            StringBuilder toSave = new StringBuilder();
-
-            for (Map.Entry<String, Boolean> entry : enabledPlayers.entrySet()) {
-                String name = entry.getKey();
-                Boolean value = entry.getValue();
-
-                // new entry/player
-                toSave.append(name).append(": ").append(value.toString()).append("\n");
-                plugin.sendConsole("[DEBUG] Added " + name + ": " + value);
-            }
-
-            database.writeToFile(toSave.toString());
-        }
-
+        database.saveMap(enabledPlayers);
         plugin.sendConsole(plugin.getMessageHandler().getDatabaseSaved());
     }
 
     @Override
     public void savePlayer(String playerName, Boolean value) {
-        database.put(playerName, value);
-
-        Map<String, Boolean> savedPlayers = database.readFile();
-
-        // in database already, replace
-        if (savedPlayers.containsKey(playerName)) {
-            savedPlayers.replace(playerName, value);
-            plugin.sendConsole("[DEBUG] Replaced " + playerName + ": " + value);
-        } else { // new to database
-            savedPlayers.put(playerName, value);
-            plugin.sendConsole("[DEBUG] Added  " + playerName + ": " + value);
-        }
-
-        // TODO find line from file and replace
-
-
-        database.writeToFile(playerName + ": " + value);
-
-        savedPlayers.clear();
+        database.savePlayer(playerName, value);
         // SAVE TO FILE
     }
 

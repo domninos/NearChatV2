@@ -48,6 +48,10 @@ public class RedisDatabase implements NearChatDatabase {
             this.enabled = true;
         } catch (Exception e) {
             plugin.error(plugin.getMessageHandler().getDBErrorConnectUnsuccessful(), e);
+
+            if (client != null)
+                client.shutdown();
+
             return false;
         }
 

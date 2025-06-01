@@ -94,6 +94,8 @@ public class DatabaseHandler {
 
         String playerName = player.getName();
 
+//        ADAPTER.setToCache(playerName);
+
         switch (plugin.getConfigHandler().getDatabaseType()) {
             case REDIS:
                 RedisAdapter redis = RedisAdapter.adapt();

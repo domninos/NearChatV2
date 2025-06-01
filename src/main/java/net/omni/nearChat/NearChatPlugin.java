@@ -102,7 +102,7 @@ public final class NearChatPlugin extends JavaPlugin {
     }
 
     public void error(String message, Throwable throwable) {
-        getLogger().log(Level.SEVERE, ChatColor.stripColor(message), throwable);
+        getLogger().log(Level.SEVERE, translate(message), throwable);
         sendConsole(message + " " + throwable.getMessage());
     }
 

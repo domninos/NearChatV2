@@ -47,7 +47,7 @@ public class HikariManager {
     }
 
     public void close() {
-        if (hikari != null)
+        if (hikari != null && hikari.isRunning())
             hikari.close();
     }
 

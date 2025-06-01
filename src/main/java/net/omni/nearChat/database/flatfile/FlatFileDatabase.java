@@ -24,9 +24,13 @@ public class FlatFileDatabase implements NearChatDatabase {
         this.file = new File(plugin.getDataFolder().getPath() + "/" + FILE_NAME);
     }
 
-    public void createFile() throws IOException {
-        if (file.createNewFile())
-            plugin.sendConsole(plugin.getMessageHandler().getCreatedFile(FILE_NAME));
+    public void checkFile() {
+        try {
+            if (file.createNewFile())
+                plugin.sendConsole(plugin.getMessageHandler().getCreatedFile(FILE_NAME));
+        } catch (IOException e) {
+            plugin.error("Could not initialize database", e);
+        }
     }
 
     public boolean connect() {
@@ -41,13 +45,40 @@ public class FlatFileDatabase implements NearChatDatabase {
         this.enabled = false;
     }
 
+    public void saveMap(Map<String, Boolean> enabledPlayers) {
+        if (enabledPlayers.isEmpty())
+            return;
+
+        StringBuilder toSave = new StringBuilder();
+
+        for (Map.Entry<String, Boolean> entry : enabledPlayers.entrySet()) {
+            String name = entry.getKey();
+            Boolean value = entry.getValue();
+
+            // new entry/player
+            toSave.append(name).append(": ").append(value.toString()).append("\n");
+        }
+
+        writeToFile(toSave.toString(), false);
+    }
+
+    public void savePlayer(String playerName, boolean value) {
+        Map<String, Boolean> savedPlayers = readFile();
+
+        if (savedPlayers.containsKey(playerName))
+            savedPlayers.replace(playerName, value); // in database already, replace
+        else
+            savedPlayers.put(playerName, value); // new to database
+
+        saveMap(savedPlayers);
+
+        savedPlayers.clear(); // garbage dump
+    }
+
     public boolean has(String playerName) {
         return cache.containsKey(playerName);
     }
 
-    public void put(String playerName, boolean value) {
-        cache.put(playerName, value);
-    }
 
     public boolean isEnabled() {
         return this.enabled && cache != null;
@@ -62,6 +93,8 @@ public class FlatFileDatabase implements NearChatDatabase {
     }
 
     public Map<String, Boolean> readFile() {
+        checkFile();
+
         Map<String, Boolean> enabled = new HashMap<>();
 
         try (Scanner scanner = new Scanner(file)) {
@@ -87,8 +120,8 @@ public class FlatFileDatabase implements NearChatDatabase {
         return enabled;
     }
 
-    public void writeToFile(String line) {
-        try (FileWriter writer = new FileWriter(file, true)) {
+    public void writeToFile(String line, boolean append) {
+        try (FileWriter writer = new FileWriter(file, append)) {
             writer.write(line + "\n");
         } catch (IOException e) {
             plugin.error("Something went wrong writing to file: ", e);
