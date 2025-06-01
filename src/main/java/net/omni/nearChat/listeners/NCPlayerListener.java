@@ -21,8 +21,10 @@ public class NCPlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        if (plugin.getDatabaseHandler().isEnabled())
-            plugin.getPlayerManager().loadEnabled(event.getPlayer());
+        if (!plugin.getDatabaseHandler().isEnabled())
+            return;
+
+        plugin.getPlayerManager().loadEnabled(event.getPlayer());
     }
 
     @EventHandler
@@ -37,6 +39,8 @@ public class NCPlayerListener implements Listener {
             plugin.getPlayerManager().save(player.getName());
             plugin.getPlayerManager().removeNearby(player);
         }
+
+        plugin.getPlayerManager().removeDelay(player);
     }
 
     @EventHandler(priority = EventPriority.LOW)
@@ -48,6 +52,15 @@ public class NCPlayerListener implements Listener {
         Player player = event.getPlayer();
 
         if (!plugin.getPlayerManager().isEnabled(player.getName())) return;
+
+        if (plugin.getPlayerManager().hasDelay(player)) {
+            event.setCancelled(true);
+
+            int delay = plugin.getPlayerManager().getDelay(player);
+
+            plugin.sendMessage(player, plugin.getMessageHandler().getWaitDelay(delay));
+            return;
+        }
 
         Set<Player> nearbyPlayers = plugin.getPlayerManager().getNearby(player);
 
@@ -76,7 +89,6 @@ public class NCPlayerListener implements Listener {
         if (plugin.getConfigHandler().isLogging())
             Bukkit.getConsoleSender().sendMessage(format);
 
-        event.setFormat("");
         event.setCancelled(true);
     }
 }

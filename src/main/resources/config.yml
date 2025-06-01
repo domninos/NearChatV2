@@ -27,3 +27,7 @@ near-block-radius: 30
 # check whether to log nearchat messages to console.
 # default: true
 log-messages: true
+
+# the delay (in seconds) to wait until you can chat on NearChat upon logging in.
+# default: 3
+delay: 3

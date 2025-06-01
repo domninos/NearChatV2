@@ -65,6 +65,7 @@ public class MessageHandler implements Flushable {
         childToMessage.put("format", getConfig().getString("format"));
 
         childToMessage.put("broker_stop", getConfig().getString("broker_stop"));
+        childToMessage.put("wait_delay", getConfig().getString("wait_delay"));
 
         childToListMessage.put("help_text", getConfig().getStringList("help_text"));
         childToListMessage.put("enabled_message", getConfig().getStringList("enabled_message"));
@@ -198,6 +199,11 @@ public class MessageHandler implements Flushable {
 
         if (getConfig().getString("broker_stop") == null) {
             messageConfig.setNoSave("broker_stop", "&cDatabase disabled. Cancelling %broker% broker..");
+            def = true;
+        }
+
+        if (getConfig().getString("wait_delay") == null) {
+            messageConfig.setNoSave("wait_delay", "&cYou must wait %delay% seconds to chat in NearChat.");
             def = true;
         }
 
@@ -427,6 +433,11 @@ public class MessageHandler implements Flushable {
 
     public String getBrokerStop(String broker) {
         return modifyDBMessage(childToMessage.getOrDefault("broker_stop", "&c`broker_stop`").replace("%broker%", broker));
+    }
+
+    public String getWaitDelay(int delay) {
+        return childToMessage.getOrDefault("wait_delay", "`wait_delay`")
+                .replace("%delay%", String.valueOf(delay));
     }
 
     public List<String> getEnabledMessage() {

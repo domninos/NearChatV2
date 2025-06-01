@@ -15,7 +15,7 @@ public class NearbyBroker extends BukkitRunnable {
     public NearbyBroker(NearChatPlugin plugin) {
         this.plugin = plugin;
 
-        runTaskTimerAsynchronously(plugin, 20L, plugin.getConfigHandler().getNearbyGetDelay());
+        runTaskTimer(plugin, 20L, plugin.getConfigHandler().getNearbyGetDelay()); // should be sync
     }
 
     @Override

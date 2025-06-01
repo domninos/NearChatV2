@@ -15,6 +15,8 @@ public class PlayerManager implements Flushable {
     private final Map<String, Boolean> enabled = new HashMap<>();
     private final Map<Player, Set<Player>> nearby = new HashMap<>();
 
+    private final Map<Player, Integer> delay = new HashMap<>();
+
     private final NearChatPlugin plugin;
 
     public PlayerManager(NearChatPlugin plugin) {
@@ -48,6 +50,38 @@ public class PlayerManager implements Flushable {
 
         if (isEnabled(player.getName()))
             setNearby(player);
+
+        int iDelay = plugin.getConfigHandler().getDelay();
+
+        delay.put(player, iDelay);
+
+        //  TODO DelayBroker();
+        /*
+
+        Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+            if (!hasDelay(player)) {
+                cancelTask()
+            }
+            delay.replace(player.getName(), getDelay(player.getName()) - 1);
+        }, 0, 20L);
+
+         */
+    }
+
+    public Map<Player, Integer> getDelays() {
+        return delay;
+    }
+
+    public int getDelay(Player player) {
+        return delay.getOrDefault(player, 0);
+    }
+
+    public boolean hasDelay(Player player) {
+        return delay.containsKey(player);
+    }
+
+    public void removeDelay(Player player) {
+        delay.remove(player);
     }
 
     public void save(String playerName) {
@@ -144,5 +178,6 @@ public class PlayerManager implements Flushable {
             nearby.forEach((name, list) -> list.clear());
 
         nearby.clear();
+        delay.clear();
     }
 }

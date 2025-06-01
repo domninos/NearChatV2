@@ -25,6 +25,8 @@ public class ConfigHandler {
 
     private String database_type;
 
+    private int delay;
+
     public ConfigHandler(NearChatPlugin plugin) {
         this.plugin = plugin;
     }
@@ -42,6 +44,7 @@ public class ConfigHandler {
 
         this.log_messages = getConfig().getBoolean("log-messages");
         this.database_type = getConfig().getString("database-type");
+        this.delay = getConfig().getInt("delay");
 
         this.host = getConfig().getString("host");
         this.port = getConfig().getInt("port");
@@ -124,6 +127,11 @@ public class ConfigHandler {
             def = true;
         }
 
+        if (getConfig().getInt("delay") == 0) {
+            nearChatConfig.setNoSave("delay", 3);
+            def = true;
+        }
+
         if (def) {
             plugin.sendConsole("&9Loaded default config values.");
             this.nearChatConfig.save();
@@ -135,6 +143,10 @@ public class ConfigHandler {
     public void setDatabase(NearChatDatabase.Type type) {
         nearChatConfig.set("database-type", type.getLabel());
         this.database_type = type.getLabel();
+    }
+
+    public int getDelay() {
+        return delay;
     }
 
     public NearChatDatabase.Type getDatabaseType() {

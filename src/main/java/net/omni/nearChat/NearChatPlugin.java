@@ -1,6 +1,7 @@
 package net.omni.nearChat;
 
 import net.omni.nearChat.brokers.DatabaseBroker;
+import net.omni.nearChat.brokers.DelayBroker;
 import net.omni.nearChat.brokers.NearbyBroker;
 import net.omni.nearChat.commands.MainCommand;
 import net.omni.nearChat.commands.NearChatCommand;
@@ -40,6 +41,8 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
     private DatabaseBroker databaseBroker;
 
     private NearbyBroker nearbyBroker;
+
+    private DelayBroker delayBroker;
 
     public NearChatPlugin() {
         this.databaseHandler = new DatabaseHandler(this);
@@ -177,8 +180,13 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
         if (nearbyBroker != null)
             nearbyBroker.cancel();
 
+        if (delayBroker != null)
+            delayBroker.cancel();
+
         this.databaseBroker = new DatabaseBroker(this);
         this.nearbyBroker = new NearbyBroker(this);
+        this.delayBroker = new DelayBroker(this);
+
         sendConsole("&aInitializing brokers..");
     }
 
