@@ -3,6 +3,7 @@ package net.omni.nearChat.managers;
 import net.omni.nearChat.NearChatPlugin;
 import net.omni.nearChat.database.DatabaseAdapter;
 import net.omni.nearChat.database.ISQLDatabase;
+import net.omni.nearChat.util.Flushable;
 import net.omni.nearChat.util.PlayerUtil;
 import org.bukkit.entity.Player;
 
@@ -10,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class PlayerManager {
+public class PlayerManager implements Flushable {
     private final Map<String, Boolean> enabled = new HashMap<>();
     private final Map<Player, Set<Player>> nearby = new HashMap<>();
 
@@ -138,6 +139,7 @@ public class PlayerManager {
         return enabled.containsKey(name);
     }
 
+    @Override
     public void flush() {
         enabled.clear();
 

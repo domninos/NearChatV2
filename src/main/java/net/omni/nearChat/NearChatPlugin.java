@@ -10,6 +10,7 @@ import net.omni.nearChat.handlers.MessageHandler;
 import net.omni.nearChat.listeners.NCPlayerListener;
 import net.omni.nearChat.managers.HikariManager;
 import net.omni.nearChat.managers.PlayerManager;
+import net.omni.nearChat.util.Flushable;
 import net.omni.nearChat.util.MainUtil;
 import net.omni.nearChat.util.NearChatConfig;
 import org.bukkit.Bukkit;
@@ -22,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
-public final class NearChatPlugin extends JavaPlugin {
+public final class NearChatPlugin extends JavaPlugin implements Flushable {
 
     private final List<MainCommand> mainCommands = new ArrayList<>();
 
@@ -49,13 +50,9 @@ public final class NearChatPlugin extends JavaPlugin {
     /*
     TODO:
         * Add /nearchat gui
-          * Possibly create inventory handler. (necessary ?)
-        * Fix flat-file storing
-        *
+          * Possibly create inventory handler. (necessary ?) [FUTURE]
         *
         * Add option for mongodb, mysql, nosql, postgresql, sqlite
-        *
-        * /database switch (mongo, mysql, nosql, postgresql, sqlite)
         *
         * make plugin available 1.8-1.21
      */
@@ -178,13 +175,13 @@ public final class NearChatPlugin extends JavaPlugin {
         if (nearbyBroker != null)
             nearbyBroker.cancel();
 
-        sendConsole("&aInitializing brokers..");
-
         this.databaseBroker = new DatabaseBroker(this);
         this.nearbyBroker = new NearbyBroker(this);
+        sendConsole("&aInitializing brokers..");
     }
 
-    private void flush() {
+    @Override
+    public void flush() {
         nearConfig.save();
         messageConfig.save();
 

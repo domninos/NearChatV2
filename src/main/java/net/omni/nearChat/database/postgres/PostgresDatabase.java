@@ -58,7 +58,6 @@ public class PostgresDatabase implements NearChatDatabase, ISQLDatabase {
             return false;
         }
 
-        plugin.tryBrokers();
         return true;
     }
 

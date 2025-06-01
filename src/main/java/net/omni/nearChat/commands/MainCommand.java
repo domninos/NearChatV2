@@ -2,6 +2,7 @@ package net.omni.nearChat.commands;
 
 import net.omni.nearChat.NearChatPlugin;
 import net.omni.nearChat.commands.subcommands.SubCommand;
+import net.omni.nearChat.util.Flushable;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -10,7 +11,7 @@ import org.bukkit.command.PluginCommand;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class MainCommand implements CommandExecutor {
+public abstract class MainCommand implements CommandExecutor, Flushable {
 
     protected final List<SubCommand> subCommands = new ArrayList<>();
     protected final NearChatPlugin plugin;
@@ -48,6 +49,8 @@ public abstract class MainCommand implements CommandExecutor {
 
                 if (sender.hasPermission(permission))
                     line = line.replace(firstWord, "").replaceFirst(" ", "");
+                else
+                    continue;
             }
 
             if (line.contains("%plugin_name%"))
@@ -63,7 +66,9 @@ public abstract class MainCommand implements CommandExecutor {
         sender.sendMessage(plugin.translate(toSend.toString()));
     }
 
+    @Override
     public void flush() {
+        subCommands.stream().filter(sub -> sub instanceof Flushable).forEach(sub -> ((Flushable) sub).flush());
         subCommands.clear();
     }
 

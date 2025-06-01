@@ -1,5 +1,7 @@
 package net.omni.nearChat.database;
 
+import java.util.Arrays;
+
 public interface NearChatDatabase {
     void close();
 
@@ -17,5 +19,19 @@ public interface NearChatDatabase {
         public String getLabel() {
             return label;
         }
+
+        public static Type parseType(String label) {
+            for (Type type : Type.values())
+                if (type.getLabel().equalsIgnoreCase(label))
+                    return type;
+
+            return null;
+        }
+
+        public static String available() {
+            return Arrays.toString(NearChatDatabase.Type.values())
+                    .replace("_", "-").replace("[", "").replace("]", "");
+        }
     }
+
 }

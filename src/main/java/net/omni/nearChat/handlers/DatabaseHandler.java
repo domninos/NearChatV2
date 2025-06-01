@@ -85,7 +85,7 @@ public class DatabaseHandler {
 
         return ADAPTER.connect();
     }
-
+    
     public void setToCache(Player player) {
         if (!isEnabled()) {
             plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectDisabled());

@@ -66,7 +66,7 @@ public class NearChatCommand extends MainCommand {
 
                 if (perm != null && !(sender.hasPermission(perm))) {
                     plugin.sendMessage(sender, plugin.getMessageHandler().getNoPermission());
-                    return true;
+                    continue;
                 }
 
                 String currentCmd = args[subCommand.getArg()];

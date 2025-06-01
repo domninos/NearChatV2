@@ -1,20 +1,23 @@
 # player/console messages
 # available placeholders
-#  - %name% -> player name
+#  - %player% -> player name
 #  - %db_type% -> either 'FLAT-FILE' or 'REDIS'  (for database-related messages only)
 #  - %host% -> (only applicable if using REDIS) -> host name  (for `db_connected_console` only)
 #  - %file_name% -> the created file's name  (for `created_file` only)
 #  - %broker% -> the broker's name (for `broker_stop` only)
+#  - %databases% -> available databases (for `db_switch_arg` only)
 player_only: "&cOnly players can execute this command."
 nearchat_enabled: "&aEnabled"
-nearchat_enabled_player: "&aEnabled NearChat for %name%"
+nearchat_enabled_player: "&aEnabled NearChat for %player%"
 nearchat_disabled: "&cDisabled"
-nearchat_disabled_player: "&cDisabled NearChat for %name%"
-nearchat_player_not_found: "&cCould not find %name%"
+nearchat_disabled_player: "&cDisabled NearChat for %player%"
+nearchat_player_not_found: "&cCould not find %player%"
 no_permission: "&cYou do not have permission to use this command."
 db_init: "&aInitializing &7%db_type%"
 db_connected: "[%db_type%] &aSuccessfully connected to database!"
 db_connected_console: "[%db_type%] &aSuccessfully connected to: &3%host%"
+db_switch_warning: "&c&l&oWARNING! &cMay cause data instability. This command is discouraged. Stop the server and reconfigure config.yml. Run this command again to confirm database switch."
+db_switch_arg: "&aAvailable databases: %databases%."
 db_disconnected: "[%db_type%] &aDatabase disconnected."
 db_error_credentials_not_found: "Database information not found in config.yml. Will not use database..."
 db_error_connect_unsuccessful: "[%db_type%] &cNot successful."
@@ -24,7 +27,7 @@ db_saved: "[%db_type%] &aSaved database." # _MAY_ produce the default value
 db_try_save: "[%db_type%] &cTrying to save database.."
 reloaded_config: "&aReloaded config and messages.yml"
 created_file: "&aSuccessfully created %file_name%" # _MAY_ produce the default value
-broker_stop: "[%db_type%] Database disabled. Cancelling %broker% broker.."
+broker_stop: "[%db_type%] &cDatabase disabled. Cancelling %broker% broker.."
 
 
 
@@ -38,7 +41,7 @@ prefix: "&f[&6Near&eChat&f] &7" # _MAY_ produce the default value
 #  - %prefix% -> the set prefix above
 #  - %player% -> the player's name
 #  - %chat% -> the player's chat to send to all nearby players.
-format: "%prefix% %player%&r: %chat%"
+format: "%prefix%%player%&r: %chat%"
 
 
 
@@ -51,10 +54,11 @@ format: "%prefix% %player%&r: %chat%"
 #  - %plugin_mc_version% -> minecraft version support of the current plugin
 help_text:
   - "&7-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
-  - "&a/nearchat >> Opens the NearChat GUI."
-  - "&a/nearchat help >> Opens this menu."
-  - "<nearchat.db> &a/nearchat database >> Reconnects to the database."
-  - "<nearchat.reload> &a/nearchat reload >> Reloads config.yml and messages.yml."
+  - "&a/nearchat [nc] >> Opens the NearChat GUI."
+  - "&a/nc help >> Opens this menu."
+  - "<nearchat.db> &a/nc database >> Reconnects to the database."
+  - "<nearchat.reload> &a/nc reload >> Reloads config.yml and messages.yml."
+  - "<nearchat.db.switch> &a/nc database switch <database> >> Switch database. &c(DISCOURAGED)"
   - ""
   - "&bDISCORD: discord.gg/nearchat"
   - ""
@@ -90,4 +94,4 @@ enabled_message:
 #  - %plugin_name% -> NearChat
 #  - %plugin_mc_version% -> minecraft version support of the current plugin
 disabled_message:
-  - "%prefix% &cSuccessfully disabled &6%plugin_name% &c[%plugin_mc_version%]"
+  - "%prefix%&cSuccessfully disabled &6%plugin_name% &c[%plugin_mc_version%]"

@@ -2,6 +2,8 @@ package net.omni.nearChat.handlers;
 
 import net.omni.nearChat.NearChatPlugin;
 import net.omni.nearChat.database.DatabaseAdapter;
+import net.omni.nearChat.database.NearChatDatabase;
+import net.omni.nearChat.util.Flushable;
 import net.omni.nearChat.util.MainUtil;
 import net.omni.nearChat.util.NearChatConfig;
 import org.bukkit.Bukkit;
@@ -12,7 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MessageHandler {
+public class MessageHandler implements Flushable {
 
     private static final List<String> EMPTY_LIST = List.of();
 
@@ -46,6 +48,8 @@ public class MessageHandler {
         childToMessage.put("db_init", getConfig().getString("db_init"));
         childToMessage.put("db_connected", getConfig().getString("db_connected"));
         childToMessage.put("db_connected_console", getConfig().getString("db_connected_console"));
+        childToMessage.put("db_switch_warning", getConfig().getString("db_switch_warning"));
+        childToMessage.put("db_switch_arg", getConfig().getString("db_switch_arg"));
         childToMessage.put("db_disconnected", getConfig().getString("db_disconnected"));
         childToMessage.put("db_error_credentials_not_found", getConfig().getString("db_error_credentials_not_found"));
         childToMessage.put("db_error_connect_unsuccessful", getConfig().getString("db_error_connect_unsuccessful"));
@@ -89,7 +93,7 @@ public class MessageHandler {
         }
 
         if (getConfig().getString("nearchat_enabled_player") == null) {
-            messageConfig.setNoSave("nearchat_enabled_player", "&aEnabled NearChat for %name%");
+            messageConfig.setNoSave("nearchat_enabled_player", "&aEnabled NearChat for %player%");
             def = true;
         }
 
@@ -99,12 +103,12 @@ public class MessageHandler {
         }
 
         if (getConfig().getString("nearchat_disabled_player") == null) {
-            messageConfig.setNoSave("nearchat_disabled_player", "&cDisabled NearChat for %name%");
+            messageConfig.setNoSave("nearchat_disabled_player", "&cDisabled NearChat for %player%");
             def = true;
         }
 
         if (getConfig().getString("nearchat_player_not_found") == null) {
-            messageConfig.setNoSave("nearchat_player_not_found", "&cCould not find %name%");
+            messageConfig.setNoSave("nearchat_player_not_found", "&cCould not find %player%");
             def = true;
         }
 
@@ -120,6 +124,17 @@ public class MessageHandler {
 
         if (getConfig().getString("db_connected_console") == null) {
             messageConfig.setNoSave("db_connected_console", "%db_type% &aSuccessfully connected to: &3%host%");
+            def = true;
+        }
+
+        if (getConfig().getString("db_switch_warning") == null) {
+            messageConfig.setNoSave("db_switch_warning",
+                    "&c&l&oWARNING! &cMay cause data instability. This command is discouraged. Stop the server and reconfigure config.yml. Run this command again to confirm database switch.");
+            def = true;
+        }
+
+        if (getConfig().getString("db_switch_arg") == null) {
+            messageConfig.setNoSave("db_switch_arg", "&aAvailable databases: %databases%.");
             def = true;
         }
 
@@ -172,7 +187,7 @@ public class MessageHandler {
         }
 
         if (getConfig().getString("prefix") == null) {
-            messageConfig.setNoSave("prefix", "&f[&6Near&eChat&f] &7");
+            messageConfig.setNoSave("prefix", "&f[&6Near&eChat&f]");
             def = true;
         }
 
@@ -182,17 +197,18 @@ public class MessageHandler {
         }
 
         if (getConfig().getString("broker_stop") == null) {
-            messageConfig.setNoSave("broker_stop", "Database disabled. Cancelling %broker% broker..");
+            messageConfig.setNoSave("broker_stop", "&cDatabase disabled. Cancelling %broker% broker..");
             def = true;
         }
 
         if (getConfig().getStringList("help_text").isEmpty()) {
             messageConfig.setNoSave("help_text", Arrays.asList(
                     "&7-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-",
-                    "&a/nearchat >> Opens the NearChat GUI.",
-                    "&a/nearchat help >> Opens this menu.",
-                    "<nearchat.db> &a/nearchat database >> Reconnects to the database.",
-                    "<nearchat.reload> &a/nearchat reload >> Reloads config.yml and messages.yml.",
+                    "&a/nearchat [nc] >> Opens the NearChat GUI.",
+                    "&a/nc help >> Opens this menu.",
+                    "<nearchat.db> &a/nc database >> Reconnects to the database.",
+                    "<nearchat.reload> &a/nc reload >> Reloads config.yml and messages.yml.",
+                    "<nearchat.db.switch> &a/nc database switch <database> >> Switch database. &c(DISCOURAGED)",
                     "",
                     "&bDISCORD: discord.gg/nearchat",
                     "",
@@ -219,7 +235,7 @@ public class MessageHandler {
 
         if (getConfig().getStringList("disabled_message").isEmpty()) {
             messageConfig.setNoSave("disabled_message", List.of(
-                    "&aSuccessfully disabled %plugin_name% [%plugin_mc_version%]"
+                    "%prefix%&cSuccessfully disabled &6%plugin_name% &c[%plugin_mc_version%]"
             ));
 
             def = true;
@@ -313,7 +329,7 @@ public class MessageHandler {
 
     public String getNearChatEnabledPlayer(String playerName) {
         return childToMessage.getOrDefault("nearchat_enabled_player", "&c`nearchat_enabled_player`")
-                .replace("%name%", playerName);
+                .replace("%player%", playerName);
     }
 
     public String getNearChatDisabled() {
@@ -322,12 +338,12 @@ public class MessageHandler {
 
     public String getNearChatDisabledPlayer(String playerName) {
         return childToMessage.getOrDefault("nearchat_disabled_player", "&c`nearchat_disabled_player`")
-                .replace("%name%", playerName);
+                .replace("%player%", playerName);
     }
 
     public String getNearChatPlayerNotFound(String playerName) {
         return childToMessage.getOrDefault("nearchat_player_not_found", "&c`nearchat_player_not_found`")
-                .replace("%name%", playerName);
+                .replace("%player%", playerName);
     }
 
     public String getPlayerOnly() {
@@ -361,6 +377,15 @@ public class MessageHandler {
     public String getDBConnectedConsole(String host) {
         return modifyDBMessage(childToMessage.getOrDefault("db_connected_console", "&c`db_connected_console`")
                 .replace("%host%", host));
+    }
+
+    public String getDBSwitchWarning() {
+        return childToMessage.getOrDefault("db_switch_warning", "&c`db_switch_warning`");
+    }
+
+    public String getDBSwitchArg() {
+        return childToMessage.getOrDefault("db_switch_arg", "&c`db_switch_arg`")
+                .replace("%databases%", NearChatDatabase.Type.available());
     }
 
     public String getDBDisconnected() {
@@ -425,6 +450,7 @@ public class MessageHandler {
         return this.messageConfig.getConfig();
     }
 
+    @Override
     public void flush() {
         childToMessage.clear();
 

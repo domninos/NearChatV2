@@ -1,6 +1,7 @@
 package net.omni.nearChat.database.redis;
 
 import io.lettuce.core.RedisClient;
+import io.lettuce.core.RedisException;
 import io.lettuce.core.RedisFuture;
 import io.lettuce.core.RedisURI;
 import io.lettuce.core.api.StatefulRedisConnection;
@@ -46,8 +47,11 @@ public class RedisDatabase implements NearChatDatabase {
             connection.async().clientCaching(true); // TODO research
 
             this.enabled = true;
-        } catch (Exception e) {
+        } catch (RedisException e) {
             plugin.error(plugin.getMessageHandler().getDBErrorConnectUnsuccessful(), e);
+
+            if (connection != null)
+                connection.close();
 
             if (client != null)
                 client.shutdown();
@@ -55,7 +59,6 @@ public class RedisDatabase implements NearChatDatabase {
             return false;
         }
 
-        plugin.tryBrokers();
         return true;
     }
 
@@ -199,7 +202,9 @@ public class RedisDatabase implements NearChatDatabase {
             if (!isEnabled())
                 return;
 
-            connection.close();
+            if (connection != null)
+                connection.close();
+
             client.shutdown();
 
             this.enabled = false;

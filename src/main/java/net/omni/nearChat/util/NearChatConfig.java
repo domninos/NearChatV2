@@ -11,6 +11,8 @@ public class NearChatConfig {
 
     private final NearChatPlugin plugin;
     private final File file;
+    private final boolean res;
+    private final String fileName;
     private FileConfiguration config;
 
     public NearChatConfig(NearChatPlugin plugin, String fileName) {
@@ -32,20 +34,8 @@ public class NearChatConfig {
             fileName += ".yml";
 
         this.file = new File(directory, fileName);
-
-        if (!file.exists()) {
-            if (res) {
-                plugin.saveResource(fileName, false);
-                plugin.sendConsole(plugin.getMessageHandler().getCreatedFile(fileName));
-            } else {
-                try {
-                    if (file.createNewFile())
-                        plugin.sendConsole(plugin.getMessageHandler().getCreatedFile(fileName));
-                } catch (IOException e) {
-                    plugin.error("Something went wrong creating " + fileName, e);
-                }
-            }
-        }
+        this.fileName = fileName;
+        this.res = res;
 
         reload();
     }
@@ -90,6 +80,20 @@ public class NearChatConfig {
     }
 
     public void reload() {
+        if (!file.exists()) {
+            if (res) {
+                plugin.saveResource(fileName, false);
+                plugin.sendConsole(plugin.getMessageHandler().getCreatedFile(fileName));
+            } else {
+                try {
+                    if (file.createNewFile())
+                        plugin.sendConsole(plugin.getMessageHandler().getCreatedFile(fileName));
+                } catch (IOException e) {
+                    plugin.error("Something went wrong creating " + fileName, e);
+                }
+            }
+        }
+
         this.config = YamlConfiguration.loadConfiguration(file);
     }
 }

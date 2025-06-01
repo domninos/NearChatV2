@@ -132,11 +132,16 @@ public class ConfigHandler {
         return def;
     }
 
+    public void setDatabase(NearChatDatabase.Type type) {
+        nearChatConfig.set("database-type", type.getLabel());
+        this.database_type = type.getLabel();
+    }
+
     public NearChatDatabase.Type getDatabaseType() {
         try {
             return NearChatDatabase.Type.valueOf(this.database_type.toUpperCase().replace("-", "_"));
         } catch (IllegalArgumentException e) {
-            plugin.error("Something went wrong parsing database type. Available database types: flat-file, redis, postgresql"); // TODO messages.yml
+            plugin.error(plugin.getMessageHandler().getDBSwitchArg());
             return null;
         }
     }
