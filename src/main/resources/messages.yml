@@ -8,9 +8,9 @@
 #  - %databases% -> available databases (for `db_switch_arg` only)
 player_only: "&cOnly players can execute this command."
 nearchat_enabled: "&aEnabled"
-nearchat_enabled_player: "&aEnabled NearChat for %player%"
+nearchat_enabled_player: "&aEnabled NearChat for player %player%"
 nearchat_disabled: "&cDisabled"
-nearchat_disabled_player: "&cDisabled NearChat for %player%"
+nearchat_disabled_player: "&cDisabled NearChat for player %player%"
 nearchat_player_not_found: "&cCould not find %player%"
 no_permission: "&cYou do not have permission to use this command."
 db_init: "&aInitializing &7%db_type%"

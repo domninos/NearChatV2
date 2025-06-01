@@ -43,7 +43,7 @@ public class PostgresAdapter implements DatabaseAdapter {
     }
 
     @Override
-    public boolean existsInDatabase(String playerName) {
+    public boolean existsInDatabase(String playerName) { // inconsistent, use ISQLDatabase#handleExists(String)
         return this.database.fetchExists(playerName);
     }
 

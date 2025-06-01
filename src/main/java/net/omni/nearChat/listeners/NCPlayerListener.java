@@ -54,8 +54,6 @@ public class NCPlayerListener implements Listener {
         if (nearbyPlayers == null || nearbyPlayers.isEmpty())
             return;
 
-        event.setCancelled(true);
-
         String format = plugin.getMessageHandler().getFormat();
 
         if (format.contains("%prefix%"))
@@ -67,12 +65,18 @@ public class NCPlayerListener implements Listener {
 
         format = plugin.translate(format);
 
-        // TODO: FIX format
         String finalFormat = format;
+
+        // TODO work around. add delay for 1/2/3 seconds on join.
 
         nearbyPlayers.forEach(nearbyPlayer -> nearbyPlayer.sendMessage(finalFormat));
 
+        plugin.sendConsole("sent");
+
         if (plugin.getConfigHandler().isLogging())
             Bukkit.getConsoleSender().sendMessage(format);
+
+        event.setFormat("");
+        event.setCancelled(true);
     }
 }

@@ -52,7 +52,9 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
         * Add /nearchat gui
           * Possibly create inventory handler. (necessary ?) [FUTURE]
         *
-        * Add option for mongodb, mysql, nosql, postgresql, sqlite
+        * RETEST ALL DATABASE
+        *
+        * Add option for mongodb, mysql, nosql,, sqlite
         *
         * make plugin available 1.8-1.21
      */

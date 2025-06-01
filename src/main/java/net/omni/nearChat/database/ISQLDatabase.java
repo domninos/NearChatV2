@@ -24,6 +24,8 @@ public interface ISQLDatabase {
 
     void saveCallback(String playerName, Boolean value);
 
+    void handleExists(String playerName);
+
     void saveNonExists(String playerName, Boolean value);
 
     boolean fetchExists(String playerName);

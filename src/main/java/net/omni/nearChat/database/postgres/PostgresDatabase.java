@@ -100,7 +100,7 @@ public class PostgresDatabase implements NearChatDatabase, ISQLDatabase {
         CompletableFuture<Boolean> future = new CompletableFuture<>();
 
         future.completeAsync(() -> {
-            String query = "SELECT EXISTS (SELECT 1 FROM " + TABLE_NAME + " WHERE player_name=?);";
+            String query = "SELECT 1 FROM " + TABLE_NAME + " WHERE player_name=? LIMIT 1;";
 
             try (Connection connection = plugin.getHikariManager().getConnection();
                  PreparedStatement stmt = connection.prepareStatement(query)) {
@@ -175,6 +175,19 @@ public class PostgresDatabase implements NearChatDatabase, ISQLDatabase {
     }
 
     @Override
+    public void handleExists(String playerName) {
+        exists(playerName).whenComplete((value, throwable) -> {
+            if (throwable != null) {
+                plugin.error("Something went wrong handling SQL exists.", throwable);
+                return;
+            }
+
+            if (!value)
+                saveNonExists(playerName, false);
+        });
+    }
+
+    @Override
     public void insert(String playerName, Boolean value) {
         if (!isEnabled()) {
             plugin.error(plugin.getMessageHandler().getDBErrorConnectDisabled());
@@ -189,6 +202,7 @@ public class PostgresDatabase implements NearChatDatabase, ISQLDatabase {
             stmt.setBoolean(2, value);
 
             stmt.executeUpdate();
+
         } catch (SQLException e) {
             plugin.error("Something went wrong saving database.", e);
         }

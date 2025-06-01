@@ -93,7 +93,7 @@ public class MessageHandler implements Flushable {
         }
 
         if (getConfig().getString("nearchat_enabled_player") == null) {
-            messageConfig.setNoSave("nearchat_enabled_player", "&aEnabled NearChat for %player%");
+            messageConfig.setNoSave("nearchat_enabled_player", "&aEnabled NearChat for player %player%");
             def = true;
         }
 
@@ -103,12 +103,12 @@ public class MessageHandler implements Flushable {
         }
 
         if (getConfig().getString("nearchat_disabled_player") == null) {
-            messageConfig.setNoSave("nearchat_disabled_player", "&cDisabled NearChat for %player%");
+            messageConfig.setNoSave("nearchat_disabled_player", "&cDisabled NearChat for player %player%");
             def = true;
         }
 
         if (getConfig().getString("nearchat_player_not_found") == null) {
-            messageConfig.setNoSave("nearchat_player_not_found", "&cCould not find %player%");
+            messageConfig.setNoSave("nearchat_player_not_found", "&cCould not find player %player%");
             def = true;
         }
 

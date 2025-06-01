@@ -36,10 +36,7 @@ public class PlayerManager implements Flushable {
             DatabaseAdapter adapter = plugin.getDatabaseHandler().getAdapter();
             ISQLDatabase sqlDb = (ISQLDatabase) adapter.getDatabase();
 
-            boolean exists = sqlDb.fetchExists(playerName);
-
-            if (!exists)
-                sqlDb.saveNonExists(playerName, false);
+            sqlDb.handleExists(playerName);
         } else {
             if (!plugin.getDatabaseHandler().checkExistsDB(playerName))
                 plugin.getDatabaseHandler().savePlayer(playerName, "false");
