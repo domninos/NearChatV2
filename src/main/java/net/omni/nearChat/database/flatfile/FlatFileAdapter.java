@@ -82,6 +82,11 @@ public class FlatFileAdapter implements DatabaseAdapter {
     }
 
     @Override
+    public void setToCache(String playerName) {
+        plugin.getPlayerManager().set(playerName, database.getValue(playerName));
+    }
+
+    @Override
     public boolean getValue(String playerName) {
         return this.database.getValue(playerName);
     }

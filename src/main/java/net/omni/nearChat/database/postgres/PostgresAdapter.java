@@ -93,6 +93,11 @@ public class PostgresAdapter implements DatabaseAdapter {
     }
 
     @Override
+    public void setToCache(String playerName) {
+        plugin.getPlayerManager().set(playerName, getValue(playerName));
+    }
+
+    @Override
     public boolean getValue(String playerName) {
         return this.database.fetchEnabled(playerName);
     }

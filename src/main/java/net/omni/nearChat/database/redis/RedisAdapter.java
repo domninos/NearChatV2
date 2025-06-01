@@ -137,6 +137,12 @@ public class RedisAdapter implements DatabaseAdapter {
     }
 
     @Override
+    public void setToCache(String playerName) {
+        redis.asyncHashGet(playerName).thenAcceptAsync((string)
+                -> plugin.getPlayerManager().set(playerName, Boolean.parseBoolean(string)));
+    }
+
+    @Override
     public boolean getValue(String playerName) {
         return Boolean.parseBoolean(redis.syncGet(playerName));
     }

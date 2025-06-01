@@ -20,6 +20,8 @@ public interface DatabaseAdapter {
 
     void closeDatabase();
 
+    void setToCache(String playerName);
+
     boolean getValue(String playerName);
 
     NearChatDatabase getDatabase();

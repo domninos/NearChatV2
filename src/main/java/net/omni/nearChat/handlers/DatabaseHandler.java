@@ -92,28 +92,7 @@ public class DatabaseHandler {
             return;
         }
 
-        String playerName = player.getName();
-
-//        ADAPTER.setToCache(playerName);
-
-        switch (plugin.getConfigHandler().getDatabaseType()) {
-            case REDIS:
-                RedisAdapter redis = RedisAdapter.adapt();
-                RedisDatabase redisDatabase = (RedisDatabase) redis.getDatabase();
-
-                redisDatabase.asyncHashGet(playerName).thenAcceptAsync((string)
-                        -> plugin.getPlayerManager().set(playerName, Boolean.parseBoolean(string)));
-                break;
-            case FLAT_FILE:
-                FlatFileAdapter flatFile = FlatFileAdapter.adapt();
-                plugin.getPlayerManager().set(playerName, flatFile.getValue(playerName));
-                break;
-            case POSTGRESQL:
-                PostgresAdapter postgres = PostgresAdapter.adapt();
-                plugin.getPlayerManager().set(playerName, postgres.getValue(playerName));
-                break;
-        }
-
+        ADAPTER.setToCache(player.getName());
         plugin.getPlayerManager().setNearby(player);
     }
 
