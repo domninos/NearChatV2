@@ -25,7 +25,9 @@ public class ConfigHandler {
 
     private String database_type;
 
-    private int delay;
+    private int delay_time;
+
+    private boolean delay;
 
     public ConfigHandler(NearChatPlugin plugin) {
         this.plugin = plugin;
@@ -44,7 +46,8 @@ public class ConfigHandler {
 
         this.log_messages = getConfig().getBoolean("log-messages");
         this.database_type = getConfig().getString("database-type");
-        this.delay = getConfig().getInt("delay");
+        this.delay_time = getConfig().getInt("delay-time");
+        this.delay = getConfig().getBoolean("delay");
 
         this.host = getConfig().getString("host");
         this.port = getConfig().getInt("port");
@@ -127,8 +130,13 @@ public class ConfigHandler {
             def = true;
         }
 
-        if (getConfig().getInt("delay") == 0) {
-            nearChatConfig.setNoSave("delay", 3);
+        if (getConfig().getInt("delay-time") == 0) {
+            nearChatConfig.setNoSave("delay-time", 3);
+            def = true;
+        }
+
+        if (getConfig().getString("delay") == null) {
+            nearChatConfig.setNoSave("delay", true);
             def = true;
         }
 
@@ -145,7 +153,11 @@ public class ConfigHandler {
         this.database_type = type.getLabel();
     }
 
-    public int getDelay() {
+    public int getDelayTime() {
+        return delay_time;
+    }
+
+    public boolean isDelay() {
         return delay;
     }
 

@@ -25,6 +25,7 @@ public class NCPlayerListener implements Listener {
             return;
 
         plugin.getPlayerManager().loadEnabled(event.getPlayer());
+        // cancel brokers if empty
     }
 
     @EventHandler
@@ -41,6 +42,8 @@ public class NCPlayerListener implements Listener {
         }
 
         plugin.getPlayerManager().removeDelay(player);
+
+        // cancel brokers if empty
     }
 
     @EventHandler(priority = EventPriority.LOW)
@@ -54,18 +57,15 @@ public class NCPlayerListener implements Listener {
         if (!plugin.getPlayerManager().isEnabled(player.getName())) return;
 
         if (plugin.getPlayerManager().hasDelay(player)) {
-            event.setCancelled(true);
-
             int delay = plugin.getPlayerManager().getDelay(player);
 
-            plugin.sendMessage(player, plugin.getMessageHandler().getWaitDelay(delay));
-            return;
+            if (delay != 0) {
+                event.setCancelled(true);
+                plugin.sendMessage(player, plugin.getMessageHandler().getWaitDelay(delay));
+                return;
+            } else
+                plugin.getPlayerManager().removeDelay(player);
         }
-
-        Set<Player> nearbyPlayers = plugin.getPlayerManager().getNearby(player);
-
-        if (nearbyPlayers == null || nearbyPlayers.isEmpty())
-            return;
 
         String format = plugin.getMessageHandler().getFormat();
 
@@ -80,11 +80,12 @@ public class NCPlayerListener implements Listener {
 
         String finalFormat = format;
 
-        // TODO work around. add delay for 1/2/3 seconds on join.
+        Set<Player> nearbyPlayers = plugin.getPlayerManager().getNearby(player);
 
-        nearbyPlayers.forEach(nearbyPlayer -> nearbyPlayer.sendMessage(finalFormat));
+        if (nearbyPlayers != null && !nearbyPlayers.isEmpty())
+            nearbyPlayers.forEach(nearbyPlayer -> nearbyPlayer.sendMessage(finalFormat));
 
-        plugin.sendConsole("sent");
+        player.sendMessage(finalFormat);
 
         if (plugin.getConfigHandler().isLogging())
             Bukkit.getConsoleSender().sendMessage(format);

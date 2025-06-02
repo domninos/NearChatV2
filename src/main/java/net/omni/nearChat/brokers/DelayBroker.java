@@ -1,41 +1,50 @@
 package net.omni.nearChat.brokers;
 
 import net.omni.nearChat.NearChatPlugin;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.Map;
 
-public class DelayBroker extends BukkitRunnable {
-    private final NearChatPlugin plugin;
-
+public class DelayBroker extends NCBroker {
     public DelayBroker(NearChatPlugin plugin) {
-        this.plugin = plugin;
-
-        runTaskTimer(plugin, 20L, 20L * plugin.getConfigHandler().getDatabaseSaveDelay()); // sync
+        super(plugin, BrokerType.DELAY);
     }
 
     @Override
-    public void run() {
+    public void brokerRun() {
+        for (Map.Entry<Player, Integer> delays : plugin.getPlayerManager().getDelays().entrySet()) {
+            Player player = delays.getKey();
 
-        // TODO debug, not working
-
-        try {
-            for (Map.Entry<Player, Integer> delays : plugin.getPlayerManager().getDelays().entrySet()) {
-                Player player = delays.getKey();
-                int val = delays.getValue();
-
-                if (val == 0) {
-                    plugin.getPlayerManager().removeDelay(player);
-                    plugin.sendConsole("delay removed for " + player.getName());
-                } else {
-                    delays.setValue(val - 1);
-                    plugin.sendConsole("val - 1");
-                }
+            if (player != null && !plugin.getPlayerManager().isEnabled(player.getName())) {
+                plugin.getPlayerManager().removeDelay(player);
+                return;
             }
+
+            int val = delays.getValue();
+
+            if (val == 0)
+                plugin.getPlayerManager().removeDelay(player);
+            else
+                delays.setValue(val - 1);
+        }
+    }
+
+    @Override
+    public boolean checkEmpty() {
+        return plugin.getPlayerManager().getDelays().isEmpty();
+    }
+
+    @Override
+    public void init() {
+        try {
+            BukkitTask task = Bukkit.getScheduler().runTaskTimer(plugin, this::brokerRun, 0L, 20L); // sync
+            setTaskId(task.getTaskId());
+
+            starting();
         } catch (Exception e) {
-            plugin.error("Something went wrong during runtime of delay: ", e);
-            cancel();
+            cancelBrokerError(true, e);
         }
     }
 }

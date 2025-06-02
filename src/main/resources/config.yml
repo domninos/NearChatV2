@@ -17,7 +17,7 @@ database-type: 'flat-file'
 database-save-delay: 6000
 
 # in minecraft ticks (millis). delay between getting nearby players. 20 * 3 = 60 (3 seconds)
-# default: 3
+# default: 60
 nearby-get-delay: 60
 
 # block radius to check for nearby players for nearchat.
@@ -30,4 +30,5 @@ log-messages: true
 
 # the delay (in seconds) to wait until you can chat on NearChat upon logging in.
 # default: 3
-delay: 3
+delay-time: 3
+delay: true

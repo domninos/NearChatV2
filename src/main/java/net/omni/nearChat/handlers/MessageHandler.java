@@ -65,6 +65,7 @@ public class MessageHandler implements Flushable {
         childToMessage.put("format", getConfig().getString("format"));
 
         childToMessage.put("broker_stop", getConfig().getString("broker_stop"));
+        childToMessage.put("broker_empty_cancel", getConfig().getString("broker_empty_cancel"));
         childToMessage.put("wait_delay", getConfig().getString("wait_delay"));
 
         childToListMessage.put("help_text", getConfig().getStringList("help_text"));
@@ -202,6 +203,11 @@ public class MessageHandler implements Flushable {
             def = true;
         }
 
+        if (getConfig().getString("broker_empty_cancel") == null) {
+            messageConfig.setNoSave("broker_empty_cancel", "[%db_type%] &cCancelled %broker% broker, there are no players in nearchat.");
+            def = true;
+        }
+
         if (getConfig().getString("wait_delay") == null) {
             messageConfig.setNoSave("wait_delay", "&cYou must wait %delay% seconds to chat in NearChat.");
             def = true;
@@ -233,7 +239,8 @@ public class MessageHandler implements Flushable {
                     "  &dDatabase: %db_type%",
                     "  %dDatabase Saving Delay: %db_delay%ms (%db_converted_ticks%)",
                     "  %dNearby Get Delay: %nearby_delay%ms (%nearby_converted_ticks%)",
-                    "  %dNearby Radius: %radius% blocks"
+                    "  %dNearby Radius: %radius% blocks",
+                    "  &dDelay: %delay_on_join%"
             ));
 
             def = true;
@@ -300,6 +307,8 @@ public class MessageHandler implements Flushable {
                 line = line.replace("%nearby_converted_ticks%", MainUtil.convertTicks(plugin.getConfigHandler().getNearbyGetDelay()));
             if (line.contains("%radius%"))
                 line = line.replace("%radius%", String.valueOf(plugin.getConfigHandler().getNearBlockRadius()));
+            if (line.contains("%delay_on_join%"))
+                line = line.replace("%delay_on_join%", String.valueOf(plugin.getConfigHandler().getDelayTime()));
 
             toSend.append(line).append("&r\n");
         }
@@ -433,6 +442,11 @@ public class MessageHandler implements Flushable {
 
     public String getBrokerStop(String broker) {
         return modifyDBMessage(childToMessage.getOrDefault("broker_stop", "&c`broker_stop`").replace("%broker%", broker));
+    }
+
+    public String getBrokerEmptyCancel(String broker) {
+        return modifyDBMessage(childToMessage.getOrDefault("broker_empty_cancel", "&c`broker_empty_cancel`")
+                .replace("%broker%", broker));
     }
 
     public String getWaitDelay(int delay) {

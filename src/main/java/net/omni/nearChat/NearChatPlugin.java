@@ -1,14 +1,12 @@
 package net.omni.nearChat;
 
-import net.omni.nearChat.brokers.DatabaseBroker;
-import net.omni.nearChat.brokers.DelayBroker;
-import net.omni.nearChat.brokers.NearbyBroker;
 import net.omni.nearChat.commands.MainCommand;
 import net.omni.nearChat.commands.NearChatCommand;
 import net.omni.nearChat.handlers.ConfigHandler;
 import net.omni.nearChat.handlers.DatabaseHandler;
 import net.omni.nearChat.handlers.MessageHandler;
 import net.omni.nearChat.listeners.NCPlayerListener;
+import net.omni.nearChat.managers.BrokerManager;
 import net.omni.nearChat.managers.HikariManager;
 import net.omni.nearChat.managers.PlayerManager;
 import net.omni.nearChat.util.Flushable;
@@ -37,12 +35,7 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
 
     private PlayerManager playerManager;
     private HikariManager hikariManager;
-
-    private DatabaseBroker databaseBroker;
-
-    private NearbyBroker nearbyBroker;
-
-    private DelayBroker delayBroker;
+    private BrokerManager brokerManager;
 
     public NearChatPlugin() {
         this.databaseHandler = new DatabaseHandler(this);
@@ -56,6 +49,11 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
           * Possibly create inventory handler. (necessary ?) [FUTURE]
         *
         * RETEST ALL DATABASE
+        *
+        *
+        * ADD /nc delay -> toggle true or false config
+        * ADD /nc delay <time> -> set delay time
+        *
         *
         * Add option for mongodb, mysql, nosql,, sqlite
         *
@@ -72,6 +70,8 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
         configHandler.load();
         messageHandler.load();
 
+        this.brokerManager = new BrokerManager(this);
+
         this.hikariManager = new HikariManager(this);
 
         databaseHandler.connect();
@@ -80,8 +80,6 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
 
         registerListeners();
         registerCommands();
-
-        tryBrokers();
 
         addHook();
 
@@ -144,6 +142,10 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
         return hikariManager;
     }
 
+    public BrokerManager getBrokerManager() {
+        return brokerManager;
+    }
+
     public List<MainCommand> getCommands() {
         return mainCommands;
     }
@@ -174,20 +176,7 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
             return;
         }
 
-        if (databaseBroker != null)
-            databaseBroker.cancel();
-
-        if (nearbyBroker != null)
-            nearbyBroker.cancel();
-
-        if (delayBroker != null)
-            delayBroker.cancel();
-
-        this.databaseBroker = new DatabaseBroker(this);
-        this.nearbyBroker = new NearbyBroker(this);
-        this.delayBroker = new DelayBroker(this);
-
-        sendConsole("&aInitializing brokers..");
+        brokerManager.tryBrokers();
     }
 
     @Override
@@ -209,6 +198,8 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
             playerManager.flush();
 
         messageHandler.flush();
+
+        brokerManager.flush();
 
         Bukkit.getScheduler().cancelTasks(this);
         HandlerList.unregisterAll(this);

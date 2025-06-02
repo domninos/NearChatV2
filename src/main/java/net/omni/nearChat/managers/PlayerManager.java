@@ -1,6 +1,7 @@
 package net.omni.nearChat.managers;
 
 import net.omni.nearChat.NearChatPlugin;
+import net.omni.nearChat.brokers.NCBroker;
 import net.omni.nearChat.database.DatabaseAdapter;
 import net.omni.nearChat.database.ISQLDatabase;
 import net.omni.nearChat.util.Flushable;
@@ -48,28 +49,26 @@ public class PlayerManager implements Flushable {
         if (!has(playerName))
             plugin.getDatabaseHandler().setToCache(player);
 
-        if (isEnabled(player.getName()))
+        if (isEnabled(player.getName())) {
             setNearby(player);
 
-        int iDelay = plugin.getConfigHandler().getDelay();
-
-        delay.put(player, iDelay);
-
-        //  TODO DelayBroker();
-        /*
-
-        Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-            if (!hasDelay(player)) {
-                cancelTask()
-            }
-            delay.replace(player.getName(), getDelay(player.getName()) - 1);
-        }, 0, 20L);
-
-         */
+            if (plugin.getConfigHandler().isDelay())
+                setDelay(player);
+        }
     }
 
     public Map<Player, Integer> getDelays() {
         return delay;
+    }
+
+    public void setDelay(Player player) {
+        int iDelay = plugin.getConfigHandler().getDelayTime() + 1; // add 1 for accuracy
+        delay.put(player, iDelay);
+
+        plugin.sendConsole("delay");
+
+        if (!plugin.getBrokerManager().isDelayRunning())
+            plugin.getBrokerManager().tryBroker(NCBroker.BrokerType.DELAY);
     }
 
     public int getDelay(Player player) {
@@ -82,6 +81,9 @@ public class PlayerManager implements Flushable {
 
     public void removeDelay(Player player) {
         delay.remove(player);
+
+        if (delay.isEmpty())
+            plugin.getBrokerManager().cancelBroker(NCBroker.BrokerType.DELAY);
     }
 
     public void save(String playerName) {
@@ -128,6 +130,9 @@ public class PlayerManager implements Flushable {
 
     public void set(String playerName, boolean val) {
         this.enabled.put(playerName, val);
+
+        if (!plugin.getBrokerManager().isDatabaseRunning())
+            plugin.getBrokerManager().tryBroker(NCBroker.BrokerType.DATABASE);
     }
 
     public Set<Player> getNearby(Player player) {
@@ -145,13 +150,19 @@ public class PlayerManager implements Flushable {
         getNearby(player).clear();
 
         nearby.remove(player);
+
+        if (nearby.isEmpty())
+            plugin.getBrokerManager().cancelBroker(NCBroker.BrokerType.NEARBY);
     }
 
     public void setNearby(Player player) {
         Set<Player> nearbyPlayers = PlayerUtil
-                .getNearbyPlayers(this, player.getLocation(), plugin.getConfigHandler().getNearBlockRadius());
+                .getNearbyPlayers(this, player, plugin.getConfigHandler().getNearBlockRadius());
 
         this.nearby.put(player, nearbyPlayers);
+
+        if (!plugin.getBrokerManager().isNearbyRunning())
+            plugin.getBrokerManager().tryBroker(NCBroker.BrokerType.NEARBY);
     }
 
     public Map<Player, Set<Player>> getNearbyPlayers() {

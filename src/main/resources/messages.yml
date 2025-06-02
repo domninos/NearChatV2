@@ -4,9 +4,9 @@
 #  - %db_type% -> either 'FLAT-FILE' or 'REDIS'  (for database-related messages only)
 #  - %host% -> (only applicable if using REDIS) -> host name  (for `db_connected_console` only)
 #  - %file_name% -> the created file's name  (for `created_file` only)
-#  - %broker% -> the broker's name (for `broker_stop` only)
+#  - %broker% -> the broker's name (for `broker_stop` and `broker_empty_cancel` only)
 #  - %databases% -> available databases (for `db_switch_arg` only)
-#  - %delay% -> delay to wait for async chat processing (spigot-api)
+#  - %delay% -> delay to wait for async chat processing (spigot-api - for `wait_delay` only)
 player_only: "&cOnly players can execute this command."
 nearchat_enabled: "&aEnabled"
 nearchat_enabled_player: "&aEnabled NearChat for player %player%"
@@ -29,6 +29,7 @@ db_try_save: "[%db_type%] &cTrying to save database.."
 reloaded_config: "&aReloaded config and messages.yml"
 created_file: "&aSuccessfully created %file_name%" # _MAY_ produce the default value
 broker_stop: "[%db_type%] &cDatabase disabled. Cancelling %broker% broker.."
+broker_empty_cancel: "[%db_type%] &cCancelled %broker% broker, there are no players in nearchat."
 wait_delay: "&cYou must wait %delay% seconds to chat in NearChat."
 
 
@@ -80,6 +81,7 @@ help_text:
 #  - %nearby_delay% -> the delay on getting nearby players (set on config.yml - milliseconds)
 #  - %nearby_converted_ticks% -> converts %nearby_delay% to human language
 #  - %radius% -> the radius to get nearby players (e.g. 30 blocks)
+#  - %delay_on_join% -> the time delay before being able to chat in nearchat.
 enabled_message:
   - ""
   - "&aSuccessfully enabled %plugin_name% v-%plugin_version% [MC %plugin_mc_version%]"
@@ -88,6 +90,7 @@ enabled_message:
   - "  &dDatabase Saving Delay: %db_delay%ms (%db_converted_ticks%)"
   - "  &dNearby Get Delay: %nearby_delay%ms (%nearby_converted_ticks%)"
   - "  &dNearby Radius: %radius% blocks"
+  - "  &dDelay: %delay_on_join%"
 
 
 # message to send on plugin disable

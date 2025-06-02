@@ -1,7 +1,7 @@
 name: NearChat
 version: '1.0-SNAPSHOT'
 main: net.omni.nearChat.NearChatPlugin
-api-version: '1.8'
+api-version: '1.18' # for testing paper spark || performance
 authors: [ domninos ]
 description: A simple chat plugin where players can create their own chat groups. They can also turn on settings to where they can only receive messages from within X blocks away.
 commands:
