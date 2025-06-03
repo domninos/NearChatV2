@@ -31,7 +31,7 @@ public abstract class NCBroker {
     }
 
     public void cancelBrokerError(boolean log, Throwable throwable) {
-        if (!isRunning() || !isRestartable())
+        if (!isRestartable() || !isRunning())
             return;
 
         stopped();
@@ -67,8 +67,8 @@ public abstract class NCBroker {
     }
 
     public void starting() {
-        plugin.sendConsole("starting " + getBrokerName());
         this.started = true;
+        plugin.sendConsole("running = " + isRunning());
     }
 
     public String getBrokerName() {

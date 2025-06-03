@@ -29,6 +29,11 @@ public class DatabaseBroker extends NCBroker {
 
     @Override
     public void init() {
+        if (isRunning()) {
+            plugin.sendConsole("running database");
+            return;
+        }
+
         try {
             BukkitTask task = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this::brokerRun,
                     20L, plugin.getConfigHandler().getDatabaseSaveDelay()); // needs to be async

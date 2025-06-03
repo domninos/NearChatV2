@@ -43,6 +43,11 @@ public class NearbyBroker extends NCBroker {
 
     @Override
     public void init() {
+        if (isRunning()) {
+            plugin.sendConsole("running nearby");
+            return;
+        }
+
         try {
             BukkitTask task = Bukkit.getScheduler().runTaskTimer(plugin, this::brokerRun, 0L, plugin.getConfigHandler().getNearbyGetDelay());
             setTaskId(task.getTaskId());
