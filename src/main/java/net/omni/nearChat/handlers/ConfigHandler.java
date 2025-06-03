@@ -161,6 +161,16 @@ public class ConfigHandler {
         return delay;
     }
 
+    public void setDelayTime(int delay_time) {
+        nearChatConfig.set("delay_time", delay_time);
+        this.delay_time = delay_time;
+    }
+
+    public void setDelay(boolean delay) {
+        nearChatConfig.set("delay", delay);
+        this.delay = delay;
+    }
+
     public NearChatDatabase.Type getDatabaseType() {
         try {
             return NearChatDatabase.Type.valueOf(this.database_type.toUpperCase().replace("-", "_"));

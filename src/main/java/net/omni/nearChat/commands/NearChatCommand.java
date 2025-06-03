@@ -1,10 +1,7 @@
 package net.omni.nearChat.commands;
 
 import net.omni.nearChat.NearChatPlugin;
-import net.omni.nearChat.commands.subcommands.DatabaseSubCommand;
-import net.omni.nearChat.commands.subcommands.HelpSubCommand;
-import net.omni.nearChat.commands.subcommands.ReloadSubCommand;
-import net.omni.nearChat.commands.subcommands.SubCommand;
+import net.omni.nearChat.commands.subcommands.*;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -24,6 +21,7 @@ public class NearChatCommand extends MainCommand {
         subCommands.add(new DatabaseSubCommand(plugin, this));
         subCommands.add(new HelpSubCommand(plugin, this));
         subCommands.add(new ReloadSubCommand(plugin, this));
+        subCommands.add(new DelaySubCommand(plugin, this));
     }
 
     @Override
@@ -73,8 +71,11 @@ public class NearChatCommand extends MainCommand {
                 String currentCmd = args[subCommand.getArg()];
                 String subCmd = subCommand.getCommand();
 
-                if (currentCmd.equalsIgnoreCase(subCmd) ||
-                        Arrays.stream(subCommand.getAliases()).anyMatch((sub) -> sub.equalsIgnoreCase(currentCmd)))
+                if (
+                        currentCmd.equalsIgnoreCase(subCmd)
+                                || (subCommand.getAliases() != null
+                                && Arrays.stream(subCommand.getAliases()).anyMatch((sub) -> sub.equalsIgnoreCase(currentCmd)))
+                )
                     return subCommand.execute(sender, args);
             }
 

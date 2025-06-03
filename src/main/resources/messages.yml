@@ -6,7 +6,7 @@
 #  - %file_name% -> the created file's name  (for `created_file` only)
 #  - %broker% -> the broker's name (for `broker_stop` and `broker_empty_cancel` only)
 #  - %databases% -> available databases (for `db_switch_arg` only)
-#  - %delay% -> delay to wait for async chat processing (spigot-api - for `wait_delay` only)
+#  - %delay% -> delay to wait for async chat processing (spigot-api - for `wait_delay` and `delay_set` only)
 player_only: "&cOnly players can execute this command."
 nearchat_enabled: "&aEnabled"
 nearchat_enabled_player: "&aEnabled NearChat for player %player%"
@@ -31,7 +31,9 @@ created_file: "&aSuccessfully created %file_name%" # _MAY_ produce the default v
 broker_stop: "[%db_type%] &cDatabase disabled. Cancelling %broker% broker.."
 broker_empty_cancel: "[%db_type%] &cCancelled %broker% broker, there are no players in nearchat."
 wait_delay: "&cYou must wait %delay% seconds to chat in NearChat."
-
+delay_switch_on: "&aSuccessfully enabled delay."
+delay_switch_off: "&aSuccessfully disabled delay."
+delay_set: "&aSuccessfully set delay to %delay% seconds."
 
 
 
@@ -62,6 +64,8 @@ help_text:
   - "<nearchat.db> &a/nc database >> Reconnects to the database."
   - "<nearchat.reload> &a/nc reload >> Reloads config.yml and messages.yml."
   - "<nearchat.db.switch> &a/nc database switch <database> >> Switch database. &c(DISCOURAGED)"
+  - "<nearchat.delay> &a/nc delay >> Toggle delay."
+  - "<nearchat.delay> &a/nc delay <time> >> Set delay time."
   - ""
   - "&bDISCORD: discord.gg/nearchat"
   - ""

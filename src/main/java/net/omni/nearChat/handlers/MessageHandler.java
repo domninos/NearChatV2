@@ -27,6 +27,8 @@ public class MessageHandler implements Flushable {
         this.plugin = plugin;
     }
 
+    // TODO turn this into objects
+    //  ConfigMessage("path", "default_value");
     public void load() {
         if (this.messageConfig == null)
             this.messageConfig = plugin.getMessageConfig();
@@ -66,7 +68,11 @@ public class MessageHandler implements Flushable {
 
         childToMessage.put("broker_stop", getConfig().getString("broker_stop"));
         childToMessage.put("broker_empty_cancel", getConfig().getString("broker_empty_cancel"));
+
         childToMessage.put("wait_delay", getConfig().getString("wait_delay"));
+        childToMessage.put("delay_switch_on", getConfig().getString("delay_switch_on"));
+        childToMessage.put("delay_switch_off", getConfig().getString("delay_switch_off"));
+        childToMessage.put("delay_set", getConfig().getString("delay_set"));
 
         childToListMessage.put("help_text", getConfig().getStringList("help_text"));
         childToListMessage.put("enabled_message", getConfig().getStringList("enabled_message"));
@@ -213,6 +219,21 @@ public class MessageHandler implements Flushable {
             def = true;
         }
 
+        if (getConfig().getString("delay_switch_on") == null) {
+            messageConfig.setNoSave("delay_switch_on", "&aSuccessfully enabled delay.");
+            def = true;
+        }
+
+        if (getConfig().getString("delay_switch_off") == null) {
+            messageConfig.setNoSave("delay_switch_off", "&aSuccessfully disabled delay");
+            def = true;
+        }
+
+        if (getConfig().getString("delay_set") == null) {
+            messageConfig.setNoSave("delay_set", "&aSuccessfully set delay to %delay% seconds");
+            def = true;
+        }
+
         if (getConfig().getStringList("help_text").isEmpty()) {
             messageConfig.setNoSave("help_text", Arrays.asList(
                     "&7-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-",
@@ -221,6 +242,8 @@ public class MessageHandler implements Flushable {
                     "<nearchat.db> &a/nc database >> Reconnects to the database.",
                     "<nearchat.reload> &a/nc reload >> Reloads config.yml and messages.yml.",
                     "<nearchat.db.switch> &a/nc database switch <database> >> Switch database. &c(DISCOURAGED)",
+                    "<nearchat.delay> &a/nc delay >> Toggle delay.",
+                    "<nearchat.delay> &a/nc delay <time> >> Set delay time.",
                     "",
                     "&bDISCORD: discord.gg/nearchat",
                     "",
@@ -452,6 +475,17 @@ public class MessageHandler implements Flushable {
     public String getWaitDelay(int delay) {
         return childToMessage.getOrDefault("wait_delay", "`wait_delay`")
                 .replace("%delay%", String.valueOf(delay));
+    }
+
+    public String getDelaySwitch(boolean delay_switch) {
+        String path = delay_switch ? "delay_switch_on" : "delay_switch_off";
+
+        return childToMessage.getOrDefault(path, "&c`" + path + "`");
+    }
+
+    public String getDelaySet(int set) {
+        return childToMessage.getOrDefault("delay_set", "&c`delay_set`")
+                .replace("%delay%", String.valueOf(set));
     }
 
     public List<String> getEnabledMessage() {
