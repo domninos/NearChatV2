@@ -23,8 +23,6 @@ public class DelayBroker extends NCBroker {
 
             int val = delays.getValue();
 
-            plugin.sendConsole(player.getName() + ": " + val);
-
             if (val == 0)
                 plugin.getPlayerManager().removeDelay(player);
             else

@@ -50,10 +50,13 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
         *
         * RETEST ALL DATABASE
         *
+        *
+        * upon /nc reload, database save isn't stopped and reinitialized lang
+        *
         * tabbing / tab complete
         *
         * Make all messages on messages.yml.
-        * Redo messages (make sure to replace on MessageHandler.java
+        * Redo messages (make sure to replace on MessageHandler.java)
         *
         * Add option for mongodb, mysql, nosql,, sqlite
         *

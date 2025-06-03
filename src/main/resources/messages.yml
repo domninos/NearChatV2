@@ -29,8 +29,8 @@ db_try_save: "[%db_type%] &cTrying to save database.."
 reloaded_config: "&aReloaded config and messages.yml"
 created_file: "&aSuccessfully created %file_name%" # _MAY_ produce the default value
 broker_stop: "[%db_type%] &cDatabase disabled. Cancelling %broker% broker.."
-broker_empty_cancel: "[%db_type%] &cCancelled %broker% broker, there are no players in nearchat."
-broker_cancel: "&cCancelling the %broker% broker.."
+broker_empty_cancel: "[%db_type%] &cThere are no players using nearchat. Cancelled the %broker% broker."
+broker_cancel: "&cCancelled the %broker% broker."
 wait_delay: "&cYou must wait %delay% to chat in NearChat." # no need to put in seconds. the plugin will automatically put second or seconds.
 delay_switch_on: "&aSuccessfully enabled delay."
 delay_switch_off: "&aSuccessfully disabled delay."

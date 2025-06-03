@@ -25,7 +25,7 @@ public class BrokerManager implements Flushable {
 
         addBroker(new NearbyBroker(plugin));
 
-        plugin.sendConsole("&aInitialized brokers. " + brokers);
+        plugin.sendConsole("&aInitialized brokers: " + brokers);
     }
 
     public void tryBrokers() {
@@ -33,27 +33,30 @@ public class BrokerManager implements Flushable {
         Set<NCBroker> cancelled = cancelBrokers();
 
         if (!cancelled.isEmpty()) {
-            cancelled.forEach(broker -> {
-                if (broker == null)
-                    return;
+            plugin.sendConsole("cancelled not empty!");
 
-                if (!broker.checkEmpty()) {
-                    removeBroker(broker);
+            for (NCBroker broker : cancelled) {
+                if (broker == null) continue;
 
-                    // then add
-                    NCBroker copy = broker.copy();
-                    addBroker(copy);
-                    copy.init();
-                } else
+                if (broker.checkEmpty()) {
                     plugin.sendConsole(plugin.getMessageHandler().getBrokerEmptyCancel(broker.getBrokerName()));
-            });
+                    continue;
+                }
 
-            plugin.sendConsole("&aRe-initializing brokers..");
+                removeBroker(broker);
+
+                // then add
+                NCBroker copy = broker.copy();
+                addBroker(copy);
+                copy.init();
+            }
+
+            plugin.sendConsole("&aRestarted brokers.");
             return;
         }
 
         // empty cancelled, meaning on run
-        brokers.forEach(this::tryBroker);
+        brokers.forEach(broker -> tryBroker(broker.getType(), true));
     }
 
     public boolean isNearbyRunning() {
@@ -82,7 +85,7 @@ public class BrokerManager implements Flushable {
         brokers.remove(broker);
     }
 
-    public void tryBroker(NCBroker broker) {
+    public void tryBroker(NCBroker broker, boolean onStart) {
         if (broker == null)
             return;
 
@@ -91,15 +94,21 @@ public class BrokerManager implements Flushable {
 
         if (!broker.checkEmpty())
             broker.init();
-        else
-            plugin.sendConsole(plugin.getMessageHandler().getBrokerEmptyCancel(broker.getBrokerName()));
+        else {
+            if (!onStart)
+                plugin.sendConsole(plugin.getMessageHandler().getBrokerEmptyCancel(broker.getBrokerName()));
+        }
     }
 
-    public void tryBroker(NCBroker.BrokerType type) {
+    public void tryBroker(NCBroker.BrokerType type, boolean onStart) {
         NCBroker fromType = getFromType(type);
 
         if (fromType != null)
-            tryBroker(fromType);
+            tryBroker(fromType, onStart);
+    }
+
+    public void tryBroker(NCBroker.BrokerType type) {
+        tryBroker(type, false);
     }
 
     public NCBroker getFromType(NCBroker.BrokerType type) {

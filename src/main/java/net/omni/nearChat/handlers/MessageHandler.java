@@ -211,12 +211,13 @@ public class MessageHandler implements Flushable {
         }
 
         if (getConfig().getString("broker_empty_cancel") == null) {
-            messageConfig.setNoSave("broker_empty_cancel", "[%db_type%] &cCancelled %broker% broker, there are no players in nearchat.");
+            messageConfig.setNoSave("broker_empty_cancel",
+                    "[%db_type%] &cThere are no players using nearchat. Cancelled the %broker% broker.");
             def = true;
         }
 
         if (getConfig().getString("broker_cancel") == null) {
-            messageConfig.setNoSave("broker_cancel", "&cCancelling the %broker% broker..");
+            messageConfig.setNoSave("broker_cancel", "&cCancelled the %broker% broker.");
             def = true;
         }
 

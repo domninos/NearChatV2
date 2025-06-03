@@ -67,6 +67,7 @@ public abstract class NCBroker {
     }
 
     public void starting() {
+        plugin.sendConsole("starting " + getBrokerName());
         this.started = true;
     }
 
