@@ -7,15 +7,17 @@ public abstract class NCBroker {
     public final NearChatPlugin plugin;
     private final BrokerType brokerType;
     private final String broker_name;
+    private final boolean restartable;
 
     private boolean started;
 
     protected int taskId = -1;
 
-    public NCBroker(NearChatPlugin plugin, BrokerType type) {
+    public NCBroker(NearChatPlugin plugin, BrokerType type, boolean restartable) {
         this.plugin = plugin;
         this.brokerType = type;
         this.broker_name = type.getLabel();
+        this.restartable = restartable;
     }
 
     public abstract void init();
@@ -29,15 +31,23 @@ public abstract class NCBroker {
     }
 
     public void cancelBrokerError(boolean log, Throwable throwable) {
-        if (!isRunning())
+        if (!isRunning() || !isRestartable())
             return;
 
-        Bukkit.getScheduler().cancelTask(taskId);
+        stopped();
 
         if (throwable != null)
-            plugin.error("Cancelled " + getBrokerName() + " broker.", throwable);
+            plugin.error(plugin.getMessageHandler().getBrokerCancel(getBrokerName()), throwable);
         else if (log)
-            plugin.sendConsole("Cancelled " + getBrokerName() + " broker.");
+            plugin.sendConsole(plugin.getMessageHandler().getBrokerCancel(getBrokerName()));
+    }
+
+    public void stopped() {
+        if (!isRunning()) return;
+
+        Bukkit.getScheduler().cancelTask(taskId);
+        setTaskId(-1);
+        this.started = false;
     }
 
     public void setTaskId(int taskId) {
@@ -49,11 +59,11 @@ public abstract class NCBroker {
     public abstract boolean checkEmpty();
 
     public boolean isRunning() {
-        try {
-            return started && taskId != -1 && Bukkit.getScheduler().isCurrentlyRunning(taskId);
-        } catch (IllegalStateException e) {
-            return false;
-        }
+        return started;
+    }
+
+    public boolean isRestartable() {
+        return restartable;
     }
 
     public void starting() {
@@ -85,7 +95,7 @@ public abstract class NCBroker {
     public NCBroker copy() {
         NCBroker current = this;
 
-        return new NCBroker(current.plugin, current.brokerType) {
+        return new NCBroker(current.plugin, current.brokerType, current.restartable) {
             @Override
             public void init() {
                 current.init();

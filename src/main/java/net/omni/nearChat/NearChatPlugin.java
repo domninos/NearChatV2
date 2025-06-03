@@ -50,10 +50,10 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
         *
         * RETEST ALL DATABASE
         *
+        * tabbing / tab complete
         *
-        * ADD /nc delay -> toggle true or false config
-        * ADD /nc delay <time> -> set delay time
-        *
+        * Make all messages on messages.yml.
+        * Redo messages (make sure to replace on MessageHandler.java
         *
         * Add option for mongodb, mysql, nosql,, sqlite
         *

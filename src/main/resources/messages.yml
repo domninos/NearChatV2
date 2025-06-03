@@ -1,7 +1,7 @@
 # player/console messages
 # available placeholders
 #  - %player% -> player name
-#  - %db_type% -> either 'FLAT-FILE' or 'REDIS'  (for database-related messages only)
+#  - %db_type% -> either 'FLAT-FILE' or 'REDIS'  (for database or broker-related messages only)
 #  - %host% -> (only applicable if using REDIS) -> host name  (for `db_connected_console` only)
 #  - %file_name% -> the created file's name  (for `created_file` only)
 #  - %broker% -> the broker's name (for `broker_stop` and `broker_empty_cancel` only)
@@ -30,7 +30,8 @@ reloaded_config: "&aReloaded config and messages.yml"
 created_file: "&aSuccessfully created %file_name%" # _MAY_ produce the default value
 broker_stop: "[%db_type%] &cDatabase disabled. Cancelling %broker% broker.."
 broker_empty_cancel: "[%db_type%] &cCancelled %broker% broker, there are no players in nearchat."
-wait_delay: "&cYou must wait %delay% seconds to chat in NearChat."
+broker_cancel: "&cCancelling the %broker% broker.."
+wait_delay: "&cYou must wait %delay% to chat in NearChat." # no need to put in seconds. the plugin will automatically put second or seconds.
 delay_switch_on: "&aSuccessfully enabled delay."
 delay_switch_off: "&aSuccessfully disabled delay."
 delay_set: "&aSuccessfully set delay to %delay% seconds."
@@ -94,7 +95,7 @@ enabled_message:
   - "  &dDatabase Saving Delay: %db_delay%ms (%db_converted_ticks%)"
   - "  &dNearby Get Delay: %nearby_delay%ms (%nearby_converted_ticks%)"
   - "  &dNearby Radius: %radius% blocks"
-  - "  &dDelay: %delay_on_join%"
+  - "  &dDelay: %delay_on_join% seconds"
 
 
 # message to send on plugin disable

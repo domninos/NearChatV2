@@ -86,6 +86,8 @@ public class NearChatCommand extends MainCommand {
                     return true;
                 }
 
+                // permission
+
                 Player player = Bukkit.getPlayerExact(args[0]);
 
                 if (player == null) {

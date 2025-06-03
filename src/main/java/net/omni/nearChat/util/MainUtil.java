@@ -80,9 +80,9 @@ public class MainUtil {
         long minutes = (millis / (1000 * 60)) % 60;
         long seconds = (millis / 1000) % 60;
 
-        return hours > 0 ? String.format("%02d hours", hours)
-                : minutes > 0 ? String.format("%02d minutes", minutes)
-                : seconds > 0 ? String.format("%02d seconds", seconds)
+        return hours > 0 ? String.format("%d hours", hours)
+                : minutes > 0 ? String.format("%d minutes", minutes)
+                : seconds > 0 ? String.format("%d seconds", seconds)
                 : String.format("%d milliseconds", millis);
     }
 

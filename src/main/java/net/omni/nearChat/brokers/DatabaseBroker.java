@@ -6,7 +6,7 @@ import org.bukkit.scheduler.BukkitTask;
 
 public class DatabaseBroker extends NCBroker {
     public DatabaseBroker(NearChatPlugin plugin) {
-        super(plugin, BrokerType.DATABASE);
+        super(plugin, BrokerType.DATABASE, true);
     }
 
     @Override
@@ -30,7 +30,8 @@ public class DatabaseBroker extends NCBroker {
     @Override
     public void init() {
         try {
-            BukkitTask task = Bukkit.getScheduler().runTaskTimer(plugin, this::brokerRun, 0L, plugin.getConfigHandler().getDatabaseSaveDelay());
+            BukkitTask task = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this::brokerRun,
+                    20L, plugin.getConfigHandler().getDatabaseSaveDelay()); // needs to be async
             setTaskId(task.getTaskId());
 
             starting();

@@ -162,7 +162,7 @@ public class ConfigHandler {
     }
 
     public void setDelayTime(int delay_time) {
-        nearChatConfig.set("delay_time", delay_time);
+        nearChatConfig.set("delay-time", delay_time);
         this.delay_time = delay_time;
     }
 

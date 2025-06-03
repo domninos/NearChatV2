@@ -6,7 +6,10 @@ import net.omni.nearChat.database.NearChatDatabase;
 import net.omni.nearChat.util.MainUtil;
 import org.bukkit.Bukkit;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -243,15 +246,10 @@ public class PostgresDatabase implements NearChatDatabase, ISQLDatabase {
     @Override
     public void checkTable() {
         try (Connection connection = plugin.getHikariManager().getConnection()) {
-            DatabaseMetaData metaData = connection.getMetaData();
+            String create = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(player_name varchar(36), enabled BOOLEAN)";
 
-            try (ResultSet resultSet = metaData.getTables(null, null, TABLE_NAME, new String[]{"TABLE"})) {
-                if (!resultSet.next()) {
-                    String create = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(player_name varchar(36), enabled BOOLEAN)";
-                    try (PreparedStatement stmt = connection.prepareStatement(create)) {
-                        stmt.executeUpdate();
-                    }
-                }
+            try (PreparedStatement stmt = connection.prepareStatement(create)) {
+                stmt.executeUpdate();
             }
         } catch (SQLException e) {
             plugin.error("Something went wrong checking database table.", e);

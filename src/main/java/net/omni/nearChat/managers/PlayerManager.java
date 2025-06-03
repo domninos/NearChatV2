@@ -62,11 +62,10 @@ public class PlayerManager implements Flushable {
     }
 
     public void setDelay(Player player) {
-        int iDelay = plugin.getConfigHandler().getDelayTime() + 1; // add 1 for accuracy
+        int iDelay = plugin.getConfigHandler().getDelayTime() + 1; // add 1 for accuracy (sync chatting is ran asynchronously)
         delay.put(player, iDelay);
 
-        plugin.sendConsole("delay");
-
+        // make sure it is added
         if (!plugin.getBrokerManager().isDelayRunning())
             plugin.getBrokerManager().tryBroker(NCBroker.BrokerType.DELAY);
     }
@@ -80,6 +79,8 @@ public class PlayerManager implements Flushable {
     }
 
     public void removeDelay(Player player) {
+        if (player == null) return;
+
         delay.remove(player);
 
         if (delay.isEmpty())
@@ -144,6 +145,8 @@ public class PlayerManager implements Flushable {
     }
 
     public void removeNearby(Player player) {
+        if (player == null) return;
+
         if (!hasNearby(player))
             return;
 

@@ -1,6 +1,7 @@
 package net.omni.nearChat.commands.subcommands;
 
 import net.omni.nearChat.NearChatPlugin;
+import net.omni.nearChat.brokers.NCBroker;
 import net.omni.nearChat.commands.MainCommand;
 import org.bukkit.command.CommandSender;
 
@@ -22,13 +23,18 @@ public class DelaySubCommand extends SubCommand {
     @Override
     public boolean execute(CommandSender sender, String[] args) {
         if (args.length == 1) {
-            boolean toChange = plugin.getConfigHandler().isDelay();
+            boolean changed = !plugin.getConfigHandler().isDelay();
 
-            plugin.getConfigHandler().setDelay(!toChange);
-            plugin.sendMessage(sender, plugin.getMessageHandler().getDelaySwitch(toChange));
+            plugin.getConfigHandler().setDelay(changed);
+            plugin.sendMessage(sender, plugin.getMessageHandler().getDelaySwitch(changed));
+
+            if (!changed) // disabled
+                plugin.getBrokerManager().getFromType(NCBroker.BrokerType.DELAY).stopped();
+            else
+                plugin.getBrokerManager().tryBroker(NCBroker.BrokerType.DELAY);
             return true;
         } else if (args.length == 2) {
-            int time = 0;
+            int time;
 
             try {
                 time = Integer.parseInt(args[1]);

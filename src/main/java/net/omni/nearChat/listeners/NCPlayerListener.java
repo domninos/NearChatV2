@@ -42,7 +42,6 @@ public class NCPlayerListener implements Listener {
         }
 
         plugin.getPlayerManager().removeDelay(player);
-
         // cancel brokers if empty
     }
 

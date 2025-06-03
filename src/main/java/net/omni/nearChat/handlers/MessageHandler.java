@@ -68,6 +68,7 @@ public class MessageHandler implements Flushable {
 
         childToMessage.put("broker_stop", getConfig().getString("broker_stop"));
         childToMessage.put("broker_empty_cancel", getConfig().getString("broker_empty_cancel"));
+        childToMessage.put("broker_cancel", getConfig().getString("broker_cancel"));
 
         childToMessage.put("wait_delay", getConfig().getString("wait_delay"));
         childToMessage.put("delay_switch_on", getConfig().getString("delay_switch_on"));
@@ -214,6 +215,11 @@ public class MessageHandler implements Flushable {
             def = true;
         }
 
+        if (getConfig().getString("broker_cancel") == null) {
+            messageConfig.setNoSave("broker_cancel", "&cCancelling the %broker% broker..");
+            def = true;
+        }
+
         if (getConfig().getString("wait_delay") == null) {
             messageConfig.setNoSave("wait_delay", "&cYou must wait %delay% seconds to chat in NearChat.");
             def = true;
@@ -263,7 +269,7 @@ public class MessageHandler implements Flushable {
                     "  %dDatabase Saving Delay: %db_delay%ms (%db_converted_ticks%)",
                     "  %dNearby Get Delay: %nearby_delay%ms (%nearby_converted_ticks%)",
                     "  %dNearby Radius: %radius% blocks",
-                    "  &dDelay: %delay_on_join%"
+                    "  &dDelay: %delay_on_join% seconds"
             ));
 
             def = true;
@@ -464,7 +470,8 @@ public class MessageHandler implements Flushable {
     }
 
     public String getBrokerStop(String broker) {
-        return modifyDBMessage(childToMessage.getOrDefault("broker_stop", "&c`broker_stop`").replace("%broker%", broker));
+        return modifyDBMessage(childToMessage.getOrDefault("broker_stop", "&c`broker_stop`")
+                .replace("%broker%", broker));
     }
 
     public String getBrokerEmptyCancel(String broker) {
@@ -472,9 +479,16 @@ public class MessageHandler implements Flushable {
                 .replace("%broker%", broker));
     }
 
+    public String getBrokerCancel(String broker) {
+        return modifyDBMessage(childToMessage.getOrDefault("broker_cancel", "&c`broker_cancel`")
+                .replace("%broker%", broker));
+    }
+
     public String getWaitDelay(int delay) {
+        String seconds = delay == 1 ? delay + " second" : delay + " seconds";
+
         return childToMessage.getOrDefault("wait_delay", "`wait_delay`")
-                .replace("%delay%", String.valueOf(delay));
+                .replace("%delay%", seconds);
     }
 
     public String getDelaySwitch(boolean delay_switch) {

@@ -28,9 +28,6 @@ public class BrokerManager implements Flushable {
         plugin.sendConsole("&aInitialized brokers. " + brokers);
     }
 
-
-    // TODO optimize tasks. make sure to cancel tasks when no nearchat players online. re-run on join
-
     public void tryBrokers() {
         // check if running
         Set<NCBroker> cancelled = cancelBrokers();
@@ -47,15 +44,16 @@ public class BrokerManager implements Flushable {
                     NCBroker copy = broker.copy();
                     addBroker(copy);
                     copy.init();
-                    plugin.sendConsole("&aRe-initializing brokers..");
                 } else
                     plugin.sendConsole(plugin.getMessageHandler().getBrokerEmptyCancel(broker.getBrokerName()));
             });
-        } else {
-            // empty cancelled, meaning on run
-            brokers.forEach(this::tryBroker);
-            plugin.sendConsole("on run");
+
+            plugin.sendConsole("&aRe-initializing brokers..");
+            return;
         }
+
+        // empty cancelled, meaning on run
+        brokers.forEach(this::tryBroker);
     }
 
     public boolean isNearbyRunning() {
@@ -67,6 +65,11 @@ public class BrokerManager implements Flushable {
     }
 
     public boolean isDelayRunning() {
+        NCBroker fromType = getFromType(NCBroker.BrokerType.DELAY);
+
+        if (fromType == null) // was disabled on run
+            addBroker(new DelayBroker(plugin));
+
         return getFromType(NCBroker.BrokerType.DELAY).isRunning();
     }
 
@@ -77,14 +80,14 @@ public class BrokerManager implements Flushable {
     public void removeBroker(NCBroker broker) {
         cancelBroker(broker);
         brokers.remove(broker);
-        plugin.sendConsole("remove");
     }
 
     public void tryBroker(NCBroker broker) {
         if (broker == null)
             return;
 
-        plugin.sendConsole("trying broker " + broker.getBrokerName());
+        if (broker.isRestartable() && broker.isRunning())
+            broker.cancelBroker(true);
 
         if (!broker.checkEmpty())
             broker.init();
@@ -110,7 +113,7 @@ public class BrokerManager implements Flushable {
         Set<NCBroker> list = new HashSet<>();
 
         brokers.forEach(broker -> {
-            if (broker != null && broker.isRunning()) {
+            if (broker != null && broker.isRestartable() && broker.isRunning()) {
                 list.add(broker);
                 broker.cancelBroker(true);
 
@@ -127,17 +130,15 @@ public class BrokerManager implements Flushable {
 
         if (!brokers.isEmpty())
             brokers.forEach(b -> {
-                if (b.equals(broker)) {
+                if (b.equals(broker) && broker.isRestartable())
                     b.cancelBroker();
-                    plugin.sendConsole("cancelled " + broker.getBrokerName());
-                }
             });
     }
 
     public void cancelBroker(NCBroker.BrokerType type) {
         NCBroker fromType = getFromType(type);
 
-        if (fromType != null)
+        if (fromType != null && fromType.isRunning())
             cancelBroker(fromType);
     }
 
