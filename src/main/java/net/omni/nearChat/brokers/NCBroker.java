@@ -46,6 +46,7 @@ public abstract class NCBroker {
         if (!isRunning()) return;
 
         Bukkit.getScheduler().cancelTask(taskId);
+
         setTaskId(-1);
         this.started = false;
     }
@@ -68,7 +69,6 @@ public abstract class NCBroker {
 
     public void starting() {
         this.started = true;
-        plugin.sendConsole("running = " + isRunning());
     }
 
     public String getBrokerName() {

@@ -11,6 +11,11 @@ public class DatabaseBroker extends NCBroker {
 
     @Override
     public void brokerRun() {
+        if (isRestartable() && !isRunning()) {
+            cancelBroker(true);
+            return;
+        }
+
         plugin.sendConsole(plugin.getMessageHandler().getDBTrySave());
 
         if (plugin.getDatabaseHandler().isEnabled())
@@ -29,10 +34,8 @@ public class DatabaseBroker extends NCBroker {
 
     @Override
     public void init() {
-        if (isRunning()) {
-            plugin.sendConsole("running database");
-            return;
-        }
+        if (isRestartable() && isRunning())
+            cancelBroker();
 
         try {
             BukkitTask task = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this::brokerRun,

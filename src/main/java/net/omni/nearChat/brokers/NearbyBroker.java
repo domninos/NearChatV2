@@ -17,6 +17,11 @@ public class NearbyBroker extends NCBroker {
 
     @Override
     public void brokerRun() {
+        if (isRestartable() && !isRunning()) {
+            cancelBroker(true);
+            return;
+        }
+
         try {
             for (Map.Entry<Player, Set<Player>> entry : plugin.getPlayerManager().getNearbyPlayers().entrySet()) {
                 Player key = entry.getKey();
@@ -43,10 +48,8 @@ public class NearbyBroker extends NCBroker {
 
     @Override
     public void init() {
-        if (isRunning()) {
-            plugin.sendConsole("running nearby");
-            return;
-        }
+        if (isRestartable() && isRunning())
+            cancelBroker();
 
         try {
             BukkitTask task = Bukkit.getScheduler().runTaskTimer(plugin, this::brokerRun, 0L, plugin.getConfigHandler().getNearbyGetDelay());

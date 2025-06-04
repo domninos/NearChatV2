@@ -28,41 +28,9 @@ public class BrokerManager implements Flushable {
         plugin.sendConsole("&aInitialized brokers: " + brokers);
     }
 
-    // TODO fix copy#isRunning is returning false but started() is ran naman
     public void tryBrokers() {
-        // check if running
-        Set<NCBroker> cancelled = cancelBrokers();
-
-        if (!cancelled.isEmpty()) {
-            for (NCBroker broker : cancelled) {
-                if (broker == null) continue;
-
-                if (broker.checkEmpty()) {
-                    plugin.sendConsole(plugin.getMessageHandler().getBrokerEmptyCancel(broker.getBrokerName()));
-                    continue;
-                }
-
-                plugin.sendConsole("cancelled checking: " + broker.getBrokerName());
-                plugin.sendConsole("cancelled running: " + broker.isRunning());
-
-                removeBroker(broker);
-
-                // then add
-                NCBroker copy = broker.copy();
-
-                tryBroker(copy, false);
-
-                addBroker(copy);
-            }
-
-            plugin.sendConsole("&aRestarted brokers.");
-
-            cancelled.clear(); // dump
-            return;
-        }
-
-        // empty cancelled, meaning on run
         brokers.forEach(broker -> tryBroker(broker, true));
+        plugin.sendConsole("&aRestarted brokers."); // TODO messages.yml
     }
 
     public boolean isNearbyRunning() {
@@ -137,9 +105,6 @@ public class BrokerManager implements Flushable {
         brokers.forEach(broker -> {
             if (broker == null)
                 return;
-
-            plugin.sendConsole("cancelBrokers " + broker.getBrokerName());
-            plugin.sendConsole("cancelBrokers running = " + broker.isRunning());
 
             if (broker.isRestartable() && broker.isRunning()) {
                 list.add(broker);

@@ -38,7 +38,7 @@ public class DelayBroker extends NCBroker {
     @Override
     public void init() {
         if (isRunning())
-            return;
+            return; // not restartable
 
         try {
             int taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, this::brokerRun, 20L, 20L); // sync
