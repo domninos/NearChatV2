@@ -181,7 +181,7 @@ public class MessageHandler implements Flushable {
         }
 
         if (getConfig().getString("db_try_save") == null) {
-            messageConfig.setNoSave("db_try_save", "[%db_type%] &cTrying to save database..");
+            messageConfig.setNoSave("db_try_save", "[%db_type%] &cTrying to save database.. (processing %updates% updates)");
             def = true;
         }
 
@@ -453,8 +453,10 @@ public class MessageHandler implements Flushable {
         return modifyDBMessage(childToMessage.getOrDefault("db_error_connect_already", "&c`db_error_connect_already`"));
     }
 
-    public String getDBTrySave() {
-        return modifyDBMessage(childToMessage.getOrDefault("db_try_save", "&c`db_try_save`"));
+    public String getDBTrySave(int updates) {
+        return modifyDBMessage(childToMessage
+                .getOrDefault("db_try_save", "&c`db_try_save`"))
+                .replace("%updates%", String.valueOf(updates));
     }
 
     public String getDatabaseSaved() {

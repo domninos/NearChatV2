@@ -17,6 +17,8 @@ import java.util.Map;
 public class DatabaseHandler {
     private final NearChatPlugin plugin;
 
+    private int updates = 0;
+
     public static DatabaseAdapter ADAPTER;
 
     public DatabaseHandler(NearChatPlugin plugin) {
@@ -94,6 +96,20 @@ public class DatabaseHandler {
 
         ADAPTER.setToCache(player.getName());
         plugin.getPlayerManager().setNearby(player);
+
+        updateChecks();
+    }
+
+    public void updateChecks() {
+        this.updates++;
+    }
+
+    public void resetCheckUpdates() {
+        this.updates = 0;
+    }
+
+    public int getUpdates() {
+        return updates;
     }
 
     public void saveMap(Map<String, Boolean> enabledPlayers, boolean async) {
@@ -112,6 +128,8 @@ public class DatabaseHandler {
             sqlDb.saveMap(enabledPlayers, async);
         } else
             ADAPTER.saveMap(enabledPlayers);
+
+        updateChecks();
     }
 
     public void savePlayer(String playerName, Boolean value, boolean async) {
@@ -130,6 +148,8 @@ public class DatabaseHandler {
             sqlDb.savePlayer(playerName, value, async);
         } else
             ADAPTER.savePlayer(playerName, value);
+
+        updateChecks();
     }
 
     public void savePlayer(String playerName, String value) {

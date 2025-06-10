@@ -4,6 +4,7 @@
 #  - %db_type% -> either 'FLAT-FILE' or 'REDIS'  (for database or broker-related messages only)
 #  - %host% -> (only applicable if using REDIS) -> host name  (for `db_connected_console` only)
 #  - %file_name% -> the created file's name  (for `created_file` only)
+#  - %updates% -> the number of updates to save. (for `db_try_save` only)
 #  - %broker% -> the broker's name (for `broker_stop` and `broker_empty_cancel` only)
 #  - %databases% -> available databases (for `db_switch_arg` only)
 #  - %delay% -> delay to wait for async chat processing (spigot-api - for `wait_delay` and `delay_set` only)
@@ -25,7 +26,7 @@ db_error_connect_unsuccessful: "[%db_type%] &cNot successful."
 db_error_connect_disabled: "[%db_type%] &cCould not connect to database because database is disabled."
 db_error_connect_already: "[%db_type%] &cCould not connect to database because database is already enabled."
 db_saved: "[%db_type%] &aSaved database." # _MAY_ produce the default value
-db_try_save: "[%db_type%] &cTrying to save database.."
+db_try_save: "[%db_type%] &cTrying to save database.. (processing %updates% updates)"
 reloaded_config: "&aReloaded config and messages.yml"
 created_file: "&aSuccessfully created %file_name%" # _MAY_ produce the default value
 broker_stop: "[%db_type%] &cDatabase disabled. Cancelling %broker% broker.."

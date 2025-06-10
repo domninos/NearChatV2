@@ -11,12 +11,21 @@ public class DatabaseBroker extends NCBroker {
 
     @Override
     public void brokerRun() {
+        if (plugin.getDatabaseHandler().getUpdates() == 0) {
+            plugin.sendConsole("No updates."); // TODO debug
+            return;
+        }
+
+        // has updates
+
         if (isRestartable() && !isRunning()) {
             cancelBroker(true);
             return;
         }
 
-        plugin.sendConsole(plugin.getMessageHandler().getDBTrySave());
+        plugin.sendConsole(plugin.getMessageHandler().getDBTrySave(plugin.getDatabaseHandler().getUpdates()));
+
+        plugin.getDatabaseHandler().resetCheckUpdates();
 
         if (plugin.getDatabaseHandler().isEnabled())
             plugin.getPlayerManager().saveMap(true);

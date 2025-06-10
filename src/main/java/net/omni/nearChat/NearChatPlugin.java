@@ -51,10 +51,9 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
         * RETEST ALL DATABASE
         *
         *
-        * upon /nc reload, database save isn't stopped and reinitialized lang
+        * make sure to not update database when cahce wasn't touched (TEST)
         *
-        *
-        * make sure to not update database when cahce wasn't touched
+        * make messages on MessageHandler follow polymorphism (or store objects in map)
         *
         *
         * tabbing / tab complete
