@@ -24,13 +24,16 @@ public class NCPlayerListener implements Listener {
         if (!plugin.getDatabaseHandler().isEnabled())
             return;
 
+        // cancels brokers if empty
+
         plugin.getPlayerManager().loadEnabled(event.getPlayer());
-        // cancel brokers if empty
     }
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         if (!plugin.getDatabaseHandler().isEnabled()) return;
+
+        // cancels brokers if empty
 
         Player player = event.getPlayer();
 
@@ -38,7 +41,11 @@ public class NCPlayerListener implements Listener {
         // only save if player executed /nearchat once
         plugin.getPlayerManager().removeNearby(player);
         plugin.getPlayerManager().removeDelay(player);
-        // cancel brokers if empty
+
+        if (plugin.getPlayerManager().hasChanged(player.getName()))
+            plugin.getPlayerManager().save(player.getName());
+
+        plugin.getPlayerManager().removeInitial(player.getName());
     }
 
     @EventHandler(priority = EventPriority.LOW)

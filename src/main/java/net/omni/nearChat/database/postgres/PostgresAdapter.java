@@ -94,7 +94,9 @@ public class PostgresAdapter implements DatabaseAdapter {
 
     @Override
     public void setToCache(String playerName) {
-        plugin.getPlayerManager().set(playerName, getValue(playerName));
+        boolean value = getValue(playerName);
+
+        plugin.getPlayerManager().set(playerName, value);
     }
 
     @Override

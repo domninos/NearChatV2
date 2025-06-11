@@ -38,8 +38,6 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
     private HikariManager hikariManager;
     private BrokerManager brokerManager;
 
-    private boolean use_papi = false;
-
     public NearChatPlugin() {
         this.databaseHandler = new DatabaseHandler(this);
         this.messageHandler = new MessageHandler(this);
@@ -54,7 +52,7 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
         * database to implement: sqlite, mongodb, mysql
         *
         *
-        * QUIET LOAD database 20 entries every 1 min
+        * load the only library when switching databases
         *
         *
         * tabbing / tab complete
@@ -226,15 +224,9 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
 
     public void checkPapi() {
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-            this.use_papi = true;
-
             PAPIManager papiManager = new PAPIManager(this);
 
             papiManager.checkPapi();
         }
-    }
-
-    public boolean isPapi() {
-        return use_papi;
     }
 }

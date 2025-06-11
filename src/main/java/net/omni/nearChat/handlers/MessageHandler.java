@@ -31,6 +31,7 @@ public class MessageHandler implements Flushable {
 
     // TODO turn this into objects
     //  ConfigMessage("path", "default_value"); (? necessary to create that much objects ?)
+    //  FIX broker_cancel on disable
     public void load() {
         if (this.messageConfig == null)
             this.messageConfig = plugin.getMessageConfig();
@@ -79,6 +80,7 @@ public class MessageHandler implements Flushable {
 
         childToListMessage.put("help_text", getConfig().getStringList("help_text"));
         childToListMessage.put("enabled_message", getConfig().getStringList("enabled_message"));
+        childToListMessage.put("settings_message", getConfig().getStringList("settings_message"));
         childToListMessage.put("disabled_message", getConfig().getStringList("disabled_message"));
 
         if (!def)
@@ -267,11 +269,19 @@ public class MessageHandler implements Flushable {
             messageConfig.setNoSave("enabled_message", Arrays.asList(
                     "",
                     "&aSuccessfully enabled %plugin_name% [%plugin_mc_version%]",
+                    "&bSettings:"
+            ));
+
+            def = true;
+        }
+
+        if (getConfig().getStringList("settings_message").isEmpty()) {
+            messageConfig.setNoSave("settings_message", Arrays.asList(
                     "&bSettings:",
                     "  &dDatabase: %db_type%",
-                    "  %dDatabase Saving Delay: %db_delay%ms (%db_converted_ticks%)",
-                    "  %dNearby Get Delay: %nearby_delay%ms (%nearby_converted_ticks%)",
-                    "  %dNearby Radius: %radius% blocks",
+                    "  &dDatabase Saving Delay: %db_delay%ms (%db_converted_ticks%)",
+                    "  &dNearby Get Delay: %nearby_delay%ms (%nearby_converted_ticks%)",
+                    "  &dNearby Radius: %radius% blocks",
                     "  &dDelay: %delay_on_join% seconds"
             ));
 
@@ -313,20 +323,25 @@ public class MessageHandler implements Flushable {
     }
 
     public void sendEnabledMessage() {
-        StringBuilder toSend = new StringBuilder();
-
         for (String line : getEnabledMessage()) {
-            if (line.isBlank()) {
-                toSend.append("\n");
-                continue;
-            }
-
             if (line.contains("%plugin_name%"))
                 line = line.replace("%plugin_name%", plugin.getConfigHandler().getPluginName());
             if (line.contains("%plugin_version%"))
                 line = line.replace("%plugin_version%", plugin.getConfigHandler().getPluginVersion());
             if (line.contains("%plugin_mc_version%"))
                 line = line.replace("%plugin_mc_version%", plugin.getConfigHandler().getPluginMCVersion());
+
+            if (line.contains("%settings%")) {
+                sendSettings();
+                continue;
+            }
+
+            Bukkit.getConsoleSender().sendMessage(plugin.translate(line));
+        }
+    }
+
+    public void sendSettings() {
+        for (String line : getSettingsMessage()) {
             if (line.contains("%db_type%"))
                 line = modifyDBMessage(line);
             if (line.contains("%db_delay%"))
@@ -342,32 +357,21 @@ public class MessageHandler implements Flushable {
             if (line.contains("%delay_on_join%"))
                 line = line.replace("%delay_on_join%", String.valueOf(plugin.getConfigHandler().getDelayTime()));
 
-            toSend.append(line).append("&r\n");
+            Bukkit.getConsoleSender().sendMessage(plugin.translate(line));
         }
-
-        Bukkit.getConsoleSender().sendMessage(plugin.translate(toSend.toString()));
     }
 
     public void sendDisabledMessage() {
-        StringBuilder toSend = new StringBuilder();
-
         for (String line : getDisabledMessage()) {
-            if (line.isBlank()) {
-                toSend.append("\n");
-                continue;
-            }
-
             if (line.contains("%prefix%"))
                 line = line.replace("%prefix%", plugin.getMessageHandler().getPrefix());
             if (line.contains("%plugin_name%"))
                 line = line.replace("%plugin_name%", plugin.getConfigHandler().getPluginName());
             if (line.contains("%plugin_mc_version%"))
-                line = line.replace("%plugin_mc_version%", plugin.getConfigHandler().getPluginMCVersion()); // TODO: get server version
+                line = line.replace("%plugin_mc_version%", plugin.getConfigHandler().getPluginMCVersion());
 
-            toSend.append(line).append("&r\n");
+            Bukkit.getConsoleSender().sendMessage(plugin.translate(line));
         }
-
-        Bukkit.getConsoleSender().sendMessage(plugin.translate(toSend.toString()));
     }
 
     public String getNearChatEnabled() {
@@ -509,6 +513,10 @@ public class MessageHandler implements Flushable {
 
     public List<String> getEnabledMessage() {
         return childToListMessage.getOrDefault("enabled_message", EMPTY_LIST);
+    }
+
+    public List<String> getSettingsMessage() {
+        return childToListMessage.getOrDefault("settings_message", EMPTY_LIST);
     }
 
     public List<String> getDisabledMessage() {

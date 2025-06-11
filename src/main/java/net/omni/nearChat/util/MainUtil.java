@@ -93,7 +93,7 @@ public class MainUtil {
 
         return hours > 0 ? String.format("%d hours", hours)
                 : minutes > 0 ? String.format("%d minutes", minutes)
-                : seconds > 0 ? String.format("%d seconds", seconds)
+                : seconds > 0 ? (seconds == 1 ? String.format("%d second", seconds) : String.format("%d seconds", seconds))
                 : String.format("%d milliseconds", millis);
     }
 

@@ -1,7 +1,7 @@
 # player/console messages
 # available placeholders
 #  - %player% -> player name
-#  - %db_type% -> either 'FLAT-FILE' or 'REDIS'  (for database or broker-related messages only)
+#  - %db_type% -> either 'FLAT-FILE', 'REDIS', 'POSTGRESQL'  (for database or broker-related messages only)
 #  - %host% -> (only applicable if using REDIS) -> host name  (for `db_connected_console` only)
 #  - %file_name% -> the created file's name  (for `created_file` only)
 #  - %updates% -> the number of updates to save. (for `db_try_save` only)
@@ -81,16 +81,22 @@ help_text:
 #  - %plugin_name% -> NearChat
 #  - %plugin_version% -> version of the plugin installed
 #  - %plugin_mc_version% -> minecraft version support of the current plugin
-#  - %db_type% -> either 'FLATFILE' or 'REDIS'
+#  - %settings% -> the settings configured in config.yml
+enabled_message:
+  - ""
+  - "&aSuccessfully enabled %plugin_name% v-%plugin_version% [MC %plugin_mc_version%]"
+  - "%settings%"
+  - ""
+
+# message in settings configured in config.yml
+#  - %db_type% -> 'FLAT-FILE', 'REDIS', 'POSTGRESQL'
 #  - %db_delay% -> the delay on saving to database (set on config.yml - milliseconds)
 #  - %db_converted_ticks% -> converts %db_delay% to human language
 #  - %nearby_delay% -> the delay on getting nearby players (set on config.yml - milliseconds)
 #  - %nearby_converted_ticks% -> converts %nearby_delay% to human language
 #  - %radius% -> the radius to get nearby players (e.g. 30 blocks)
 #  - %delay_on_join% -> the time delay before being able to chat in nearchat.
-enabled_message:
-  - ""
-  - "&aSuccessfully enabled %plugin_name% v-%plugin_version% [MC %plugin_mc_version%]"
+settings_message:
   - "&bSettings:"
   - "  &dDatabase: %db_type%"
   - "  &dDatabase Saving Delay: %db_delay%ms (%db_converted_ticks%)"

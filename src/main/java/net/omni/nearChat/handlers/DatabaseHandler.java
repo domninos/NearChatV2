@@ -10,7 +10,6 @@ import net.omni.nearChat.database.postgres.PostgresAdapter;
 import net.omni.nearChat.database.postgres.PostgresDatabase;
 import net.omni.nearChat.database.redis.RedisAdapter;
 import net.omni.nearChat.database.redis.RedisDatabase;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.Map;
@@ -87,10 +86,6 @@ public class DatabaseHandler {
         initDatabase();
 
         return ADAPTER.connect();
-    }
-
-    public void initiateClusterProcess() {
-        // load 20 entries every min?
     }
 
     public void setToCache(Player player) {

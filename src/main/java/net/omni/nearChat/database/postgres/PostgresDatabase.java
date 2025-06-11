@@ -24,15 +24,6 @@ public class PostgresDatabase implements NearChatDatabase, ISQLDatabase {
 
     private static final String TABLE_NAME = "nearchat_enabled";
 
-    /*
-     * POSTGRESQL
-     * host: localhost
-     * username: postgres
-     * password: admin
-     * database_name: postgres
-     * port: 5432
-     */
-
     public PostgresDatabase(NearChatPlugin plugin) {
         this.plugin = plugin;
     }
@@ -240,7 +231,6 @@ public class PostgresDatabase implements NearChatDatabase, ISQLDatabase {
                 if (resultSet.next())
                     return resultSet.getBoolean("enabled");
 
-                plugin.sendConsole("no result. return false");
                 return false;
             } catch (SQLException e) {
                 plugin.error("Something went wrong fetching from database.", e);
@@ -280,6 +270,8 @@ public class PostgresDatabase implements NearChatDatabase, ISQLDatabase {
     @Override
     public void saveNonExists(String playerName, Boolean value) {
         insert(playerName, value);
+
+        plugin.getPlayerManager().setInitial(playerName, value);
     }
 
     @Override
@@ -287,7 +279,7 @@ public class PostgresDatabase implements NearChatDatabase, ISQLDatabase {
         try {
             return Objects.requireNonNull(exists(playerName)).get();
         } catch (InterruptedException | ExecutionException e) {
-            plugin.sendConsole("error");
+            plugin.error("Something went wrong fetching exists.", e);
             return false;
         }
     }

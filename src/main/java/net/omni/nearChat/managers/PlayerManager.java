@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class PlayerManager implements Flushable {
+    private final Map<String, Boolean> initial = new HashMap<>();
     private final Map<String, Boolean> enabled = new HashMap<>();
     private final Map<Player, Set<Player>> nearby = new HashMap<>();
 
@@ -35,10 +36,6 @@ public class PlayerManager implements Flushable {
 
         String playerName = player.getName();
 
-
-        // TODO this is resource intensive
-
-
         // if not in database
         if (plugin.getDatabaseHandler().isSQL()) {
             DatabaseAdapter adapter = plugin.getDatabaseHandler().getAdapter();
@@ -48,6 +45,8 @@ public class PlayerManager implements Flushable {
         } else {
             if (!plugin.getDatabaseHandler().checkExistsDB(playerName))
                 plugin.getDatabaseHandler().savePlayer(playerName, "false");
+
+            setInitial(player.getName(), false);
         }
 
         // not in cache
@@ -60,6 +59,22 @@ public class PlayerManager implements Flushable {
             if (plugin.getConfigHandler().isDelay())
                 setDelay(player);
         }
+    }
+
+    public void setInitial(String player, boolean value) {
+        initial.put(player, value);
+    }
+
+    public boolean getInitial(String player) {
+        return initial.getOrDefault(player, false);
+    }
+
+    public boolean hasChanged(String player) {
+        return has(player) && getInitial(player) != enabled.getOrDefault(player, false);
+    }
+
+    public void removeInitial(String player) {
+        initial.remove(player);
     }
 
     public Map<Player, Integer> getDelays() {
@@ -137,6 +152,8 @@ public class PlayerManager implements Flushable {
     public void set(String playerName, boolean val) {
         this.enabled.put(playerName, val);
 
+        initial.put(playerName, val);
+
         if (!plugin.getBrokerManager().isDatabaseRunning())
             plugin.getBrokerManager().tryBroker(NCBroker.BrokerType.DATABASE);
     }
@@ -198,5 +215,6 @@ public class PlayerManager implements Flushable {
 
         nearby.clear();
         delay.clear();
+        initial.clear();
     }
 }
