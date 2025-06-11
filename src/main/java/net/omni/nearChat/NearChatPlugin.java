@@ -8,6 +8,7 @@ import net.omni.nearChat.handlers.MessageHandler;
 import net.omni.nearChat.listeners.NCPlayerListener;
 import net.omni.nearChat.managers.BrokerManager;
 import net.omni.nearChat.managers.HikariManager;
+import net.omni.nearChat.managers.PAPIManager;
 import net.omni.nearChat.managers.PlayerManager;
 import net.omni.nearChat.util.Flushable;
 import net.omni.nearChat.util.MainUtil;
@@ -36,6 +37,9 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
     private PlayerManager playerManager;
     private HikariManager hikariManager;
     private BrokerManager brokerManager;
+    private PAPIManager papiManager;
+
+    private boolean use_papi = false;
 
     public NearChatPlugin() {
         this.databaseHandler = new DatabaseHandler(this);
@@ -50,18 +54,20 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
         *
         * RETEST ALL DATABASE
         *
+        * make sure to not update database when cache wasn't touched (TEST)
+        * support PlaceholderAPI (for format in nearchat) (TEST)
         *
-        * make sure to not update database when cahce wasn't touched (TEST)
-        *
-        * make messages on MessageHandler follow polymorphism (or store objects in map)
-        *
+        * database to implement: sqlite, mongodb, mysql
         *
         * tabbing / tab complete
+        *
         *
         * Make all messages on messages.yml.
         * Redo messages (make sure to replace on MessageHandler.java)
         *
-        * Add option for mongodb, mysql, nosql,, sqlite
+        *
+        *
+        * make messages on MessageHandler follow polymorphism (or store objects in map) [not sure if efficient or necessary]
         *
         * make plugin available 1.8-1.21
      */
@@ -86,6 +92,8 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
 
         registerListeners();
         registerCommands();
+
+        checkPapi();
 
         addHook();
 
@@ -216,5 +224,18 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
             if (DatabaseHandler.ADAPTER != null && DatabaseHandler.ADAPTER.getDatabase() != null)
                 DatabaseHandler.ADAPTER.lastSaveMap();
         }));
+    }
+
+    public void checkPapi() {
+        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            this.use_papi = true;
+            this.papiManager = new PAPIManager(this);
+
+            papiManager.checkPapi();
+        }
+    }
+
+    public boolean isPapi() {
+        return use_papi;
     }
 }

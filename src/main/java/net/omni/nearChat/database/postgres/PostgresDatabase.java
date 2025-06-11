@@ -18,6 +18,7 @@ import java.util.concurrent.ExecutionException;
 
 public class PostgresDatabase implements NearChatDatabase, ISQLDatabase {
     private boolean enabled = false;
+    private String host = "";
 
     private final NearChatPlugin plugin;
 
@@ -55,6 +56,8 @@ public class PostgresDatabase implements NearChatDatabase, ISQLDatabase {
 
                 connection.close();
                 this.enabled = true;
+
+                this.host = host;
             }
         } catch (Exception e) {
             plugin.error(plugin.getMessageHandler().getDBErrorConnectUnsuccessful(), e);
@@ -62,6 +65,11 @@ public class PostgresDatabase implements NearChatDatabase, ISQLDatabase {
         }
 
         return true;
+    }
+
+    @Override
+    public String getHost() {
+        return this.host;
     }
 
     @Override

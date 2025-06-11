@@ -71,7 +71,7 @@ public class MainUtil {
 //        libraryManager.loadLibrary(sqlite);
         libraryManager.loadLibrary(hikaricp);
 
-        plugin.sendConsole("Loaded libraries"); // TODO messages.yml
+        plugin.sendConsole("&aLoaded libraries"); // TODO messages.yml
     }
 
     public static String convertTicks(long ticks) {

@@ -10,6 +10,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class SQLiteDatabase implements NearChatDatabase {
+    // TODO
     private final NearChatPlugin plugin;
 
     private final File db_file;

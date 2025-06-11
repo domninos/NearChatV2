@@ -6,6 +6,8 @@ import java.util.concurrent.CompletableFuture;
 public interface ISQLDatabase {
     boolean connect(String host, int port, String database_name, String user, String password);
 
+    String getHost();
+
     boolean connectConfig();
 
     void checkTable();

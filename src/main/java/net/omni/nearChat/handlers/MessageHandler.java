@@ -21,6 +21,8 @@ public class MessageHandler implements Flushable {
     private final NearChatPlugin plugin;
     private final Map<String, String> childToMessage = new HashMap<>();
     private final Map<String, List<String>> childToListMessage = new HashMap<>();
+
+
     private NearChatConfig messageConfig;
 
     public MessageHandler(NearChatPlugin plugin) {
@@ -28,7 +30,7 @@ public class MessageHandler implements Flushable {
     }
 
     // TODO turn this into objects
-    //  ConfigMessage("path", "default_value");
+    //  ConfigMessage("path", "default_value"); (? necessary to create that much objects ?)
     public void load() {
         if (this.messageConfig == null)
             this.messageConfig = plugin.getMessageConfig();
