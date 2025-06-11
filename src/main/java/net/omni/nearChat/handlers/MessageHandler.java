@@ -324,7 +324,7 @@ public class MessageHandler implements Flushable {
             if (line.contains("%plugin_name%"))
                 line = line.replace("%plugin_name%", plugin.getConfigHandler().getPluginName());
             if (line.contains("%plugin_version%"))
-                line = line.replace("%plugin_version%", plugin.getConfigHandler().getPluginVersion()); // TODO: get server version
+                line = line.replace("%plugin_version%", plugin.getConfigHandler().getPluginVersion());
             if (line.contains("%plugin_mc_version%"))
                 line = line.replace("%plugin_mc_version%", plugin.getConfigHandler().getPluginMCVersion());
             if (line.contains("%db_type%"))

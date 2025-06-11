@@ -3,18 +3,29 @@ package net.omni.nearChat.util;
 import net.byteflux.libby.BukkitLibraryManager;
 import net.byteflux.libby.Library;
 import net.omni.nearChat.NearChatPlugin;
+import org.bukkit.Bukkit;
 
 import java.util.Arrays;
 
 public class MainUtil {
+    public static int VERSION;
+    public static String FULL_VERSION;
 
+    static {
+        String major = Bukkit.getServer().getBukkitVersion().split("-")[0];
+
+        String[] majorSplit = major.split("\\."); // 1.21
+
+        FULL_VERSION = major;
+        VERSION = Integer.parseInt(majorSplit[1]); // 21
+    }
+
+    // TODO load only when choosing sql
     public static void loadLibraries(NearChatPlugin plugin) {
-        // Create a library manager for a Bukkit/Spigot plugin
         // REF: https://github.com/AlessioDP/libby/tree/master
 
         BukkitLibraryManager libraryManager = new BukkitLibraryManager(plugin);
 
-        // TODO load only when choosing sql
         // "{}" is replaced with ".", useful to avoid unwanted changes m ade by maven-shade-plugin
 
         Library lettuce = Library.builder()

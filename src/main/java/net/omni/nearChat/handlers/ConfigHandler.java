@@ -2,6 +2,7 @@ package net.omni.nearChat.handlers;
 
 import net.omni.nearChat.NearChatPlugin;
 import net.omni.nearChat.database.NearChatDatabase;
+import net.omni.nearChat.util.MainUtil;
 import net.omni.nearChat.util.NearChatConfig;
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -57,7 +58,11 @@ public class ConfigHandler {
 
         this.plugin_name = plugin.getDescription().getName();
         this.plugin_version = plugin.getDescription().getVersion();
-        this.plugin_mc_version = plugin.getDescription().getAPIVersion();
+
+        if (MainUtil.VERSION >= 13) // 1.13 version
+            this.plugin_mc_version = plugin.getDescription().getAPIVersion();
+        else
+            this.plugin_mc_version = MainUtil.FULL_VERSION;
 
         if (!def)
             plugin.sendConsole("&aLoaded config.");

@@ -37,7 +37,6 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
     private PlayerManager playerManager;
     private HikariManager hikariManager;
     private BrokerManager brokerManager;
-    private PAPIManager papiManager;
 
     private boolean use_papi = false;
 
@@ -55,7 +54,6 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
         * RETEST ALL DATABASE
         *
         * make sure to not update database when cache wasn't touched (TEST)
-        * support PlaceholderAPI (for format in nearchat) (TEST)
         *
         * database to implement: sqlite, mongodb, mysql
         *
@@ -68,8 +66,6 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
         *
         *
         * make messages on MessageHandler follow polymorphism (or store objects in map) [not sure if efficient or necessary]
-        *
-        * make plugin available 1.8-1.21
      */
 
     @Override
@@ -229,7 +225,8 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
     public void checkPapi() {
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             this.use_papi = true;
-            this.papiManager = new PAPIManager(this);
+
+            PAPIManager papiManager = new PAPIManager(this);
 
             papiManager.checkPapi();
         }

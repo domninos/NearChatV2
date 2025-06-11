@@ -8,5 +8,4 @@ description: A simple chat plugin where players can create their own chat groups
 commands:
   nearchat:
     usage: /<command>
-    aliases:
-      - nc
+    aliases: [ "nc" ]
