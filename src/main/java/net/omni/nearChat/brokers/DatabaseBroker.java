@@ -25,14 +25,14 @@ public class DatabaseBroker extends NCBroker {
 
         plugin.sendConsole(plugin.getMessageHandler().getDBTrySave(plugin.getDatabaseHandler().getUpdates()));
 
-        plugin.getDatabaseHandler().resetCheckUpdates();
-
         if (plugin.getDatabaseHandler().isEnabled())
             plugin.getPlayerManager().saveMap(true);
         else {
             plugin.sendConsole(plugin.getMessageHandler().getBrokerStop(getBrokerName()));
             cancelBroker(true);
         }
+
+        plugin.getDatabaseHandler().resetCheckUpdates();
     }
 
     @Override

@@ -92,6 +92,7 @@ public class FlatFileDatabase implements NearChatDatabase {
         return cache;
     }
 
+    // resource heavy function
     public Map<String, Boolean> readFile() {
         checkFile();
 
@@ -107,7 +108,6 @@ public class FlatFileDatabase implements NearChatDatabase {
                 String[] split = line.split(":");
 
                 // name: boolean
-                // KimHeechul: true
                 String name = split[0];
                 boolean value = Boolean.parseBoolean(split[1].strip());
 

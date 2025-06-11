@@ -36,11 +36,7 @@ public class NCPlayerListener implements Listener {
 
         // only save to database if in cache
         // only save if player executed /nearchat once
-        if (plugin.getPlayerManager().has(player.getName())) {
-            plugin.getPlayerManager().save(player.getName());
-            plugin.getPlayerManager().removeNearby(player);
-        }
-
+        plugin.getPlayerManager().removeNearby(player);
         plugin.getPlayerManager().removeDelay(player);
         // cancel brokers if empty
     }

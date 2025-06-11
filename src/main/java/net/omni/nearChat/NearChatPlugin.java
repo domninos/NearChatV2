@@ -48,14 +48,14 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
 
     /*
     TODO:
-        * Add /nearchat gui
-          * Possibly create inventory handler. (necessary ?) [FUTURE]
         *
         * RETEST ALL DATABASE
         *
-        * make sure to not update database when cache wasn't touched (TEST)
-        *
         * database to implement: sqlite, mongodb, mysql
+        *
+        *
+        * QUIET LOAD database 20 entries every 1 min
+        *
         *
         * tabbing / tab complete
         *
@@ -66,6 +66,8 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
         *
         *
         * make messages on MessageHandler follow polymorphism (or store objects in map) [not sure if efficient or necessary]
+        * Add /nearchat gui
+          * Possibly create inventory handler. (necessary ?) [FUTURE]
      */
 
     @Override

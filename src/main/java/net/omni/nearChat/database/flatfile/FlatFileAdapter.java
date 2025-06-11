@@ -46,9 +46,6 @@ public class FlatFileAdapter implements DatabaseAdapter {
         return database.has(playerName);
     }
 
-
-    // TODO: test
-    // TODO: possibly just use NearChatConfig for .yml
     @Override
     public void saveMap(Map<String, Boolean> enabledPlayers) {
         database.saveMap(enabledPlayers);

@@ -1,4 +1,3 @@
-# plugin uses redis as its database api.
 # NOTE: leave empty if you want to use a flat-file database (stores data to a .txt file)
 host: ""
 port: ""
@@ -9,7 +8,7 @@ password: ""
 # whether to use a flat-file database or redis database
 # (use and fill credentials above to use a redis or any SQL database)
 # database: 'redis' or 'flat-file' or 'mongodb' or 'sqlite' or 'postgresql'
-# default: 'flat-file'
+# default: 'flat-file' TODO: should be sqlite
 database-type: 'flat-file'
 
 # in ticks (millis). 6000 - 5 mins. 20 * 60 = 1200 (60 seconds) * 5 = 6000 milliseconds.

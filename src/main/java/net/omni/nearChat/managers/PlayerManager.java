@@ -11,12 +11,13 @@ import org.bukkit.entity.Player;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class PlayerManager implements Flushable {
     private final Map<String, Boolean> enabled = new HashMap<>();
     private final Map<Player, Set<Player>> nearby = new HashMap<>();
 
-    private final Map<Player, Integer> delay = new HashMap<>();
+    private final Map<Player, Integer> delay = new ConcurrentHashMap<>();
 
     private final NearChatPlugin plugin;
 
@@ -33,6 +34,10 @@ public class PlayerManager implements Flushable {
         }
 
         String playerName = player.getName();
+
+
+        // TODO this is resource intensive
+
 
         // if not in database
         if (plugin.getDatabaseHandler().isSQL()) {
