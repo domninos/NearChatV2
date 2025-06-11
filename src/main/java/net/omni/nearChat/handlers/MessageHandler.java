@@ -322,6 +322,9 @@ public class MessageHandler implements Flushable {
         messageConfig.save();
     }
 
+    /*
+    TODO: fix spacing when logging on paper 1.11.2 and lower
+     */
     public void sendEnabledMessage() {
         for (String line : getEnabledMessage()) {
             if (line.contains("%plugin_name%"))
