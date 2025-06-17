@@ -40,7 +40,7 @@ delay_set: "&aSuccessfully set delay to %delay% seconds."
 
 
 # set the command prefix
-prefix: "&f[&6Near&eChat&f] &7" # _MAY_ produce the default value
+prefix: "&f[&6Near&eChat&f]&7" # _MAY_ produce the default value
 
 
 # set the format for chat messaging on nearchat.
@@ -48,7 +48,7 @@ prefix: "&f[&6Near&eChat&f] &7" # _MAY_ produce the default value
 #  - %prefix% -> the set prefix above
 #  - %player% -> the player's name
 #  - %chat% -> the player's chat to send to all nearby players.
-format: "%prefix%%player%&r: %chat%"
+format: "%prefix% %player%&r: %chat%"
 
 
 
@@ -63,9 +63,9 @@ help_text:
   - "&7-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
   - "&a/nearchat [nc] » Opens the NearChat GUI."
   - "&a/nc help » Opens this menu."
-  - "<nearchat.db> &a/nc database » Reconnects to the database."
+  - "<nearchat.db> &a/nc database [db] » Reconnects to the database."
   - "<nearchat.db.switch> &a/nc database switch <database> » Switch database. &c(DISCOURAGED)"
-  - "<nearchat.reload> &a/nc reload » Reloads config.yml and messages.yml."
+  - "<nearchat.reload> &a/nc reload [rl] » Reloads config.yml and messages.yml."
   - "<nearchat.delay> &a/nc delay » Toggle delay."
   - "<nearchat.delay> &a/nc delay <time> » Set delay time."
   - ""
@@ -113,4 +113,4 @@ settings_message:
 #  - %plugin_name% -> NearChat
 #  - %plugin_mc_version% -> minecraft version support of the current plugin
 disabled_message:
-  - "%prefix%&cSuccessfully disabled &6%plugin_name% &c[%plugin_mc_version%]"
+  - "%prefix% &cSuccessfully disabled &6%plugin_name% &c[%plugin_mc_version%]"

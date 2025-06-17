@@ -21,6 +21,8 @@ public class DatabaseBroker extends NCBroker {
             return;
         }
 
+        plugin.sendConsole(plugin.getMessageHandler().getDBTrySave(plugin.getDatabaseHandler().getUpdates()));
+
         if (plugin.getDatabaseHandler().isEnabled())
             plugin.getPlayerManager().saveMap(true);
         else {
@@ -28,7 +30,6 @@ public class DatabaseBroker extends NCBroker {
             cancelBroker(true);
         }
 
-        plugin.sendConsole(plugin.getMessageHandler().getDBTrySave(plugin.getDatabaseHandler().getUpdates()));
         plugin.getDatabaseHandler().resetCheckUpdates();
     }
 

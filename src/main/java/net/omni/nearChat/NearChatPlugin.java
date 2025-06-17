@@ -59,6 +59,8 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
         *
         * fetch for updates (TRY) on load
         *
+        * `broker_cancel` on disable
+        *
         * Make all messages on messages.yml.
         * Redo messages (make sure to replace on MessageHandler.java)
         *
