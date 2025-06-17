@@ -4,6 +4,7 @@ import net.omni.nearChat.NearChatPlugin;
 import net.omni.nearChat.commands.subcommands.SubCommand;
 import net.omni.nearChat.util.Flushable;
 import org.bukkit.Bukkit;
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
@@ -31,6 +32,8 @@ public abstract class MainCommand implements CommandExecutor, Flushable {
     public abstract void registerSubCommands();
 
     public abstract List<String> getHelpText();
+
+    public abstract List<String> getTabCompleter(CommandSender sender, Command command, String label, String[] args);
 
     public void sendHelp(CommandSender sender) {
         StringBuilder toSend = new StringBuilder("\n");
@@ -74,13 +77,17 @@ public abstract class MainCommand implements CommandExecutor, Flushable {
 
     public void register() {
         PluginCommand pc = Bukkit.getPluginCommand(getMainCommand());
+
         if (pc == null) {
             plugin.error("Could not register /" + getMainCommand() + " because it does not exist in plugin.yml!");
             return;
         }
 
         pc.setExecutor(this);
+        pc.setTabCompleter(this::getTabCompleter); // TODO test tab completer
+
         registerSubCommands();
         plugin.getCommands().add(this);
+
     }
 }

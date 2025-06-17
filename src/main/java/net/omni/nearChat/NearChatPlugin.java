@@ -53,12 +53,11 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
         *
         *
         * load the only library when switching databases
-        * block censored/blacklisted words (research for more)
-        * add admin command to inspect nearchat of player
+        * block censored/blacklisted words (research for more accuracy)
+        * add admin command to inspect nearchat of player (send all messages sent from and to player)
         *
         *
-        * tabbing / tab complete
-        *
+        * fetch for updates (TRY) on load
         *
         * Make all messages on messages.yml.
         * Redo messages (make sure to replace on MessageHandler.java)

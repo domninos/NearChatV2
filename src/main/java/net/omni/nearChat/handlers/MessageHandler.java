@@ -16,7 +16,7 @@ import java.util.Map;
 
 public class MessageHandler implements Flushable {
 
-    private static final List<String> EMPTY_LIST = List.of();
+    public static final List<String> EMPTY_LIST = List.of();
 
     private final NearChatPlugin plugin;
     private final Map<String, String> childToMessage = new HashMap<>();

@@ -2,11 +2,14 @@ package net.omni.nearChat.commands;
 
 import net.omni.nearChat.NearChatPlugin;
 import net.omni.nearChat.commands.subcommands.*;
+import net.omni.nearChat.handlers.MessageHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.util.StringUtil;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -18,8 +21,8 @@ public class NearChatCommand extends MainCommand {
 
     @Override
     public void registerSubCommands() {
-        subCommands.add(new DatabaseSubCommand(plugin, this));
         subCommands.add(new HelpSubCommand(plugin, this));
+        subCommands.add(new DatabaseSubCommand(plugin, this));
         subCommands.add(new ReloadSubCommand(plugin, this));
         subCommands.add(new DelaySubCommand(plugin, this));
     }
@@ -27,6 +30,59 @@ public class NearChatCommand extends MainCommand {
     @Override
     public List<String> getHelpText() {
         return plugin.getMessageHandler().getHelpTextList();
+    }
+
+    @Override
+    public List<String> getTabCompleter(CommandSender sender, Command command, String label, String[] args) {
+        if (subCommands.isEmpty())
+            return MessageHandler.EMPTY_LIST;
+
+        if (!sender.hasPermission(getPermission()))
+            return MessageHandler.EMPTY_LIST;
+
+        List<String> completer = new ArrayList<>();
+        List<String> collection = new ArrayList<>();
+
+        if (args.length == 0) {
+            if (plugin.getDatabaseHandler().isEnabled()) {
+                completer.add(getMainCommand());
+
+                return StringUtil.copyPartialMatches(getMainCommand(), completer, collection);
+            }
+        } else {
+            // check subcommands first
+
+            for (SubCommand subCommand : getSubCommands()) {
+                if (subCommand == null) continue;
+
+                String perm = subCommand.getPermission();
+
+                if (perm != null && !sender.hasPermission(perm))
+                    continue;
+
+                if (args.length != (subCommand.getArg() + 1)) // make sure to only tab complete when on the right place
+                    continue;
+
+                String currentCmd = args[subCommand.getArg()];
+                String subCmd = subCommand.getCommand();
+
+                if (currentCmd.isEmpty()) {
+                    // just tabbed; empty
+
+                    completer.add(subCmd);
+
+                    return StringUtil.copyPartialMatches(currentCmd.toLowerCase(), completer, collection);
+                }
+
+                if (StringUtil.startsWithIgnoreCase(subCmd, currentCmd)) {
+                    completer.add(subCmd);
+
+                    return StringUtil.copyPartialMatches(currentCmd.toLowerCase(), completer, collection);
+                }
+            }
+        }
+
+        return completer; // empty
     }
 
     @Override
@@ -44,6 +100,7 @@ public class NearChatCommand extends MainCommand {
                 plugin.sendMessage(sender, plugin.getMessageHandler().getPlayerOnly());
                 return true;
             }
+
             if (!plugin.getDatabaseHandler().isEnabled()) {
                 plugin.sendMessage(sender, plugin.getMessageHandler().getDBErrorConnectDisabled());
                 return true;
@@ -58,12 +115,9 @@ public class NearChatCommand extends MainCommand {
             for (SubCommand subCommand : getSubCommands()) {
                 if (subCommand == null) continue;
 
-                // TODO: tabbing / tabComplete()
-
                 String perm = subCommand.getPermission();
 
-                // TODO
-                if (perm != null && !perm.equalsIgnoreCase(getPermission()) && !(sender.hasPermission(perm))) {
+                if (perm != null && !(sender.hasPermission(perm))) {
                     plugin.sendMessage(sender, plugin.getMessageHandler().getNoPermission());
                     return true;
                 }
