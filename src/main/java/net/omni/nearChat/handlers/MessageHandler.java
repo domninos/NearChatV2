@@ -200,7 +200,7 @@ public class MessageHandler implements Flushable {
         }
 
         if (getConfig().getString("prefix") == null) {
-            messageConfig.setNoSave("prefix", "&f[&6Near&eChat&f]");
+            messageConfig.setNoSave("prefix", "&f[&6Near&eChat&f]&7");
             def = true;
         }
 
@@ -236,7 +236,7 @@ public class MessageHandler implements Flushable {
         }
 
         if (getConfig().getString("delay_switch_off") == null) {
-            messageConfig.setNoSave("delay_switch_off", "&aSuccessfully disabled delay");
+            messageConfig.setNoSave("delay_switch_off", "&cSuccessfully disabled delay");
             def = true;
         }
 
@@ -415,7 +415,7 @@ public class MessageHandler implements Flushable {
     }
 
     public String getPrefix() {
-        return childToMessage.getOrDefault("prefix", "&f[&6Near&eChat&f] &7");
+        return childToMessage.getOrDefault("prefix", "&f[&6Near&eChat&f]&7");
     }
 
     public String getFormat() {

@@ -34,7 +34,7 @@ broker_empty_cancel: "[%db_type%] &cThere are no players using nearchat. Cancell
 broker_cancel: "&cCancelled the %broker% broker."
 wait_delay: "&cYou must wait %delay% to chat in NearChat." # no need to put in seconds. the plugin will automatically put second or seconds.
 delay_switch_on: "&aSuccessfully enabled delay."
-delay_switch_off: "&aSuccessfully disabled delay."
+delay_switch_off: "&cSuccessfully disabled delay."
 delay_set: "&aSuccessfully set delay to %delay% seconds."
 
 

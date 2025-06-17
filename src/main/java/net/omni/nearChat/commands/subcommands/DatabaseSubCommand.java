@@ -5,6 +5,7 @@ import net.omni.nearChat.commands.MainCommand;
 import net.omni.nearChat.database.NearChatDatabase;
 import net.omni.nearChat.util.Flushable;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 public class DatabaseSubCommand extends SubCommand implements Flushable {
 
@@ -77,8 +78,15 @@ public class DatabaseSubCommand extends SubCommand implements Flushable {
 
                         if (plugin.getDatabaseHandler().connect()) {
                             plugin.sendMessage(sender, plugin.getMessageHandler().getDBConnected());
-                        } else
+
+                            if (sender instanceof Player) // also send connected message to console
+                                plugin.sendConsole(plugin.getMessageHandler().getDBConnected());
+                        } else {
                             plugin.sendMessage(sender, plugin.getMessageHandler().getDBErrorConnectUnsuccessful());
+
+                            if (sender instanceof Player) // also send unsuccessful message to console
+                                plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectUnsuccessful());
+                        }
 
                         return true;
                     } catch (Exception e) {

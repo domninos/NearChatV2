@@ -164,7 +164,7 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
     }
 
     public void sendMessage(CommandSender sender, String msg) {
-        sender.sendMessage(translate(messageHandler.getPrefix() + msg));
+        sender.sendMessage(translate(messageHandler.getPrefix() + " " + msg));
     }
 
     public String translate(String text) {
@@ -210,9 +210,9 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
         if (playerManager != null)
             playerManager.flush();
 
-        messageHandler.flush();
-
         brokerManager.flush();
+
+        messageHandler.flush();
 
         Bukkit.getScheduler().cancelTasks(this);
         HandlerList.unregisterAll(this);
@@ -220,7 +220,7 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
 
     public void addHook() {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            if (DatabaseHandler.ADAPTER != null && DatabaseHandler.ADAPTER.getDatabase() != null)
+            if (DatabaseHandler.ADAPTER != null)
                 DatabaseHandler.ADAPTER.lastSaveMap();
         }));
     }
