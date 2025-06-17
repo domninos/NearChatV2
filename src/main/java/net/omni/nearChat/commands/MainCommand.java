@@ -2,6 +2,7 @@ package net.omni.nearChat.commands;
 
 import net.omni.nearChat.NearChatPlugin;
 import net.omni.nearChat.commands.subcommands.SubCommand;
+import net.omni.nearChat.database.NearChatDatabase;
 import net.omni.nearChat.util.Flushable;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -62,6 +63,9 @@ public abstract class MainCommand implements CommandExecutor, Flushable {
                 line = line.replace("%plugin_version%", plugin.getConfigHandler().getPluginVersion());
             if (line.contains("%plugin_mc_version%"))
                 line = line.replace("%plugin_mc_version%", plugin.getConfigHandler().getPluginMCVersion());
+
+            if (line.contains("%databases%"))
+                line = line.replace("%databases%", NearChatDatabase.Type.available());
 
             toSend.append(line).append("&r\n");
         }

@@ -9,6 +9,7 @@ import net.omni.nearChat.util.PlayerUtil;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,6 +20,9 @@ public class PlayerManager implements Flushable {
     private final Map<Player, Set<Player>> nearby = new HashMap<>();
 
     private final Map<Player, Integer> delay = new ConcurrentHashMap<>();
+
+    private final Set<String> switching = new HashSet<>();
+
 
     private final NearChatPlugin plugin;
 
@@ -190,6 +194,14 @@ public class PlayerManager implements Flushable {
             plugin.getBrokerManager().tryBroker(NCBroker.BrokerType.NEARBY);
     }
 
+    public void setSwitching(String name) {
+        switching.add(name);
+    }
+
+    public void removeSwitching(String name) {
+        switching.remove(name);
+    }
+
     public Map<Player, Set<Player>> getNearbyPlayers() {
         return nearby;
     }
@@ -200,6 +212,10 @@ public class PlayerManager implements Flushable {
 
     public boolean isEnabled(String name) {
         return enabled.getOrDefault(name, false);
+    }
+
+    public boolean isSwitching(String name) {
+        return switching.contains(name);
     }
 
     public boolean has(String name) {
@@ -216,5 +232,7 @@ public class PlayerManager implements Flushable {
         nearby.clear();
         delay.clear();
         initial.clear();
+
+        switching.clear();
     }
 }

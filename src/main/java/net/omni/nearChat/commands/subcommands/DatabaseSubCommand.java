@@ -6,11 +6,7 @@ import net.omni.nearChat.database.NearChatDatabase;
 import net.omni.nearChat.util.Flushable;
 import org.bukkit.command.CommandSender;
 
-import java.util.HashSet;
-import java.util.Set;
-
 public class DatabaseSubCommand extends SubCommand implements Flushable {
-    private final Set<String> switching = new HashSet<>();
 
     public DatabaseSubCommand(NearChatPlugin plugin, MainCommand mainCommand) {
         super(plugin, mainCommand);
@@ -53,8 +49,10 @@ public class DatabaseSubCommand extends SubCommand implements Flushable {
                     mainCommand.sendHelp(sender);
                     return true;
                 } else if (args.length == 3) {
-                    if (!switching.contains(sender.getName())) {
-                        switching.add(sender.getName());
+                    String name = sender.getName();
+
+                    if (plugin.getPlayerManager().isSwitching(name)) {
+                        plugin.getPlayerManager().setSwitching(name);
                         plugin.sendMessage(sender, plugin.getMessageHandler().getDBSwitchWarning());
                         return true;
                     }
@@ -72,7 +70,7 @@ public class DatabaseSubCommand extends SubCommand implements Flushable {
 
                     try {
                         // reload before accessing config.
-                        switching.remove(sender.getName());
+                        plugin.getPlayerManager().removeSwitching(name);
 
                         plugin.getConfigHandler().setDatabase(type);
                         plugin.getNearConfig().reload();
@@ -88,6 +86,9 @@ public class DatabaseSubCommand extends SubCommand implements Flushable {
                     }
 
                 }
+            } else {
+                mainCommand.sendHelp(sender);
+                return true;
             }
         }
 
@@ -106,6 +107,5 @@ public class DatabaseSubCommand extends SubCommand implements Flushable {
 
     @Override
     public void flush() {
-        this.switching.clear();
     }
 }

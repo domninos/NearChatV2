@@ -2,6 +2,7 @@ package net.omni.nearChat.commands;
 
 import net.omni.nearChat.NearChatPlugin;
 import net.omni.nearChat.commands.subcommands.*;
+import net.omni.nearChat.database.NearChatDatabase;
 import net.omni.nearChat.handlers.MessageHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -52,6 +53,33 @@ public class NearChatCommand extends MainCommand {
         } else {
             // check subcommands first
 
+            if (args[0].equalsIgnoreCase("database")) {
+                // /nc database switch <database>
+                if (args.length == 2) {
+                    // for "switch"
+
+                    if (StringUtil.startsWithIgnoreCase("switch", args[1])) {
+                        completer.add("switch");
+
+                        StringUtil.copyPartialMatches(args[1].toLowerCase(), completer, collection);
+                    }
+
+                } else if (args.length == 3) {
+                    // for databases
+                    for (NearChatDatabase.Type type : NearChatDatabase.Type.values()) {
+                        if (type == null)
+                            continue;
+
+                        if (StringUtil.startsWithIgnoreCase(type.getLabel(), args[2])) {
+                            completer.add(type.getLabel());
+                        }
+                    }
+
+                    StringUtil.copyPartialMatches(args[2], completer, collection);
+                }
+            }
+
+
             for (SubCommand subCommand : getSubCommands()) {
                 if (subCommand == null) continue;
 
@@ -60,29 +88,25 @@ public class NearChatCommand extends MainCommand {
                 if (perm != null && !sender.hasPermission(perm))
                     continue;
 
-                if (args.length != (subCommand.getArg() + 1)) // make sure to only tab complete when on the right place
-                    continue;
-
-                String currentCmd = args[subCommand.getArg()];
+                int subArg = subCommand.getArg();
+                String currentCmd = args[subArg];
                 String subCmd = subCommand.getCommand();
 
-                if (currentCmd.isEmpty()) {
-                    // just tabbed; empty
+                if (args.length != (subArg + 1)) // make sure to only tab complete when on the right place
+                    continue;
 
+                // just tabbed; empty
+                if (currentCmd.isEmpty())
                     completer.add(subCmd);
 
-                    return StringUtil.copyPartialMatches(currentCmd.toLowerCase(), completer, collection);
-                }
-
-                if (StringUtil.startsWithIgnoreCase(subCmd, currentCmd)) {
+                if (StringUtil.startsWithIgnoreCase(subCmd, currentCmd))
                     completer.add(subCmd);
 
-                    return StringUtil.copyPartialMatches(currentCmd.toLowerCase(), completer, collection);
-                }
+                StringUtil.copyPartialMatches(currentCmd.toLowerCase(), completer, collection);
             }
         }
 
-        return completer; // empty
+        return collection; // not empty
     }
 
     @Override
