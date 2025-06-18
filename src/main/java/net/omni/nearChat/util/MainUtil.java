@@ -57,13 +57,13 @@ public class MainUtil {
                 .version("42.7.5")
                 .relocate("org{}postgresql", "net{}omni{}nearChat{}libs{}org{}postgresql")
                 .build();
-//
-//        Library sqlite = Library.builder()
-//                .groupId("org{}xerial")
-//                .artifactId("sqlite-jdbc")
-//                .version("3.49.1.0")
-//                .relocate("org{}sqlite", "net{}omni{}nearChat{}libs{}org{}sqlite")
-//                .build();
+
+        Library sqlite = Library.builder()
+                .groupId("org{}xerial")
+                .artifactId("sqlite-jdbc")
+                .version("3.49.1.0")
+                .relocate("org{}sqlite", "net{}omni{}nearChat{}libs{}org{}xerial")
+                .build();
 
         Library hikaricp = Library.builder()
                 .groupId("com{}zaxxer")
@@ -78,9 +78,11 @@ public class MainUtil {
         libraryManager.loadLibrary(reactive_streams);
         libraryManager.loadLibrary(lettuce);
 
-        libraryManager.loadLibrary(postgres);
-//        libraryManager.loadLibrary(sqlite);
+        // TODO load only when choosing sql
         libraryManager.loadLibrary(hikaricp);
+
+        libraryManager.loadLibrary(postgres);
+        libraryManager.loadLibrary(sqlite);
 
         plugin.sendConsole("&aLoaded libraries"); // TODO messages.yml
     }

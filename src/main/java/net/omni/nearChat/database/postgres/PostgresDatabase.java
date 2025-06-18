@@ -22,8 +22,6 @@ public class PostgresDatabase implements NearChatDatabase, ISQLDatabase {
 
     private final NearChatPlugin plugin;
 
-    private static final String TABLE_NAME = "nearchat_enabled";
-
     public PostgresDatabase(NearChatPlugin plugin) {
         this.plugin = plugin;
     }

@@ -4,6 +4,10 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public interface ISQLDatabase {
+
+    // CONSTANT
+    String TABLE_NAME = "nearchat_enabled";
+
     boolean connect(String host, int port, String database_name, String user, String password);
 
     String getHost();

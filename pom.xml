@@ -50,6 +50,10 @@
                             <pattern>com.zaxxer.hikari</pattern>
                             <shadedPattern>net.omni.nearChat.libs.com.zaxxer.hikari</shadedPattern>
                         </relocation>
+                        <relocation>
+                            <pattern>org.xerial</pattern>
+                            <shadedPattern>net.omni.nearChat.libs.org.xerial.sqlite-jdbc</shadedPattern>
+                        </relocation>
                     </relocations>
                 </configuration>
                 <executions>
