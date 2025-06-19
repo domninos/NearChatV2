@@ -10,6 +10,8 @@ import net.omni.nearChat.database.postgres.PostgresAdapter;
 import net.omni.nearChat.database.postgres.PostgresDatabase;
 import net.omni.nearChat.database.redis.RedisAdapter;
 import net.omni.nearChat.database.redis.RedisDatabase;
+import net.omni.nearChat.database.sqlite.SQLiteAdapter;
+import net.omni.nearChat.database.sqlite.SQLiteDatabase;
 import org.bukkit.entity.Player;
 
 import java.util.Map;
@@ -43,11 +45,15 @@ public class DatabaseHandler {
                 && ADAPTER instanceof PostgresAdapter;
     }
 
+    public boolean isSQLite() {
+        return ADAPTER != null
+                && plugin.getConfigHandler().getDatabaseType() == NearChatDatabase.Type.SQLITE
+                && ADAPTER instanceof SQLiteAdapter;
+    }
+
     // TODO other databases
     public void initDatabase() {
-        // REF: https://redis.io/docs/latest/develop/clients/lettuce/connect/
-
-        if (ADAPTER != null) {
+        if (ADAPTER != null) { // close previous database connection
             ADAPTER.closeDatabase();
             NearChatDatabase db = ADAPTER.getDatabase();
 
@@ -59,6 +65,7 @@ public class DatabaseHandler {
 
         switch (type) {
             case REDIS:
+                plugin.getLibraryHandler().loadRedisLib(); // load redis first since it uses redis libraries within the adapter class.
                 ADAPTER = new RedisAdapter(plugin, new RedisDatabase(plugin));
                 break;
             case POSTGRESQL:
@@ -67,7 +74,9 @@ public class DatabaseHandler {
             case FLAT_FILE:
                 ADAPTER = new FlatFileAdapter(plugin, new FlatFileDatabase(plugin));
                 break;
-
+            case SQLITE:
+                ADAPTER = new SQLiteAdapter(plugin, new SQLiteDatabase(plugin));
+                break;
         }
 
         if (ADAPTER == null) {
@@ -75,8 +84,8 @@ public class DatabaseHandler {
             return;
         }
 
-        ADAPTER.initDatabase();
         plugin.sendConsole(plugin.getMessageHandler().getDBInit());
+        ADAPTER.initDatabase();
     }
 
     public boolean connect() {

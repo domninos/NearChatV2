@@ -3,6 +3,7 @@ package net.omni.nearChat.database.postgres;
 import net.omni.nearChat.NearChatPlugin;
 import net.omni.nearChat.database.ISQLDatabase;
 import net.omni.nearChat.database.NearChatDatabase;
+import net.omni.nearChat.database.SQLCredentials;
 import net.omni.nearChat.util.MainUtil;
 import org.bukkit.Bukkit;
 
@@ -16,7 +17,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 
-public class PostgresDatabase implements NearChatDatabase, ISQLDatabase {
+public class PostgresDatabase implements NearChatDatabase, ISQLDatabase, SQLCredentials {
     private boolean enabled = false;
     private String host = "";
 
@@ -204,7 +205,7 @@ public class PostgresDatabase implements NearChatDatabase, ISQLDatabase {
             stmt.executeUpdate();
 
         } catch (SQLException e) {
-            plugin.error("Something went wrong saving database.", e);
+            plugin.error("Something went wrong inserting to database.", e);
         }
     }
 
@@ -287,7 +288,7 @@ public class PostgresDatabase implements NearChatDatabase, ISQLDatabase {
         try {
             return Objects.requireNonNull(get(playerName)).get();
         } catch (InterruptedException | ExecutionException e) {
-            plugin.sendConsole("error");
+            plugin.error("Something went wrong fetching enabled.", e);
             return false;
         }
     }

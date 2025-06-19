@@ -8,7 +8,10 @@ public interface NearChatDatabase {
     boolean isEnabled();
 
     enum Type {
-        REDIS("redis"), FLAT_FILE("flat-file"), POSTGRESQL("postgresql");
+        REDIS("redis"),
+        FLAT_FILE("flat-file"),
+        POSTGRESQL("postgresql"),
+        SQLITE("sqlite");
 
         final String label;
 

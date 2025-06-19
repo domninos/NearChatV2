@@ -292,7 +292,7 @@ public class MessageHandler implements Flushable {
 
         if (getConfig().getStringList("disabled_message").isEmpty()) {
             messageConfig.setNoSave("disabled_message", List.of(
-                    "%prefix%&cSuccessfully disabled &6%plugin_name% &c[%plugin_mc_version%]"
+                    "%prefix%&cSuccessfully disabled &6%plugin_name% &c[%plugin_version%]"
             ));
 
             def = true;
@@ -374,6 +374,8 @@ public class MessageHandler implements Flushable {
                 line = line.replace("%plugin_name%", plugin.getConfigHandler().getPluginName());
             if (line.contains("%plugin_mc_version%"))
                 line = line.replace("%plugin_mc_version%", plugin.getConfigHandler().getPluginMCVersion());
+            if (line.contains("%plugin_version%"))
+                line = line.replace("%plugin_version%", plugin.getConfigHandler().getPluginVersion());
 
             Bukkit.getConsoleSender().sendMessage(plugin.translate(line));
         }

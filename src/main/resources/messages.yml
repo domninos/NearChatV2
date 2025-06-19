@@ -111,6 +111,7 @@ settings_message:
 # available placeholders:
 #  - %prefix% -> the set prefix above
 #  - %plugin_name% -> NearChat
+#  - %plugin_version% -> NearChat version
 #  - %plugin_mc_version% -> minecraft version support of the current plugin
 disabled_message:
-  - "%prefix% &cSuccessfully disabled &6%plugin_name% &c[%plugin_mc_version%]"
+  - "%prefix% &cSuccessfully disabled &6%plugin_name% &c[%plugin_version%]"

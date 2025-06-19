@@ -53,8 +53,8 @@ public class NearChatCommand extends MainCommand {
         } else {
             // check subcommands first
 
-            if (args[0].equalsIgnoreCase("database")) {
-                // /nc database switch <database>
+            if (args[0].equalsIgnoreCase("database") || args[0].equalsIgnoreCase("db")) {
+                // /nc database switch <database> || /nc db switch <database>
                 if (args.length == 2) {
                     // for "switch"
 

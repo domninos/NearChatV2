@@ -1,15 +1,15 @@
-# NOTE: leave empty if you want to use a flat-file database (stores data to a .txt file)
+# NOTE: leave empty if you want to use a flat-file database (stores data to a .txt file) or sqlite (stores data to a .db file)
 host: ""
 port: ""
-database-name: "" # only for SQL type database
+database-name: "" # only for SQL type database [POSTGRESQL, MySQL]
 user: ""
 password: ""
 
 # whether to use a flat-file database or redis database
 # (use and fill credentials above to use a redis or any SQL database)
-# database: 'redis' or 'flat-file' or 'mongodb' or 'sqlite' or 'postgresql'
-# default: 'flat-file' TODO: should be sqlite
-database-type: 'flat-file'
+# database:  'sqlite' or 'redis' or 'flat-file' or 'mongodb' or 'postgresql'
+# default: 'sqlite'
+database-type: 'sqlite'
 
 # in ticks (millis). 6000 - 5 mins. 20 * 60 = 1200 (60 seconds) * 5 = 6000 milliseconds.
 # default: 6000

@@ -21,8 +21,6 @@ public class RedisAdapter implements DatabaseAdapter {
     public RedisAdapter(NearChatPlugin plugin, RedisDatabase redis) {
         this.plugin = plugin;
         this.redis = redis;
-
-        // make sure redis is loaded in MainUtil
     }
 
     public static RedisAdapter from(DatabaseAdapter adapter) {
@@ -36,6 +34,7 @@ public class RedisAdapter implements DatabaseAdapter {
     @Override
     public void initDatabase() {
         // REF: https://redis.io/docs/latest/develop/clients/lettuce/connect/
+        plugin.getLibraryHandler().loadRedisLib();
     }
 
     @Override

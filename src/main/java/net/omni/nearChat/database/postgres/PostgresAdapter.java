@@ -15,8 +15,6 @@ public class PostgresAdapter implements DatabaseAdapter {
     public PostgresAdapter(NearChatPlugin plugin, PostgresDatabase database) {
         this.plugin = plugin;
         this.database = database;
-
-        // make sure postgre is loaded in MainUtil
     }
 
     public static PostgresAdapter from(DatabaseAdapter adapter) {
@@ -29,7 +27,7 @@ public class PostgresAdapter implements DatabaseAdapter {
 
     @Override
     public void initDatabase() {
-        // empty; ignore
+        plugin.getLibraryHandler().loadPostgresLib();
     }
 
     @Override
@@ -55,7 +53,7 @@ public class PostgresAdapter implements DatabaseAdapter {
 
             plugin.sendConsole(plugin.getMessageHandler().getDatabaseSaved());
         } catch (Exception e) {
-            plugin.error("Could not save database properly", e);
+            plugin.error("Could not save database properly.", e);
         }
     }
 

@@ -4,6 +4,7 @@ import net.omni.nearChat.commands.MainCommand;
 import net.omni.nearChat.commands.NearChatCommand;
 import net.omni.nearChat.handlers.ConfigHandler;
 import net.omni.nearChat.handlers.DatabaseHandler;
+import net.omni.nearChat.handlers.LibraryHandler;
 import net.omni.nearChat.handlers.MessageHandler;
 import net.omni.nearChat.listeners.NCPlayerListener;
 import net.omni.nearChat.managers.BrokerManager;
@@ -11,7 +12,6 @@ import net.omni.nearChat.managers.HikariManager;
 import net.omni.nearChat.managers.PAPIManager;
 import net.omni.nearChat.managers.PlayerManager;
 import net.omni.nearChat.util.Flushable;
-import net.omni.nearChat.util.MainUtil;
 import net.omni.nearChat.util.NearChatConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -33,6 +33,7 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
     private final ConfigHandler configHandler;
     private final MessageHandler messageHandler;
     private final DatabaseHandler databaseHandler;
+    private final LibraryHandler libraryHandler;
 
     private PlayerManager playerManager;
     private HikariManager hikariManager;
@@ -42,6 +43,7 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
         this.databaseHandler = new DatabaseHandler(this);
         this.messageHandler = new MessageHandler(this);
         this.configHandler = new ConfigHandler(this);
+        this.libraryHandler = new LibraryHandler(this);
     }
 
     /*
@@ -50,6 +52,8 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
         * RETEST ALL DATABASE
         *
         * database to implement: sqlite, mongodb, mysql
+        *
+        * FIX library loading so slow
         *
         *
         * load the only library when switching databases
@@ -65,6 +69,10 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
         *
         *
         *
+        * CLEANUPPPPPPPPPPPPPPPPPPPP
+        *
+        *
+        *
         * make messages on MessageHandler follow polymorphism (or store objects in map) [not sure if efficient or necessary]
         * Add /nearchat gui
           * Possibly create inventory handler. (necessary ?) [FUTURE]
@@ -72,7 +80,7 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
 
     @Override
     public void onEnable() {
-        MainUtil.loadLibraries(this);
+        libraryHandler.ensureMainLibraries();
 
         this.messageConfig = new NearChatConfig(this, "messages.yml", true);
         this.nearConfig = new NearChatConfig(this, "config.yml", true);
@@ -109,6 +117,8 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
         hikariManager.close();
 
         messageHandler.sendDisabledMessage();
+
+        libraryHandler.stopExecutor();
 
         flush();
     }
@@ -148,6 +158,10 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
 
     public PlayerManager getPlayerManager() {
         return playerManager;
+    }
+
+    public LibraryHandler getLibraryHandler() {
+        return libraryHandler;
     }
 
     public HikariManager getHikariManager() {
