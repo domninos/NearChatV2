@@ -8,6 +8,7 @@
 #  - %broker% -> the broker's name (for `broker_stop` and `broker_empty_cancel` only)
 #  - %databases% -> available databases (for `db_switch_arg` only)
 #  - %delay% -> delay to wait for async chat processing (spigot-api - for `wait_delay` and `delay_set` only)
+#  - %library% -> the library to load (for `loaded_library` only)
 player_only: "&cOnly players can execute this command."
 nearchat_enabled: "&aEnabled"
 nearchat_enabled_player: "&aEnabled NearChat for player %player%"
@@ -15,10 +16,11 @@ nearchat_disabled: "&cDisabled"
 nearchat_disabled_player: "&cDisabled NearChat for player %player%"
 nearchat_player_not_found: "&cCould not find %player%"
 no_permission: "&cYou do not have permission to use this command."
+db_try: "&aTrying to connect.."
 db_init: "&aInitializing &7%db_type%"
 db_connected: "[%db_type%] &aSuccessfully connected to database!"
 db_connected_console: "[%db_type%] &aSuccessfully connected to: &3%host%"
-db_switch_warning: "&c&l&oWARNING! &cMay cause data instability. This command is discouraged. Stop the server and reconfigure config.yml. Run this command again to confirm database switch."
+db_switch_warning: "&c&l&oWARNING! &cMay cause data inconsistency. This command is discouraged. Stop the server and reconfigure config.yml. Run this command again to confirm database switch."
 db_switch_arg: "&aAvailable databases: %databases%."
 db_disconnected: "[%db_type%] &aDatabase disconnected."
 db_error_credentials_not_found: "Database information not found in config.yml. Will not use database..."
@@ -36,6 +38,9 @@ wait_delay: "&cYou must wait %delay% to chat in NearChat." # no need to put in s
 delay_switch_on: "&aSuccessfully enabled delay."
 delay_switch_off: "&cSuccessfully disabled delay."
 delay_set: "&aSuccessfully set delay to %delay% seconds."
+library_loaded: "&aLoaded %library% libraries."
+library_downloading: "&aDownloading libraries. Please wait for a few seconds."
+
 
 
 

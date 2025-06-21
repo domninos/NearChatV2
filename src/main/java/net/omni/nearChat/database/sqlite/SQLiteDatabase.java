@@ -20,8 +20,6 @@ public class SQLiteDatabase implements NearChatDatabase, ISQLDatabase, SQLCreden
     private final File db_file;
     private final String urlString;
 
-    private Connection connection;
-
     private boolean enabled = false;
 
     private final String host = "nearchat.db";
@@ -32,9 +30,6 @@ public class SQLiteDatabase implements NearChatDatabase, ISQLDatabase, SQLCreden
         this.urlString = "jdbc:sqlite:" + db_file.getAbsolutePath();
     }
 
-    protected Connection getConn() throws SQLException {
-        return this.connection == null ? DriverManager.getConnection(this.urlString) : this.connection;
-    }
 
     @Override
     public boolean connect(String host) {
@@ -49,18 +44,17 @@ public class SQLiteDatabase implements NearChatDatabase, ISQLDatabase, SQLCreden
         }
 
         try {
-            this.connection = getConn();
-
             checkTable();
 
             this.enabled = true;
 
             plugin.sendConsole(plugin.getMessageHandler().getDBConnectedConsole(host));
+
+            return true;
         } catch (Exception e) {
             plugin.error("Something went wrong connecting to SQLite database.", e);
+            return false;
         }
-
-        return false;
     }
 
     @Override
@@ -77,8 +71,8 @@ public class SQLiteDatabase implements NearChatDatabase, ISQLDatabase, SQLCreden
     public void checkTable() {
         String create = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(player_name VARCHAR(36), enabled BOOLEAN)";
 
-        try (Connection conn = getConn();
-             PreparedStatement stmt = conn.prepareStatement(create)) {
+        try (Connection connection = DriverManager.getConnection(this.urlString);
+             PreparedStatement stmt = connection.prepareStatement(create)) {
 
             stmt.executeUpdate();
         } catch (SQLException e) {
@@ -98,7 +92,8 @@ public class SQLiteDatabase implements NearChatDatabase, ISQLDatabase, SQLCreden
         future.completeAsync(() -> {
             String query = "SELECT enabled FROM " + TABLE_NAME + " WHERE player_name=?;";
 
-            try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            try (Connection connection = DriverManager.getConnection(this.urlString);
+                 PreparedStatement stmt = connection.prepareStatement(query)) {
                 stmt.setString(1, playerName);
 
                 ResultSet resultSet = stmt.executeQuery();
@@ -125,7 +120,8 @@ public class SQLiteDatabase implements NearChatDatabase, ISQLDatabase, SQLCreden
 
         String query = "INSERT INTO " + TABLE_NAME + "(player_name,enabled) VALUES(?,?);";
 
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+        try (Connection connection = DriverManager.getConnection(this.urlString);
+             PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, playerName);
             stmt.setBoolean(2, value);
 
@@ -147,7 +143,8 @@ public class SQLiteDatabase implements NearChatDatabase, ISQLDatabase, SQLCreden
         future.completeAsync(() -> {
             String query = "SELECT 1 FROM " + TABLE_NAME + " WHERE player_name=? LIMIT 1;";
 
-            try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            try (Connection connection = DriverManager.getConnection(this.urlString);
+                 PreparedStatement stmt = connection.prepareStatement(query)) {
                 stmt.setString(1, playerName);
 
                 // EXISTS
@@ -179,9 +176,15 @@ public class SQLiteDatabase implements NearChatDatabase, ISQLDatabase, SQLCreden
 
     @Override
     public void saveCallbackMap(Map<String, Boolean> enabledPlayers) {
+        if (!isEnabled()) {
+            plugin.error(plugin.getMessageHandler().getDBErrorConnectDisabled());
+            return;
+        }
+
         final String query = "UPDATE " + TABLE_NAME + " SET enabled=? WHERE player_name=?;";
 
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+        try (Connection connection = DriverManager.getConnection(this.urlString);
+             PreparedStatement stmt = connection.prepareStatement(query)) {
             connection.setAutoCommit(false);
 
             for (Map.Entry<String, Boolean> entry : enabledPlayers.entrySet()) {
@@ -217,9 +220,15 @@ public class SQLiteDatabase implements NearChatDatabase, ISQLDatabase, SQLCreden
 
     @Override
     public void saveCallback(String playerName, Boolean value) {
+        if (!isEnabled()) {
+            plugin.error(plugin.getMessageHandler().getDBErrorConnectDisabled());
+            return;
+        }
+
         String query = "UPDATE " + TABLE_NAME + " SET enabled=? WHERE player_name=?;";
 
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+        try (Connection connection = DriverManager.getConnection(this.urlString);
+             PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setBoolean(1, value);
             stmt.setString(2, playerName);
 
@@ -231,6 +240,11 @@ public class SQLiteDatabase implements NearChatDatabase, ISQLDatabase, SQLCreden
 
     @Override
     public void handleExists(String playerName) {
+        if (!isEnabled()) {
+            plugin.error(plugin.getMessageHandler().getDBErrorConnectDisabled());
+            return;
+        }
+
         exists(playerName).whenComplete((value, throwable) -> {
             if (throwable != null) {
                 plugin.error("Something went wrong handling SQL exists.", throwable);
@@ -244,6 +258,11 @@ public class SQLiteDatabase implements NearChatDatabase, ISQLDatabase, SQLCreden
 
     @Override
     public void saveNonExists(String playerName, Boolean value) {
+        if (!isEnabled()) {
+            plugin.error(plugin.getMessageHandler().getDBErrorConnectDisabled());
+            return;
+        }
+
         insert(playerName, value);
 
         plugin.getPlayerManager().setInitial(playerName, value);
@@ -251,6 +270,11 @@ public class SQLiteDatabase implements NearChatDatabase, ISQLDatabase, SQLCreden
 
     @Override
     public boolean fetchExists(String playerName) {
+        if (!isEnabled()) {
+            plugin.error(plugin.getMessageHandler().getDBErrorConnectDisabled());
+            return false;
+        }
+
         try {
             return Objects.requireNonNull(exists(playerName)).get();
         } catch (InterruptedException | ExecutionException e) {
@@ -261,6 +285,11 @@ public class SQLiteDatabase implements NearChatDatabase, ISQLDatabase, SQLCreden
 
     @Override
     public boolean fetchEnabled(String playerName) {
+        if (!isEnabled()) {
+            plugin.error(plugin.getMessageHandler().getDBErrorConnectDisabled());
+            return false;
+        }
+
         try {
             return Objects.requireNonNull(get(playerName)).get();
         } catch (InterruptedException | ExecutionException e) {
@@ -271,23 +300,14 @@ public class SQLiteDatabase implements NearChatDatabase, ISQLDatabase, SQLCreden
 
     @Override
     public void close() {
-        try {
-            if (!isEnabled())
-                return;
+        if (!isEnabled())
+            return;
 
-            connection.close();
-
-            this.connection = null;
-
-            this.enabled = false;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        this.enabled = false;
     }
 
     @Override
     public boolean isEnabled() {
         return this.enabled;
     }
-
 }

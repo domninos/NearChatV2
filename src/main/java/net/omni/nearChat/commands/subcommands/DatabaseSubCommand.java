@@ -4,6 +4,7 @@ import net.omni.nearChat.NearChatPlugin;
 import net.omni.nearChat.commands.MainCommand;
 import net.omni.nearChat.database.NearChatDatabase;
 import net.omni.nearChat.util.Flushable;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -50,17 +51,7 @@ public class DatabaseSubCommand extends SubCommand implements Flushable {
                     mainCommand.sendHelp(sender);
                     return true;
                 } else if (args.length == 3) {
-                    String name = sender.getName();
-
-                    if (plugin.getPlayerManager().isSwitching(name)) {
-                        plugin.getPlayerManager().setSwitching(name);
-                        plugin.sendMessage(sender, plugin.getMessageHandler().getDBSwitchWarning());
-                        return true;
-                    }
-
                     String databaseArg = args[2];
-
-                    // make sure there is caution since data may become unstable and should just stop the server and set database on config
 
                     NearChatDatabase.Type type = NearChatDatabase.Type.parseType(databaseArg);
 
@@ -69,6 +60,16 @@ public class DatabaseSubCommand extends SubCommand implements Flushable {
                         return true;
                     }
 
+                    String name = sender.getName();
+
+                    if (!plugin.getPlayerManager().isSwitching(name)) {
+                        plugin.getPlayerManager().setSwitching(name);
+                        plugin.sendMessage(sender, plugin.getMessageHandler().getDBSwitchWarning());
+                        return true;
+                    }
+
+                    // make sure there is caution since data may become unstable and should just stop the server and set database on config
+
                     try {
                         // reload before accessing config.
                         plugin.getPlayerManager().removeSwitching(name);
@@ -76,17 +77,37 @@ public class DatabaseSubCommand extends SubCommand implements Flushable {
                         plugin.getConfigHandler().setDatabase(type);
                         plugin.getNearConfig().reload();
 
-                        if (plugin.getDatabaseHandler().connect()) {
-                            plugin.sendMessage(sender, plugin.getMessageHandler().getDBConnected());
+                        plugin.sendMessage(sender, plugin.getMessageHandler().getDBTry());
 
-                            if (sender instanceof Player) // also send connected message to console
-                                plugin.sendConsole(plugin.getMessageHandler().getDBConnected());
-                        } else {
-                            plugin.sendMessage(sender, plugin.getMessageHandler().getDBErrorConnectUnsuccessful());
+                        if (sender instanceof Player)
+                            plugin.sendConsole(plugin.getMessageHandler().getDBTry());
 
-                            if (sender instanceof Player) // also send unsuccessful message to console
-                                plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectUnsuccessful());
+                        if (!type.isLoaded(plugin)) {
+                            plugin.sendMessage(sender, plugin.getMessageHandler().getLibraryDownloading());
+
+                            if (sender instanceof Player)
+                                plugin.sendConsole(plugin.getMessageHandler().getLibraryDownloading());
                         }
+
+
+                        // should be done async
+                        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                            String toSend;
+
+                            if (plugin.getDatabaseHandler().connect()) {
+                                toSend = plugin.getMessageHandler().getDBConnected();
+
+                                // load every online players' nearchat status
+                                Bukkit.getOnlinePlayers().forEach(player ->
+                                        plugin.getPlayerManager().loadEnabled(player));
+                            } else
+                                toSend = plugin.getMessageHandler().getDBErrorConnectUnsuccessful();
+
+                            plugin.sendMessage(sender, toSend);
+
+                            if (sender instanceof Player) // also send message to console
+                                plugin.sendConsole(toSend);
+                        });
 
                         return true;
                     } catch (Exception e) {

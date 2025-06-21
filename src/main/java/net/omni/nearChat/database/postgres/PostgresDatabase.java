@@ -94,7 +94,7 @@ public class PostgresDatabase implements NearChatDatabase, ISQLDatabase, SQLCred
     @Override
     public CompletableFuture<Boolean> exists(String playerName) {
         if (!isEnabled()) {
-            plugin.error(plugin.getMessageHandler().getDBErrorConnectUnsuccessful());
+            plugin.error(plugin.getMessageHandler().getDBErrorConnectDisabled());
             return null;
         }
 
@@ -136,6 +136,11 @@ public class PostgresDatabase implements NearChatDatabase, ISQLDatabase, SQLCred
 
     @Override
     public void saveCallbackMap(Map<String, Boolean> enabledPlayers) {
+        if (!isEnabled()) {
+            plugin.error(plugin.getMessageHandler().getDBErrorConnectDisabled());
+            return;
+        }
+
         final String query = "UPDATE " + TABLE_NAME + " SET enabled=? WHERE player_name=?;";
 
         try (Connection connection = plugin.getHikariManager().getConnection();
@@ -162,6 +167,11 @@ public class PostgresDatabase implements NearChatDatabase, ISQLDatabase, SQLCred
 
     @Override
     public void saveCallback(String playerName, Boolean value) {
+        if (!isEnabled()) {
+            plugin.error(plugin.getMessageHandler().getDBErrorConnectDisabled());
+            return;
+        }
+
         String query = "UPDATE " + TABLE_NAME + " SET enabled=? WHERE player_name=?;";
 
         try (Connection connection = plugin.getHikariManager().getConnection();
@@ -177,6 +187,11 @@ public class PostgresDatabase implements NearChatDatabase, ISQLDatabase, SQLCred
 
     @Override
     public void handleExists(String playerName) {
+        if (!isEnabled()) {
+            plugin.error(plugin.getMessageHandler().getDBErrorConnectDisabled());
+            return;
+        }
+
         exists(playerName).whenComplete((value, throwable) -> {
             if (throwable != null) {
                 plugin.error("Something went wrong handling SQL exists.", throwable);
@@ -268,6 +283,11 @@ public class PostgresDatabase implements NearChatDatabase, ISQLDatabase, SQLCred
 
     @Override
     public void saveNonExists(String playerName, Boolean value) {
+        if (!isEnabled()) {
+            plugin.error(plugin.getMessageHandler().getDBErrorConnectDisabled());
+            return;
+        }
+
         insert(playerName, value);
 
         plugin.getPlayerManager().setInitial(playerName, value);
@@ -275,6 +295,11 @@ public class PostgresDatabase implements NearChatDatabase, ISQLDatabase, SQLCred
 
     @Override
     public boolean fetchExists(String playerName) {
+        if (!isEnabled()) {
+            plugin.error(plugin.getMessageHandler().getDBErrorConnectDisabled());
+            return false;
+        }
+
         try {
             return Objects.requireNonNull(exists(playerName)).get();
         } catch (InterruptedException | ExecutionException e) {
@@ -285,6 +310,11 @@ public class PostgresDatabase implements NearChatDatabase, ISQLDatabase, SQLCred
 
     @Override
     public boolean fetchEnabled(String playerName) {
+        if (!isEnabled()) {
+            plugin.error(plugin.getMessageHandler().getDBErrorConnectDisabled());
+            return false;
+        }
+
         try {
             return Objects.requireNonNull(get(playerName)).get();
         } catch (InterruptedException | ExecutionException e) {

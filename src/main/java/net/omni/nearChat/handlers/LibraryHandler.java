@@ -3,26 +3,55 @@ package net.omni.nearChat.handlers;
 import net.byteflux.libby.BukkitLibraryManager;
 import net.byteflux.libby.Library;
 import net.omni.nearChat.NearChatPlugin;
+import net.omni.nearChat.database.NearChatDatabase;
+import net.omni.nearChat.util.Libraries;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class LibraryHandler {
     private final NearChatPlugin plugin;
 
     private final BukkitLibraryManager libraryManager;
 
-
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
-
 
     public LibraryHandler(NearChatPlugin plugin) {
         this.plugin = plugin;
         this.libraryManager = new BukkitLibraryManager(plugin);
     }
 
-    public void loadSQLiteLibraries() {
-        executor.submit(() -> {
+    public void loadLibraries(NearChatDatabase.Type type) throws ExecutionException, InterruptedException {
+        switch (type) {
+            case SQLITE:
+                loadSQLiteLibraries().get();
+                break;
+            case POSTGRESQL:
+                loadPostgresLib().get();
+                break;
+            case REDIS:
+                loadRedisLib().get();
+                break;
+            case FLAT_FILE:
+            default:
+                break;
+        }
+
+        plugin.sendConsole(plugin.getMessageHandler().getLibraryLoaded(type.getLabel()));
+    }
+
+    public boolean isLibLoaded(NearChatDatabase.Type type) {
+        return type.isLoaded(plugin);
+    }
+
+    public boolean isLibLoaded() {
+        return plugin.getDatabaseHandler().getAdapter() != null && plugin.getDatabaseHandler().getAdapter().getType().isLoaded(plugin);
+    }
+
+    public Future<Boolean> loadSQLiteLibraries() {
+        return submitExec(() -> {
             Library sqlite = Library.builder()
                     .groupId("org{}xerial")
                     .artifactId("sqlite-jdbc")
@@ -32,12 +61,13 @@ public class LibraryHandler {
 
             libraryManager.loadLibrary(sqlite);
 
-            plugin.sendConsole("Loaded SQLite library..."); // TODO messages.yml
+            Libraries.SQLITE.load(plugin.getDataFolder());
+            return true;
         });
     }
 
-    public void loadPostgresLib() {
-        executor.submit(() -> {
+    public Future<Boolean> loadPostgresLib() {
+        return submitExec(() -> {
             ensureHikari();
 
             Library postgres = Library.builder()
@@ -49,68 +79,73 @@ public class LibraryHandler {
 
             libraryManager.loadLibrary(postgres);
 
-            plugin.sendConsole("Loaded PostgreSQL libraries..."); // TODO messages.yml
+            Libraries.POSTGRESQL.load(plugin.getDataFolder());
+            return true;
         });
     }
 
-    public void loadRedisLib() {
-        // TODO fix. load before instantiating RedisAdapter on DatabaseHandler
+    public Future<Boolean> loadRedisLib() {
+        return submitExec(() -> {
+            Library reactivestreams = Library.builder()
+                    .groupId("org{}reactivestreams")
+                    .artifactId("reactive-streams")
+                    .version("1.0.4")
+                    .build();
 
-        executor.submit(() -> {
+            Library projectreactor = Library.builder()
+                    .groupId("io{}projectreactor")
+                    .artifactId("reactor-core")
+                    .version("3.6.6")
+                    .build();
+
             Library lettuce = Library.builder()
                     .groupId("io{}lettuce")
                     .artifactId("lettuce-core")
                     .version("6.6.0.RELEASE")
                     .id("AlessioDP")
                     .repository("https://repo.alessiodp.com/releases/")
-                    // Sets an id for the library
-                    // Relocation is applied to the downloaded jar before loading it
                     .relocate("io{}lettuce{}core", "net{}omni{}nearChat{}libs{}io{}lettuce{}core")
                     .build();
 
-            Library reactive_streams = Library.builder()
-                    .groupId("org{}reactivestreams")
-                    .artifactId("reactive-streams")
-                    .version("1.0.4")
-                    .build();
+            libraryManager.loadLibrary(reactivestreams);
+            Libraries.REACTIVE_STREAMS.load(plugin.getDataFolder());
 
-            Library reactor_core = Library.builder()
-                    .groupId("io{}projectreactor")
-                    .artifactId("reactor-core")
-                    .version("3.6.6")
-                    .build();
+            libraryManager.loadLibrary(projectreactor);
+            Libraries.PROJECT_REACTOR.load(plugin.getDataFolder());
 
-            libraryManager.loadLibrary(reactor_core);
-            libraryManager.loadLibrary(reactive_streams);
             libraryManager.loadLibrary(lettuce);
-
-            plugin.sendConsole("Loaded Redis libraries..."); // TODO messages.yml
+            Libraries.REDIS.load(plugin.getDataFolder());
+            return true;
         });
     }
 
     public void ensureMainLibraries() {
         libraryManager.addMavenCentral();
-
-        plugin.sendConsole("&aLoaded main libraries"); // TODO messages.yml
+        libraryManager.addSonatype();
     }
 
-    // use hikari connection pool when dealing with SQL databases
+    // use hikari connection pool when dealing with SQL databases except SQLite (?)
     public void ensureHikari() {
-        executor.submit(() -> {
-            Library hikaricp = Library.builder()
-                    .groupId("com{}zaxxer")
-                    .artifactId("HikariCP")
-                    .version("6.3.0")
-                    .relocate("com{}zaxxer{}hikari", "net{}omni{}nearChat{}libs{}com{}zaxxer{}hikari")
-                    .build();
+        Library hikaricp = Library.builder()
+                .groupId("com{}zaxxer")
+                .artifactId("HikariCP")
+                .version("6.3.0")
+                .relocate("com{}zaxxer{}hikari", "net{}omni{}nearChat{}libs{}com{}zaxxer{}hikari")
+                .build();
 
-            libraryManager.loadLibrary(hikaricp);
+        libraryManager.loadLibrary(hikaricp);
 
-            plugin.sendConsole("&aLoaded HikariCP"); // TODO messages.yml
-        });
+        Libraries.HIKARICP.load(plugin.getDataFolder());
+
+        plugin.sendConsole(plugin.getMessageHandler().getLibraryLoaded("HikariCP"));
     }
 
-    public void stopExecutor() {
-        executor.shutdownNow();
+    public Future<Boolean> submitExec(NCFunction func) {
+        return executor.submit(func::exec);
     }
+
+    public interface NCFunction {
+        boolean exec();
+    }
+
 }

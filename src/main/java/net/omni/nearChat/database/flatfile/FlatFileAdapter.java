@@ -60,6 +60,11 @@ public class FlatFileAdapter implements DatabaseAdapter {
 
     @Override
     public void lastSaveMap() {
+        if (!database.isEnabled()) {
+            plugin.error(plugin.getMessageHandler().getDBErrorConnectDisabled());
+            return;
+        }
+
         Map<String, Boolean> enabledPlayers = plugin.getPlayerManager().getEnabledPlayers();
 
         if (!enabledPlayers.isEmpty())
@@ -91,6 +96,11 @@ public class FlatFileAdapter implements DatabaseAdapter {
     @Override
     public NearChatDatabase getDatabase() {
         return this.database;
+    }
+
+    @Override
+    public NearChatDatabase.Type getType() {
+        return NearChatDatabase.Type.FLAT_FILE;
     }
 
     @Override

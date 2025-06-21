@@ -1,10 +1,5 @@
 package net.omni.nearChat.database.redis;
 
-import io.lettuce.core.RedisException;
-import io.lettuce.core.RedisFuture;
-import io.lettuce.core.TransactionResult;
-import io.lettuce.core.api.async.RedisAsyncCommands;
-import io.lettuce.core.api.sync.RedisCommands;
 import net.omni.nearChat.NearChatPlugin;
 import net.omni.nearChat.database.DatabaseAdapter;
 import net.omni.nearChat.database.NearChatDatabase;
@@ -34,7 +29,6 @@ public class RedisAdapter implements DatabaseAdapter {
     @Override
     public void initDatabase() {
         // REF: https://redis.io/docs/latest/develop/clients/lettuce/connect/
-        plugin.getLibraryHandler().loadRedisLib();
     }
 
     @Override
@@ -54,68 +48,25 @@ public class RedisAdapter implements DatabaseAdapter {
 
     @Override
     public void saveMap(Map<String, Boolean> enabledPlayers) {
-        try {
-            if (!enabledPlayers.isEmpty()) {
-                RedisAsyncCommands<String, String> async = redis.getAsync();
-
-                async.multi();
-
-                for (Map.Entry<String, Boolean> entry : enabledPlayers.entrySet()) {
-                    String name = entry.getKey();
-                    Boolean value = entry.getValue();
-
-                    redis.asyncHashSetNoSave(async, name, value.toString());
-                }
-
-                RedisFuture<TransactionResult> exec = async.exec();
-
-                exec.whenComplete((result, throwable) -> {
-                    if (throwable != null) {
-                        plugin.error("Could not complete execution: ", throwable);
-                        return;
-                    }
-
-                    async.save();
-                    plugin.sendConsole(plugin.getMessageHandler().getDatabaseSaved());
-                });
-            }
-
+        if (!enabledPlayers.isEmpty())
+            redis.multipleAsync(enabledPlayers);
+        else
             plugin.sendConsole(plugin.getMessageHandler().getDatabaseSaved());
-        } catch (RedisException e) {
-            plugin.error("Could not save async properly");
-        }
     }
 
     @Override
     public void lastSaveMap() {
-        // needs to be sync
-        try {
-            Map<String, Boolean> enabledPlayers = plugin.getPlayerManager().getEnabledPlayers();
-
-            if (!enabledPlayers.isEmpty()) {
-                RedisCommands<String, String> sync = redis.getSync();
-
-                try {
-                    sync.multi();
-
-                    for (Map.Entry<String, Boolean> entry : enabledPlayers.entrySet()) {
-                        String name = entry.getKey();
-                        Boolean value = entry.getValue();
-
-                        redis.syncHashSet(sync, name, value.toString());
-                    }
-
-                    sync.exec();
-                    sync.save();
-                } catch (RedisException e) {
-                    plugin.error("Could not exec properly");
-                }
-            }
-
-            plugin.sendConsole(plugin.getMessageHandler().getDatabaseSaved());
-        } catch (RedisException e) {
-            plugin.error("Could not save properly");
+        if (!redis.isEnabled()) {
+            plugin.error(plugin.getMessageHandler().getDBErrorConnectDisabled());
+            return;
         }
+        // needs to be sync
+        Map<String, Boolean> enabledPlayers = plugin.getPlayerManager().getEnabledPlayers();
+
+        if (!enabledPlayers.isEmpty())
+            redis.multiple(enabledPlayers);
+        else
+            plugin.sendConsole(plugin.getMessageHandler().getDatabaseSaved());
     }
 
     @Override
@@ -149,6 +100,11 @@ public class RedisAdapter implements DatabaseAdapter {
     @Override
     public NearChatDatabase getDatabase() {
         return this.redis;
+    }
+
+    @Override
+    public NearChatDatabase.Type getType() {
+        return NearChatDatabase.Type.REDIS;
     }
 
     @Override

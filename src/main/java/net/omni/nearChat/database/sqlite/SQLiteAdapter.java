@@ -28,7 +28,6 @@ public class SQLiteAdapter implements DatabaseAdapter {
 
     @Override
     public void initDatabase() {
-        plugin.getLibraryHandler().loadSQLiteLibraries();
     }
 
     @Override
@@ -69,6 +68,11 @@ public class SQLiteAdapter implements DatabaseAdapter {
 
     @Override
     public void lastSaveMap() {
+        if (!database.isEnabled()) {
+            plugin.error(plugin.getMessageHandler().getDBErrorConnectDisabled());
+            return;
+        }
+
         try {
             Map<String, Boolean> enabledPlayers = plugin.getPlayerManager().getEnabledPlayers();
 
@@ -106,6 +110,11 @@ public class SQLiteAdapter implements DatabaseAdapter {
     @Override
     public NearChatDatabase getDatabase() {
         return this.database;
+    }
+
+    @Override
+    public NearChatDatabase.Type getType() {
+        return NearChatDatabase.Type.SQLITE;
     }
 
     @Override

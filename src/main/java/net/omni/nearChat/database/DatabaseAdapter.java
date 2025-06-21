@@ -26,5 +26,7 @@ public interface DatabaseAdapter {
 
     NearChatDatabase getDatabase();
 
+    NearChatDatabase.Type getType();
+
     String toString();
 }

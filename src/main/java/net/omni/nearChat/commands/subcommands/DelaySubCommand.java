@@ -22,6 +22,11 @@ public class DelaySubCommand extends SubCommand {
 
     @Override
     public boolean execute(CommandSender sender, String[] args) {
+        if (!plugin.getDatabaseHandler().isEnabled()) {
+            plugin.sendMessage(sender, plugin.getMessageHandler().getDBErrorConnectDisabled());
+            return true;
+        }
+
         if (args.length == 1) {
             boolean changed = !plugin.getConfigHandler().isDelay();
 

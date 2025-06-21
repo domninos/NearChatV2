@@ -15,6 +15,7 @@ import net.omni.nearChat.database.sqlite.SQLiteDatabase;
 import org.bukkit.entity.Player;
 
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 public class DatabaseHandler {
     private final NearChatPlugin plugin;
@@ -52,47 +53,73 @@ public class DatabaseHandler {
     }
 
     // TODO other databases
-    public void initDatabase() {
+    public NearChatDatabase.Type initDatabase() {
         if (ADAPTER != null) { // close previous database connection
             ADAPTER.closeDatabase();
             NearChatDatabase db = ADAPTER.getDatabase();
 
             if (db != null)
                 db.close();
+
+            ADAPTER = null;
         }
 
         NearChatDatabase.Type type = plugin.getConfigHandler().getDatabaseType();
 
-        switch (type) {
-            case REDIS:
-                plugin.getLibraryHandler().loadRedisLib(); // load redis first since it uses redis libraries within the adapter class.
-                ADAPTER = new RedisAdapter(plugin, new RedisDatabase(plugin));
-                break;
-            case POSTGRESQL:
-                ADAPTER = new PostgresAdapter(plugin, new PostgresDatabase(plugin));
-                break;
-            case FLAT_FILE:
-                ADAPTER = new FlatFileAdapter(plugin, new FlatFileDatabase(plugin));
-                break;
-            case SQLITE:
-                ADAPTER = new SQLiteAdapter(plugin, new SQLiteDatabase(plugin));
-                break;
+        if (!type.isLoaded(plugin)) {
+            try {
+                plugin.getLibraryHandler().loadLibraries(type);
+            } catch (ExecutionException | InterruptedException e) {
+                plugin.error("Something went wrong loading libraries of " + type.getLabel(), e);
+                return type;
+            }
         }
 
-        if (ADAPTER == null) {
-            plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectUnsuccessful());
-            return;
-        }
+        plugin.getLibraryHandler().submitExec(() -> {
+            switch (type) {
+                case REDIS:
+                    ADAPTER = new RedisAdapter(plugin, new RedisDatabase(plugin));
+                    break;
+                case POSTGRESQL:
+                    ADAPTER = new PostgresAdapter(plugin, new PostgresDatabase(plugin));
+                    break;
+                case FLAT_FILE:
+                    ADAPTER = new FlatFileAdapter(plugin, new FlatFileDatabase(plugin));
+                    break;
+                case SQLITE:
+                    ADAPTER = new SQLiteAdapter(plugin, new SQLiteDatabase(plugin));
+                    break;
+            }
 
-        plugin.sendConsole(plugin.getMessageHandler().getDBInit());
-        ADAPTER.initDatabase();
+            if (ADAPTER == null) {
+                plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectUnsuccessful());
+                return false;
+            }
+
+            plugin.sendConsole(plugin.getMessageHandler().getDBInit());
+            ADAPTER.initDatabase();
+            return true;
+        });
+
+        return type;
     }
 
     public boolean connect() {
         if (plugin.getPlayerManager() != null)
             plugin.getPlayerManager().flush();
 
-        initDatabase();
+        NearChatDatabase.Type type = initDatabase();
+
+        if (ADAPTER == null) {
+            // retry loading
+            try {
+                // run on the same thread
+                return plugin.getLibraryHandler().submitExec(() -> ADAPTER.connect()).get();
+            } catch (InterruptedException | ExecutionException e) {
+                plugin.error("Something went wrong connecting to " + type.getLabel(), e);
+                return false;
+            }
+        }
 
         return ADAPTER.connect();
     }
@@ -165,8 +192,8 @@ public class DatabaseHandler {
         savePlayer(playerName, Boolean.getBoolean(value), true);
     }
 
-    public boolean isEnabled() {
-        return ADAPTER != null && ADAPTER.isEnabled();
+    public boolean isEnabled() { // TODO make it not check for isLibLoaded for PlayerManager#loadEnabled (?)
+        return ADAPTER != null && plugin.getLibraryHandler().isLibLoaded(ADAPTER.getType()) && ADAPTER.isEnabled();
     }
 
     public boolean checkExistsDB(String playerName) {

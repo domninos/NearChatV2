@@ -1,7 +1,6 @@
 package net.omni.nearChat.handlers;
 
 import net.omni.nearChat.NearChatPlugin;
-import net.omni.nearChat.database.DatabaseAdapter;
 import net.omni.nearChat.database.NearChatDatabase;
 import net.omni.nearChat.util.Flushable;
 import net.omni.nearChat.util.MainUtil;
@@ -31,7 +30,6 @@ public class MessageHandler implements Flushable {
 
     // TODO turn this into objects
     //  ConfigMessage("path", "default_value"); (? necessary to create that much objects ?)
-    //  FIX broker_cancel on disable
     public void load() {
         if (this.messageConfig == null)
             this.messageConfig = plugin.getMessageConfig();
@@ -50,6 +48,7 @@ public class MessageHandler implements Flushable {
         childToMessage.put("nearchat_disabled_player", getConfig().getString("nearchat_disabled_player"));
         childToMessage.put("nearchat_player_not_found", getConfig().getString("nearchat_player_not_found"));
 
+        childToMessage.put("db_try", getConfig().getString("db_try"));
         childToMessage.put("db_init", getConfig().getString("db_init"));
         childToMessage.put("db_connected", getConfig().getString("db_connected"));
         childToMessage.put("db_connected_console", getConfig().getString("db_connected_console"));
@@ -77,6 +76,9 @@ public class MessageHandler implements Flushable {
         childToMessage.put("delay_switch_on", getConfig().getString("delay_switch_on"));
         childToMessage.put("delay_switch_off", getConfig().getString("delay_switch_off"));
         childToMessage.put("delay_set", getConfig().getString("delay_set"));
+
+        childToMessage.put("library_loaded", getConfig().getString("library_loaded"));
+        childToMessage.put("library_downloading", getConfig().getString("library_downloading"));
 
         childToListMessage.put("help_text", getConfig().getStringList("help_text"));
         childToListMessage.put("enabled_message", getConfig().getStringList("enabled_message"));
@@ -125,6 +127,12 @@ public class MessageHandler implements Flushable {
             def = true;
         }
 
+        if (getConfig().getString("db_try") == null) {
+            messageConfig.setNoSave("db_try", "&aTrying to connect..");
+
+            def = true;
+        }
+
         if (getConfig().getString("db_init") == null) {
             messageConfig.setNoSave("db_init", "&aInitializing &7%db_type%");
             def = true;
@@ -142,7 +150,7 @@ public class MessageHandler implements Flushable {
 
         if (getConfig().getString("db_switch_warning") == null) {
             messageConfig.setNoSave("db_switch_warning",
-                    "&c&l&oWARNING! &cMay cause data instability. This command is discouraged. Stop the server and reconfigure config.yml. Run this command again to confirm database switch.");
+                    "&c&l&oWARNING! &cMay cause data inconsistency. This command is discouraged. Stop the server and reconfigure config.yml. Run this command again to confirm database switch.");
             def = true;
         }
 
@@ -242,6 +250,18 @@ public class MessageHandler implements Flushable {
 
         if (getConfig().getString("delay_set") == null) {
             messageConfig.setNoSave("delay_set", "&aSuccessfully set delay to %delay% seconds");
+            def = true;
+        }
+
+        if (getConfig().getString("library_loaded") == null) {
+            messageConfig.setNoSave("library_loaded", "&aLoaded %library% libraries.");
+
+            def = true;
+        }
+
+        if (getConfig().getString("library_downloading") == null) {
+            messageConfig.setNoSave("library_downloading", "&aDownloading libraries. Please wait for a few seconds.");
+
             def = true;
         }
 
@@ -424,6 +444,10 @@ public class MessageHandler implements Flushable {
         return childToMessage.getOrDefault("format", "&c`format`");
     }
 
+    public String getDBTry() {
+        return modifyDBMessage(childToMessage.getOrDefault("db_try", "&c`db_try`"));
+    }
+
     public String getDBInit() {
         return modifyDBMessage(childToMessage.getOrDefault("db_init", "&c`db_init`"));
     }
@@ -518,6 +542,15 @@ public class MessageHandler implements Flushable {
                 .replace("%delay%", String.valueOf(set));
     }
 
+    public String getLibraryLoaded(String library) {
+        return childToMessage.getOrDefault("library_loaded", "&c`library_loaded`")
+                .replace("%library%", library);
+    }
+
+    public String getLibraryDownloading() {
+        return childToMessage.getOrDefault("library_downloading", "`library_downloading");
+    }
+
     public List<String> getEnabledMessage() {
         return childToListMessage.getOrDefault("enabled_message", EMPTY_LIST);
     }
@@ -531,12 +564,9 @@ public class MessageHandler implements Flushable {
     }
 
     public String modifyDBMessage(String db_message) {
-        DatabaseAdapter db = plugin.getDatabaseHandler().getAdapter();
+        NearChatDatabase.Type type = plugin.getConfigHandler().getDatabaseType();
 
-        if (db == null)
-            return db_message != null ? db_message.replace("%db_type%", "NONE") : "null";
-        else
-            return db_message != null ? db_message.replace("%db_type%", db.toString()) : "null";
+        return db_message.replace("%db_type%", type.getLabel().toUpperCase());
     }
 
     public FileConfiguration getConfig() {

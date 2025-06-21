@@ -21,11 +21,21 @@ public class NCPlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
+        if (!plugin.getLibraryHandler().isLibLoaded()) {
+            // wait for libraries to load
+
+            plugin.getLibraryHandler().submitExec(() -> {
+                plugin.getPlayerManager().loadEnabled(event.getPlayer());
+                return true;
+            });
+
+            return;
+        }
+
         if (!plugin.getDatabaseHandler().isEnabled())
             return;
 
         // cancels brokers if empty
-
         plugin.getPlayerManager().loadEnabled(event.getPlayer());
     }
 
@@ -59,6 +69,8 @@ public class NCPlayerListener implements Listener {
         if (!plugin.getDatabaseHandler().isEnabled()) return;
 
         Player player = event.getPlayer();
+
+        // TODO: hook into other chat plugins
 
         if (!plugin.getPlayerManager().isEnabled(player.getName())) return;
 

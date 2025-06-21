@@ -53,10 +53,7 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
         *
         * database to implement: sqlite, mongodb, mysql
         *
-        * FIX library loading so slow
         *
-        *
-        * load the only library when switching databases
         * block censored/blacklisted words (research for more accuracy)
         * add admin command to inspect nearchat of player (send all messages sent from and to player)
         *
@@ -92,7 +89,7 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
 
         this.hikariManager = new HikariManager(this);
 
-        databaseHandler.connect();
+        Bukkit.getScheduler().runTaskAsynchronously(this, databaseHandler::connect);
 
         this.playerManager = new PlayerManager(this);
 
@@ -117,8 +114,6 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
         hikariManager.close();
 
         messageHandler.sendDisabledMessage();
-
-        libraryHandler.stopExecutor();
 
         flush();
     }

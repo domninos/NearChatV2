@@ -1,9 +1,6 @@
 package net.omni.nearChat.database.redis;
 
-import io.lettuce.core.RedisClient;
-import io.lettuce.core.RedisException;
-import io.lettuce.core.RedisFuture;
-import io.lettuce.core.RedisURI;
+import io.lettuce.core.*;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
 import io.lettuce.core.api.sync.RedisCommands;
@@ -47,7 +44,7 @@ public class RedisDatabase implements NearChatDatabase {
             connection.async().clientCaching(true); // TODO research
 
             this.enabled = true;
-        } catch (RedisException e) {
+        } catch (RedisConnectionException e) {
             plugin.error(plugin.getMessageHandler().getDBErrorConnectUnsuccessful(), e);
 
             if (connection != null)
@@ -173,6 +170,55 @@ public class RedisDatabase implements NearChatDatabase {
 
     public void asyncHashSet(String field, String value) {
         asyncHashSet(getAsync(), field, value);
+    }
+
+    public void multiple(Map<String, Boolean> enabledPlayers) {
+        try {
+            RedisCommands<String, String> sync = getSync();
+
+            sync.multi();
+
+            for (Map.Entry<String, Boolean> entry : enabledPlayers.entrySet()) {
+                String name = entry.getKey();
+                Boolean value = entry.getValue();
+
+                syncHashSet(sync, name, value.toString());
+            }
+
+            sync.exec();
+            sync.save();
+        } catch (RedisException e) {
+            plugin.error("Could not exec multiple properly.", e);
+        }
+    }
+
+    public void multipleAsync(Map<String, Boolean> enabledPlayers) {
+        try {
+            RedisAsyncCommands<String, String> async = getAsync();
+
+            async.multi();
+
+            for (Map.Entry<String, Boolean> entry : enabledPlayers.entrySet()) {
+                String name = entry.getKey();
+                Boolean value = entry.getValue();
+
+                asyncHashSetNoSave(async, name, value.toString());
+            }
+
+            RedisFuture<TransactionResult> exec = async.exec();
+
+            exec.whenComplete((result, throwable) -> {
+                if (throwable != null) {
+                    plugin.error("Could not complete execution: ", throwable);
+                    return;
+                }
+
+                async.save();
+                plugin.sendConsole(plugin.getMessageHandler().getDatabaseSaved());
+            });
+        } catch (RedisException e) {
+            plugin.error("Could not exec multiple properly.", e);
+        }
     }
 
     public RedisAsyncCommands<String, String> getAsync() {

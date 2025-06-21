@@ -38,6 +38,8 @@ public class PlayerManager implements Flushable {
             return;
         }
 
+        if (player == null) return;
+
         String playerName = player.getName();
 
         // if not in database
