@@ -9,6 +9,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 
 import java.util.Set;
 
@@ -60,6 +61,20 @@ public class NCPlayerListener implements Listener {
 
         if (plugin.getPlayerManager().isSwitching(name))
             plugin.getPlayerManager().removeSwitching(name);
+    }
+
+    @EventHandler
+    public void onPlayerTeleport(PlayerTeleportEvent event) {
+        if (!plugin.getDatabaseHandler().isEnabled())
+            return;
+
+        Player player = event.getPlayer();
+
+        if (!plugin.getPlayerManager().isEnabled(player.getName()))
+            return;
+
+        // update nearby
+        plugin.getPlayerManager().setNearby(player);
     }
 
     @EventHandler(priority = EventPriority.LOW)
