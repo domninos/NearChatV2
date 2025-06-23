@@ -5,7 +5,6 @@ import net.byteflux.libby.Library;
 import net.omni.nearChat.NearChatPlugin;
 import net.omni.nearChat.database.NearChatDatabase;
 import net.omni.nearChat.util.Libraries;
-import org.bukkit.Bukkit;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -161,6 +160,10 @@ public class LibraryHandler {
 
     public Future<Boolean> submitExec(NCFunction func) {
         return executor.submit(func::exec);
+    }
+
+    public void stopExecutor() {
+        this.executor.shutdown();
     }
 
     public interface NCFunction {

@@ -60,8 +60,6 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
         * add admin command to inspect nearchat of player (send all messages sent from and to player)
         *
         *
-        * fetch for updates (TRY) on load
-        *
         *
         * Make all messages on messages.yml.
         * Redo messages (make sure to replace on MessageHandler.java)
@@ -80,6 +78,7 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
     @Override
     public void onEnable() {
         versionHandler.checkForUpdates();
+
         libraryHandler.ensureMainLibraries();
 
         this.messageConfig = new NearChatConfig(this, "messages.yml", true);
@@ -117,6 +116,8 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
         hikariManager.close();
 
         messageHandler.sendDisabledMessage();
+
+        libraryHandler.stopExecutor();
 
         flush();
     }

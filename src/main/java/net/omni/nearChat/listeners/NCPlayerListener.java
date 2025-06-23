@@ -22,22 +22,32 @@ public class NCPlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
+        Player player = event.getPlayer();
+
         if (!plugin.getLibraryHandler().isLibLoaded()) {
             // wait for libraries to load
 
             plugin.getLibraryHandler().submitExec(() -> {
-                plugin.getPlayerManager().loadEnabled(event.getPlayer());
+                plugin.getPlayerManager().loadEnabled(player);
                 return true;
             });
 
             return;
         }
 
+        if (plugin.getVersionHandler().hasUpdate()) {
+            if (player.isOp() || player.hasPermission("nearchat.notify")) {
+                // if player has permission for update notifications
+                plugin.sendMessage(player, "&eThere is an update available! Please update to "
+                        + plugin.getVersionHandler().getVersionUpdate());
+            }
+        }
+
         if (!plugin.getDatabaseHandler().isEnabled())
             return;
 
         // cancels brokers if empty
-        plugin.getPlayerManager().loadEnabled(event.getPlayer());
+        plugin.getPlayerManager().loadEnabled(player);
     }
 
     @EventHandler
