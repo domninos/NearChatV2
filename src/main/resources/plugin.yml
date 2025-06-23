@@ -1,5 +1,5 @@
 name: NearChat
-version: '1.0.0-SNAPSHOT'
+version: '0.1.0-alpha'
 main: net.omni.nearChat.NearChatPlugin
 api-version: '1.13' # for testing paper spark || performance
 authors: [ domninos ]

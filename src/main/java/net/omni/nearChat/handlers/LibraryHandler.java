@@ -5,6 +5,7 @@ import net.byteflux.libby.Library;
 import net.omni.nearChat.NearChatPlugin;
 import net.omni.nearChat.database.NearChatDatabase;
 import net.omni.nearChat.util.Libraries;
+import org.bukkit.Bukkit;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -73,7 +74,7 @@ public class LibraryHandler {
             Library postgres = Library.builder()
                     .groupId("org{}postgresql")
                     .artifactId("postgresql")
-                    .version("42.7.5")
+                    .version("42.7.7")
                     .relocate("org{}postgresql", "net{}omni{}nearChat{}libs{}org{}postgresql")
                     .build();
 
@@ -138,6 +139,24 @@ public class LibraryHandler {
         Libraries.HIKARICP.load(plugin.getDataFolder());
 
         plugin.sendConsole(plugin.getMessageHandler().getLibraryLoaded("HikariCP"));
+    }
+
+    public Future<Boolean> ensureJSON() {
+        return submitExec(() -> {
+            Library json = Library.builder()
+                    .groupId("org{}json")
+                    .artifactId("json")
+                    .version("20250517")
+                    .relocate("org{}json", "net{}omni{}nearChat{}libs{}org{}json")
+                    .build();
+
+            libraryManager.loadLibrary(json);
+
+            Libraries.JSON.load(plugin.getDataFolder());
+
+            plugin.sendConsole(plugin.getMessageHandler().getLibraryLoaded("JSON"));
+            return true;
+        });
     }
 
     public Future<Boolean> submitExec(NCFunction func) {

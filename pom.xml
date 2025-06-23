@@ -6,7 +6,7 @@
 
     <groupId>net.omni</groupId>
     <artifactId>NearChat</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>0.1.0-alpha</version>
     <packaging>jar</packaging>
 
     <name>NearChat</name>
@@ -53,6 +53,10 @@
                         <relocation>
                             <pattern>org.xerial</pattern>
                             <shadedPattern>net.omni.nearChat.libs.org.xerial.sqlite-jdbc</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.json</pattern>
+                            <shadedPattern>net.omni.nearChat.libs.org.json</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>
@@ -141,7 +145,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.7.5</version>
+            <version>42.7.7</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -154,6 +158,12 @@
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
             <version>6.3.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20250517</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

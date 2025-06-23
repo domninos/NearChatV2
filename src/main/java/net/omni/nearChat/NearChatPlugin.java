@@ -2,10 +2,7 @@ package net.omni.nearChat;
 
 import net.omni.nearChat.commands.MainCommand;
 import net.omni.nearChat.commands.NearChatCommand;
-import net.omni.nearChat.handlers.ConfigHandler;
-import net.omni.nearChat.handlers.DatabaseHandler;
-import net.omni.nearChat.handlers.LibraryHandler;
-import net.omni.nearChat.handlers.MessageHandler;
+import net.omni.nearChat.handlers.*;
 import net.omni.nearChat.listeners.NCPlayerListener;
 import net.omni.nearChat.managers.BrokerManager;
 import net.omni.nearChat.managers.HikariManager;
@@ -34,6 +31,7 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
     private final MessageHandler messageHandler;
     private final DatabaseHandler databaseHandler;
     private final LibraryHandler libraryHandler;
+    private final VersionHandler versionHandler;
 
     private PlayerManager playerManager;
     private HikariManager hikariManager;
@@ -44,6 +42,7 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
         this.messageHandler = new MessageHandler(this);
         this.configHandler = new ConfigHandler(this);
         this.libraryHandler = new LibraryHandler(this);
+        this.versionHandler = new VersionHandler(this);
     }
 
     /*
@@ -52,6 +51,9 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
         * RETEST ALL DATABASE
         *
         * database to implement: sqlite, mongodb, mysql
+        *
+        * check for sqlite driver. if not found, revert to flat-file
+        *  - make sure to include flat-file is not encouraged as it is resource intensive
         *
         *
         * block censored/blacklisted words (research for more accuracy)
@@ -77,6 +79,7 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
 
     @Override
     public void onEnable() {
+        versionHandler.checkForUpdates();
         libraryHandler.ensureMainLibraries();
 
         this.messageConfig = new NearChatConfig(this, "messages.yml", true);
@@ -157,6 +160,10 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
 
     public LibraryHandler getLibraryHandler() {
         return libraryHandler;
+    }
+
+    public VersionHandler getVersionHandler() {
+        return versionHandler;
     }
 
     public HikariManager getHikariManager() {

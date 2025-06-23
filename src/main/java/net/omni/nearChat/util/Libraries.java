@@ -5,6 +5,7 @@ import net.omni.nearChat.NearChatPlugin;
 import java.io.File;
 
 public enum Libraries {
+    JSON("org/json"),
     HIKARICP("com/zaxxer/HikariCP"),
     PROJECT_REACTOR("io/projectreactor"),
     REACTIVE_STREAMS("org/reactivestreams"),
@@ -36,7 +37,7 @@ public enum Libraries {
 
         if (this == POSTGRESQL) {
             if (!HIKARICP.isLoaded(plugin))
-                plugin.sendConsole("HikariCP is needed for connection pooling (PostgreSQL)");
+                plugin.sendConsole("&cHikariCP is needed for connection pooling (PostgreSQL)");
         }
 
         return this.loaded;

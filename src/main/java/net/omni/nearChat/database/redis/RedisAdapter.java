@@ -56,17 +56,16 @@ public class RedisAdapter implements DatabaseAdapter {
 
     @Override
     public void lastSaveMap() {
-        if (!redis.isEnabled()) {
-            plugin.error(plugin.getMessageHandler().getDBErrorConnectDisabled());
+        if (!redis.isEnabled())
             return;
-        }
+
         // needs to be sync
         Map<String, Boolean> enabledPlayers = plugin.getPlayerManager().getEnabledPlayers();
 
         if (!enabledPlayers.isEmpty())
             redis.multiple(enabledPlayers);
-        else
-            plugin.sendConsole(plugin.getMessageHandler().getDatabaseSaved());
+
+        plugin.sendConsole(plugin.getMessageHandler().getDatabaseSaved());
     }
 
     @Override

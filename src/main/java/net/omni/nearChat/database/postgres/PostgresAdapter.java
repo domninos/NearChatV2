@@ -67,16 +67,16 @@ public class PostgresAdapter implements DatabaseAdapter {
 
     @Override
     public void lastSaveMap() {
-        if (!database.isEnabled()) {
-            plugin.error(plugin.getMessageHandler().getDBErrorConnectDisabled());
+        if (!database.isEnabled())
             return;
-        }
 
         try {
             Map<String, Boolean> enabledPlayers = plugin.getPlayerManager().getEnabledPlayers();
 
             if (!enabledPlayers.isEmpty())
                 this.database.saveMap(enabledPlayers, false);
+
+            closeDatabase();
         } catch (Exception e) {
             plugin.error("Could not save database properly", e);
         }
