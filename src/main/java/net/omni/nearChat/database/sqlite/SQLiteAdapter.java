@@ -28,6 +28,11 @@ public class SQLiteAdapter implements DatabaseAdapter {
 
     @Override
     public void initDatabase() {
+        try {
+            Class.forName("org.sqlite.JDBC"); // check for driver
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

@@ -42,7 +42,7 @@ public class PAPIManager {
 
         @Override
         public @NotNull String getVersion() {
-            return "1.0-SNAPSHOT";
+            return plugin.getVersionHandler().getCurrentVersion();
         }
 
         @Override

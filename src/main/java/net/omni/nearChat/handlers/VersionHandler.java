@@ -21,6 +21,8 @@ public class VersionHandler {
     private boolean update = false;
     private String versionUpdate = "NULL"; // NULL if no updates
 
+    private String currentVersion;
+
     public VersionHandler(NearChatPlugin plugin) {
         this.plugin = plugin;
     }
@@ -37,6 +39,8 @@ public class VersionHandler {
 
                 HttpURLConnection http = (HttpURLConnection) new URL(API_URL).openConnection();
                 http.setRequestProperty("Accept", "application/vnd.github.v3+json");
+                http.setRequestProperty("Authorization", "");
+                // /actions/secrets/{secret_name}
 
                 if (http.getResponseCode() == 200) {
                     String tagName = getTagName(http); // v1.0.0-release || v1.0.0-alpha
@@ -66,6 +70,10 @@ public class VersionHandler {
                 plugin.error("Something went wrong while checking for updates.", e);
             }
         });
+    }
+
+    public String getCurrentVersion()  {
+        return this.currentVersion == null ? this.currentVersion = plugin.getDescription().getVersion() : this.currentVersion;
     }
 
     public String getVersionUpdate() {
