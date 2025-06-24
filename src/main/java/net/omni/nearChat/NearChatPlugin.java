@@ -4,10 +4,7 @@ import net.omni.nearChat.commands.MainCommand;
 import net.omni.nearChat.commands.NearChatCommand;
 import net.omni.nearChat.handlers.*;
 import net.omni.nearChat.listeners.NCPlayerListener;
-import net.omni.nearChat.managers.BrokerManager;
-import net.omni.nearChat.managers.HikariManager;
-import net.omni.nearChat.managers.PAPIManager;
-import net.omni.nearChat.managers.PlayerManager;
+import net.omni.nearChat.managers.*;
 import net.omni.nearChat.util.Flushable;
 import net.omni.nearChat.util.NearChatConfig;
 import org.bukkit.Bukkit;
@@ -36,6 +33,7 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
     private PlayerManager playerManager;
     private HikariManager hikariManager;
     private BrokerManager brokerManager;
+    private GitManager gitManager;
 
     public NearChatPlugin() {
         this.databaseHandler = new DatabaseHandler(this);
@@ -50,19 +48,31 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
         *
         * RETEST ALL DATABASE
         *
-        * database to implement: sqlite, mongodb, mysql
+        * database to implement: mysql, mariadb, mongodb
         *
         * check for sqlite driver. if not found, revert to flat-file
         *  - make sure to include flat-file is not encouraged as it is resource intensive
         *
         *
+        * MAKE IMPLEMENTATIONS OF:
+        *  - chat plugins
+        *  - censored/blacklisted plugins/words
+        *  - chat logger
+        *  - [show] items plugin things
+        *
+        *
+        *
+        *
+        *
+        *
         * block censored/blacklisted words (research for more accuracy)
-        * add admin command to inspect nearchat of player (send all messages sent from and to player)
+        * add admin command to inspect nearchat of player (get all messages sent from and to player)
         *
         *
         *
         * Make all messages on messages.yml.
         * Redo messages (make sure to replace on MessageHandler.java)
+        *
         *
         *
         *
@@ -77,6 +87,8 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
 
     @Override
     public void onEnable() {
+        this.gitManager = new GitManager(this);
+
         versionHandler.checkForUpdates();
 
         libraryHandler.ensureMainLibraries();
@@ -173,6 +185,10 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
 
     public BrokerManager getBrokerManager() {
         return brokerManager;
+    }
+
+    public GitManager getGitManager() {
+        return gitManager;
     }
 
     public List<MainCommand> getCommands() {

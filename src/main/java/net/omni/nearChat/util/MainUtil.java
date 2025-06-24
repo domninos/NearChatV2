@@ -32,4 +32,23 @@ public class MainUtil {
     public static boolean isNullOrBlank(String... strings) {
         return Arrays.stream(strings).anyMatch(string -> string == null || string.isBlank());
     }
+
+    public static int isUpdateFound(String currentVersion, String releaseVersion) {
+        String[] currentSplit = currentVersion.split("\\.");
+        String[] releaseSplit = releaseVersion.split("\\.");
+
+        int length = currentVersion.length();
+
+        for (int i = 0; i < length; i++) {
+            int num1 = i < currentSplit.length ? Integer.parseInt(currentSplit[i]) : 0;
+            int num2 = i < releaseSplit.length ? Integer.parseInt(releaseSplit[i]) : 0;
+
+            if (num1 < num2)
+                return 1; // has a new update
+            if (num1 > num2)
+                return -1; // using a newer version than on GitHub release.
+        }
+
+        return 0; // equal
+    }
 }
