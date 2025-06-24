@@ -12,13 +12,7 @@ import java.net.URL;
 
 public class GitManager {
 
-    // https://api.github.com/repos/domninos/NearChatV2/releases
-
     protected static final String API_URL = "https://api.github.com/repos/domninos/NearChatV2/releases";
-    // /repos/{owner}/{repo}/environments/{environment_name}/variables/{name}
-
-    // TODO find a way to use github token without hardocoding
-
 
     private final NearChatPlugin plugin;
 
