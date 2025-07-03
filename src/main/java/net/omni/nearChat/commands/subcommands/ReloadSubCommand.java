@@ -21,11 +21,14 @@ public class ReloadSubCommand extends SubCommand {
 
     @Override
     public boolean execute(CommandSender sender, String[] args) {
-        plugin.getNearConfig().reload();
-        plugin.getConfigHandler().load();
+        plugin.getOMCConfig().reload();
+        plugin.getConfigHandler().initialize();
+
+        plugin.getDBMessageHandler().reload();
+        plugin.getDBMessageHandler().initialize();
 
         plugin.getMessageConfig().reload();
-        plugin.getMessageHandler().load();
+        plugin.getMessageHandler().initialize();
 
         // reload brokers
         plugin.tryBrokers();

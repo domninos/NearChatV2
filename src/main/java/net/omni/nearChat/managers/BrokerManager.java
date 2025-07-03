@@ -1,11 +1,11 @@
 package net.omni.nearChat.managers;
 
+import net.omc.util.Flushable;
 import net.omni.nearChat.NearChatPlugin;
 import net.omni.nearChat.brokers.DatabaseBroker;
 import net.omni.nearChat.brokers.DelayBroker;
 import net.omni.nearChat.brokers.NCBroker;
 import net.omni.nearChat.brokers.NearbyBroker;
-import net.omni.nearChat.util.Flushable;
 
 import java.util.HashSet;
 import java.util.Set;

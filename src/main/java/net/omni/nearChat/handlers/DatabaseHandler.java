@@ -1,9 +1,9 @@
 package net.omni.nearChat.handlers;
 
+import net.omc.database.ISQLDatabase;
+import net.omc.database.OMCDatabase;
+import net.omc.handlers.OMCDatabaseHandler;
 import net.omni.nearChat.NearChatPlugin;
-import net.omni.nearChat.database.DatabaseAdapter;
-import net.omni.nearChat.database.ISQLDatabase;
-import net.omni.nearChat.database.NearChatDatabase;
 import net.omni.nearChat.database.flatfile.FlatFileAdapter;
 import net.omni.nearChat.database.flatfile.FlatFileDatabase;
 import net.omni.nearChat.database.postgres.PostgresAdapter;
@@ -17,46 +17,22 @@ import org.bukkit.entity.Player;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-public class DatabaseHandler {
-    private final NearChatPlugin plugin;
+public class DatabaseHandler extends OMCDatabaseHandler {
 
-    private int updates = 0;
-
-    public static DatabaseAdapter ADAPTER;
+    private final NearChatPlugin nearChatPlugin;
 
     public DatabaseHandler(NearChatPlugin plugin) {
-        this.plugin = plugin;
-    }
+        super(plugin);
 
-    public boolean isFlatFile() {
-        return ADAPTER != null
-                && plugin.getConfigHandler().getDatabaseType() == NearChatDatabase.Type.FLAT_FILE
-                && ADAPTER instanceof FlatFileAdapter;
-    }
-
-    public boolean isRedis() {
-        return ADAPTER != null
-                && plugin.getConfigHandler().getDatabaseType() == NearChatDatabase.Type.REDIS
-                && ADAPTER instanceof RedisAdapter;
-    }
-
-    public boolean isPostgreSQL() {
-        return ADAPTER != null
-                && plugin.getConfigHandler().getDatabaseType() == NearChatDatabase.Type.POSTGRESQL
-                && ADAPTER instanceof PostgresAdapter;
-    }
-
-    public boolean isSQLite() {
-        return ADAPTER != null
-                && plugin.getConfigHandler().getDatabaseType() == NearChatDatabase.Type.SQLITE
-                && ADAPTER instanceof SQLiteAdapter;
+        this.nearChatPlugin = plugin;
     }
 
     // TODO other databases
-    public NearChatDatabase.Type initDatabase() {
+    @Override
+    public OMCDatabase.Type initDatabase() {
         if (ADAPTER != null) { // close previous database connection
             ADAPTER.closeDatabase();
-            NearChatDatabase db = ADAPTER.getDatabase();
+            OMCDatabase db = ADAPTER.getDatabase();
 
             if (db != null)
                 db.close();
@@ -64,7 +40,7 @@ public class DatabaseHandler {
             ADAPTER = null;
         }
 
-        NearChatDatabase.Type type = plugin.getConfigHandler().getDatabaseType();
+        OMCDatabase.Type type = plugin.getDBConfigHandler().getDatabaseType();
 
         if (!type.isLoaded(plugin)) {
             try {
@@ -78,25 +54,25 @@ public class DatabaseHandler {
         plugin.getLibraryHandler().submitExec(() -> {
             switch (type) {
                 case REDIS:
-                    ADAPTER = new RedisAdapter(plugin, new RedisDatabase(plugin));
+                    ADAPTER = new RedisAdapter(nearChatPlugin, new RedisDatabase(nearChatPlugin));
                     break;
                 case POSTGRESQL:
-                    ADAPTER = new PostgresAdapter(plugin, new PostgresDatabase(plugin));
+                    ADAPTER = new PostgresAdapter(nearChatPlugin, new PostgresDatabase(nearChatPlugin));
                     break;
                 case FLAT_FILE:
-                    ADAPTER = new FlatFileAdapter(plugin, new FlatFileDatabase(plugin));
+                    ADAPTER = new FlatFileAdapter(nearChatPlugin, new FlatFileDatabase(nearChatPlugin));
                     break;
                 case SQLITE:
-                    ADAPTER = new SQLiteAdapter(plugin, new SQLiteDatabase(plugin));
+                    ADAPTER = new SQLiteAdapter(nearChatPlugin, new SQLiteDatabase(nearChatPlugin));
                     break;
             }
 
             if (ADAPTER == null) {
-                plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectUnsuccessful());
+                plugin.sendConsole(plugin.getDBMessageHandler().getDBErrorConnectUnsuccessful());
                 return false;
             }
 
-            plugin.sendConsole(plugin.getMessageHandler().getDBInit());
+            plugin.sendConsole(plugin.getDBMessageHandler().getDBInit());
             ADAPTER.initDatabase();
             return true;
         });
@@ -105,10 +81,10 @@ public class DatabaseHandler {
     }
 
     public boolean connect() {
-        if (plugin.getPlayerManager() != null)
-            plugin.getPlayerManager().flush();
+        if (nearChatPlugin.getPlayerManager() != null)
+            nearChatPlugin.getPlayerManager().flush();
 
-        NearChatDatabase.Type type = initDatabase();
+        OMCDatabase.Type type = initDatabase();
 
         if (ADAPTER == null) {
             // retry loading
@@ -124,37 +100,27 @@ public class DatabaseHandler {
         return ADAPTER.connect();
     }
 
+    @Override
     public void setToCache(Player player) {
         if (!isEnabled()) {
-            plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectDisabled());
+            plugin.sendConsole(plugin.getDBMessageHandler().getDBErrorConnectDisabled());
             return;
         }
 
         ADAPTER.setToCache(player.getName());
-        plugin.getPlayerManager().setNearby(player);
+        nearChatPlugin.getPlayerManager().setNearby(player);
 
         updateChecks();
     }
 
-    public void updateChecks() {
-        this.updates++;
-    }
-
-    public void resetCheckUpdates() {
-        this.updates = 0;
-    }
-
-    public int getUpdates() {
-        return updates;
-    }
-
+    @Override
     public void saveMap(Map<String, Boolean> enabledPlayers, boolean async) {
         if (!isEnabled()) {
-            plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectDisabled());
+            plugin.sendConsole(plugin.getDBMessageHandler().getDBErrorConnectDisabled());
             return;
         }
         if (ADAPTER == null) {
-            plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectUnsuccessful());
+            plugin.sendConsole(plugin.getDBMessageHandler().getDBErrorConnectUnsuccessful());
             return;
         }
 
@@ -166,50 +132,5 @@ public class DatabaseHandler {
             ADAPTER.saveMap(enabledPlayers);
 
         updateChecks();
-    }
-
-    public void savePlayer(String playerName, Boolean value, boolean async) {
-        if (!isEnabled()) {
-            plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectDisabled());
-            return;
-        }
-        if (ADAPTER == null) {
-            plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectUnsuccessful());
-            return;
-        }
-
-        // sql async
-        if (isSQL()) {
-            ISQLDatabase sqlDb = (ISQLDatabase) getAdapter().getDatabase();
-            sqlDb.savePlayer(playerName, value, async);
-        } else
-            ADAPTER.savePlayer(playerName, value);
-
-        updateChecks();
-    }
-
-    public void savePlayer(String playerName, String value) {
-        savePlayer(playerName, Boolean.getBoolean(value), true);
-    }
-
-    public boolean isEnabled() { // TODO make it not check for isLibLoaded for PlayerManager#loadEnabled (?)
-        return ADAPTER != null && plugin.getLibraryHandler().isLibLoaded(ADAPTER.getType()) && ADAPTER.isEnabled();
-    }
-
-    public boolean checkExistsDB(String playerName) {
-        return isEnabled() && ADAPTER.existsInDatabase(playerName);
-    }
-
-    public DatabaseAdapter getAdapter() {
-        return ADAPTER;
-    }
-
-    public boolean isSQL() {
-        return ADAPTER != null && ADAPTER.getDatabase() instanceof ISQLDatabase;
-    }
-
-    public void closeDatabase() {
-        if (isEnabled())
-            ADAPTER.closeDatabase();
     }
 }

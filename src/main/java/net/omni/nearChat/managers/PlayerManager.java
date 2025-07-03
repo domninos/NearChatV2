@@ -1,11 +1,11 @@
 package net.omni.nearChat.managers;
 
+import net.omc.database.DatabaseAdapter;
+import net.omc.database.ISQLDatabase;
+import net.omc.util.Flushable;
+import net.omc.util.PlayerUtil;
 import net.omni.nearChat.NearChatPlugin;
 import net.omni.nearChat.brokers.NCBroker;
-import net.omni.nearChat.database.DatabaseAdapter;
-import net.omni.nearChat.database.ISQLDatabase;
-import net.omni.nearChat.util.Flushable;
-import net.omni.nearChat.util.PlayerUtil;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
@@ -34,7 +34,7 @@ public class PlayerManager implements Flushable {
     //  * KEY,uuid,owner,value (NearChat 2.0)
     public void loadEnabled(Player player) {
         if (!plugin.getDatabaseHandler().isEnabled()) {
-            plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectDisabled());
+            plugin.sendConsole(plugin.getDBMessageHandler().getDBErrorConnectDisabled());
             return;
         }
 
@@ -115,7 +115,7 @@ public class PlayerManager implements Flushable {
 
     public void save(String playerName) {
         if (!plugin.getDatabaseHandler().isEnabled()) {
-            plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectDisabled());
+            plugin.sendConsole(plugin.getDBMessageHandler().getDBErrorConnectDisabled());
             return;
         }
 
@@ -127,7 +127,7 @@ public class PlayerManager implements Flushable {
 
     public void saveMap(boolean async) {
         if (!plugin.getDatabaseHandler().isEnabled())
-            plugin.sendConsole(plugin.getMessageHandler().getDBErrorConnectDisabled());
+            plugin.sendConsole(plugin.getDBMessageHandler().getDBErrorConnectDisabled());
         else
             plugin.getDatabaseHandler().saveMap(this.enabled, async);
     }
@@ -188,7 +188,8 @@ public class PlayerManager implements Flushable {
 
     public void setNearby(Player player) {
         Set<Player> nearbyPlayers = PlayerUtil
-                .getNearbyPlayers(this, player, plugin.getConfigHandler().getNearBlockRadius());
+                .getNearbyPlayers(player, plugin.getConfigHandler().getNearBlockRadius(),
+                        (p) -> plugin.getPlayerManager().isEnabled(p.getName()));
 
         this.nearby.put(player, nearbyPlayers);
 

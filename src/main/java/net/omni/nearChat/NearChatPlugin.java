@@ -1,45 +1,51 @@
 package net.omni.nearChat;
 
+import net.omc.OMCApi;
+import net.omc.OMCPlugin;
+import net.omc.config.OMCConfig;
+import net.omc.handlers.LibraryHandler;
+import net.omc.handlers.OMCDatabaseHandler;
+import net.omc.util.Flushable;
 import net.omni.nearChat.commands.MainCommand;
 import net.omni.nearChat.commands.NearChatCommand;
-import net.omni.nearChat.handlers.*;
+import net.omni.nearChat.handlers.ConfigHandler;
+import net.omni.nearChat.handlers.DatabaseHandler;
+import net.omni.nearChat.handlers.MessageHandler;
+import net.omni.nearChat.handlers.VersionHandler;
 import net.omni.nearChat.listeners.NCPlayerListener;
-import net.omni.nearChat.managers.*;
-import net.omni.nearChat.util.Flushable;
-import net.omni.nearChat.util.NearChatConfig;
+import net.omni.nearChat.managers.BrokerManager;
+import net.omni.nearChat.managers.GitManager;
+import net.omni.nearChat.managers.PAPIManager;
+import net.omni.nearChat.managers.PlayerManager;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.event.HandlerList;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
-public final class NearChatPlugin extends JavaPlugin implements Flushable {
+public final class NearChatPlugin extends OMCPlugin implements Flushable {
 
     private final List<MainCommand> mainCommands = new ArrayList<>();
 
-    private NearChatConfig nearConfig;
-    private NearChatConfig messageConfig;
+    private OMCConfig nearConfig;
+    private OMCConfig messageConfig;
 
     private final ConfigHandler configHandler;
     private final MessageHandler messageHandler;
-    private final DatabaseHandler databaseHandler;
-    private final LibraryHandler libraryHandler;
+    private final OMCDatabaseHandler databaseHandler;
     private final VersionHandler versionHandler;
 
     private PlayerManager playerManager;
-    private HikariManager hikariManager;
     private BrokerManager brokerManager;
     private GitManager gitManager;
+
+
+    private LibraryHandler libraryHandler;
 
     public NearChatPlugin() {
         this.databaseHandler = new DatabaseHandler(this);
         this.messageHandler = new MessageHandler(this);
         this.configHandler = new ConfigHandler(this);
-        this.libraryHandler = new LibraryHandler(this);
         this.versionHandler = new VersionHandler(this);
     }
 
@@ -91,17 +97,23 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
 
         versionHandler.checkForUpdates();
 
+        this.messageConfig = new OMCConfig(this, "messages.yml", true);
+        this.nearConfig = new OMCConfig(this, "config.yml", true);
+
+        getDBConfigHandler().load(this.nearConfig);
+        configHandler.load(nearConfig);
+
+        getDBMessageHandler().load(this.messageConfig);
+        messageHandler.load(messageConfig);
+
+        this.libraryHandler = OMCApi.getInstance().getLibraryHandler(this);
+        libraryHandler.setLibraryPath("net{}omni{}nearChat{}libs");
         libraryHandler.ensureMainLibraries();
 
-        this.messageConfig = new NearChatConfig(this, "messages.yml", true);
-        this.nearConfig = new NearChatConfig(this, "config.yml", true);
-
-        configHandler.load();
-        messageHandler.load();
 
         this.brokerManager = new BrokerManager(this);
 
-        this.hikariManager = new HikariManager(this);
+        getHikariManager();
 
         Bukkit.getScheduler().runTaskAsynchronously(this, databaseHandler::connect);
 
@@ -125,7 +137,7 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
         if (playerManager != null)
             playerManager.saveMap(false);
 
-        hikariManager.close();
+        getHikariManager().close();
 
         messageHandler.sendDisabledMessage();
 
@@ -134,34 +146,10 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
         flush();
     }
 
-    public void error(String message, Throwable throwable) {
-        getLogger().log(Level.SEVERE, translate(message), throwable);
-        sendConsole(message + " " + throwable.getMessage());
-    }
-
-    public void error(String text) {
-        sendConsole("&cERROR! Something went wrong: " + text);
-    }
-
-    public void sendConsole(String text) {
-        sendMessage(Bukkit.getConsoleSender(), text);
-    }
-
-    public NearChatConfig getNearConfig() {
-        return this.nearConfig;
-    }
-
-    public NearChatConfig getMessageConfig() {
-        return messageConfig;
-    }
-
     public MessageHandler getMessageHandler() {
         return messageHandler;
     }
 
-    public DatabaseHandler getDatabaseHandler() {
-        return databaseHandler;
-    }
 
     public ConfigHandler getConfigHandler() {
         return configHandler;
@@ -171,17 +159,11 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
         return playerManager;
     }
 
-    public LibraryHandler getLibraryHandler() {
-        return libraryHandler;
-    }
 
     public VersionHandler getVersionHandler() {
         return versionHandler;
     }
 
-    public HikariManager getHikariManager() {
-        return hikariManager;
-    }
 
     public BrokerManager getBrokerManager() {
         return brokerManager;
@@ -195,33 +177,50 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
         return mainCommands;
     }
 
-    public void sendMessage(CommandSender sender, String msg) {
-        sender.sendMessage(translate(messageHandler.getPrefix() + " " + msg));
-    }
-
-    public String translate(String text) {
-        return ChatColor.translateAlternateColorCodes('&', text);
-    }
-
-    private void registerListeners() {
+    @Override
+    public void registerListeners() {
         sendConsole("&aInitializing listeners..");
 
         Bukkit.getPluginManager().registerEvents(new NCPlayerListener(this), this);
     }
 
-    private void registerCommands() { // TODO: if ever add more commands
+    @Override
+    public void registerCommands() { // TODO: if ever add more commands
         sendConsole("&aInitializing commands..");
 
         new NearChatCommand(this).register();
     }
 
+    @Override
+    public String getNetworkPrefix() {
+        return "OMCN";
+    }
+
     public void tryBrokers() {
         if (!getDatabaseHandler().isEnabled()) {
-            sendConsole(getMessageHandler().getDBErrorConnectDisabled());
+            sendConsole(getDBMessageHandler().getDBErrorConnectDisabled());
             return;
         }
 
         brokerManager.tryBrokers();
+    }
+
+    @Override
+    public OMCConfig getOMCConfig() {
+        return this.nearConfig;
+    }
+
+    public OMCConfig getMessageConfig() {
+        return messageConfig;
+    }
+
+    @Override
+    public OMCDatabaseHandler getDatabaseHandler() {
+        return this.databaseHandler;
+    }
+
+    public OMCPlugin asOMC() {
+        return this;
     }
 
     @Override
@@ -264,4 +263,6 @@ public final class NearChatPlugin extends JavaPlugin implements Flushable {
             papiManager.checkPapi();
         }
     }
+
+    // TODO support HolographicDisplaysAPI (only send holograms to players nearby and has nearchat)
 }

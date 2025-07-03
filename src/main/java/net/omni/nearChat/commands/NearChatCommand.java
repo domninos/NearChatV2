@@ -1,8 +1,8 @@
 package net.omni.nearChat.commands;
 
+import net.omc.database.OMCDatabase;
 import net.omni.nearChat.NearChatPlugin;
 import net.omni.nearChat.commands.subcommands.*;
-import net.omni.nearChat.database.NearChatDatabase;
 import net.omni.nearChat.handlers.MessageHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -66,7 +66,7 @@ public class NearChatCommand extends MainCommand {
 
                 } else if (args.length == 3) {
                     // for databases
-                    for (NearChatDatabase.Type type : NearChatDatabase.Type.values()) {
+                    for (OMCDatabase.Type type : OMCDatabase.Type.values()) {
                         if (type == null)
                             continue;
 
@@ -126,7 +126,7 @@ public class NearChatCommand extends MainCommand {
             }
 
             if (!plugin.getDatabaseHandler().isEnabled()) {
-                plugin.sendMessage(sender, plugin.getMessageHandler().getDBErrorConnectDisabled());
+                plugin.sendMessage(sender, plugin.getDBMessageHandler().getDBErrorConnectDisabled());
                 return true;
             }
 
@@ -160,7 +160,7 @@ public class NearChatCommand extends MainCommand {
             // look for playername
             if (args.length == 1) {
                 if (!plugin.getDatabaseHandler().isEnabled()) {
-                    plugin.sendMessage(sender, plugin.getMessageHandler().getDBErrorConnectDisabled());
+                    plugin.sendMessage(sender, plugin.getDBMessageHandler().getDBErrorConnectDisabled());
                     return true;
                 }
 

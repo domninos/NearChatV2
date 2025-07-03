@@ -1,245 +1,111 @@
 package net.omni.nearChat.handlers;
 
+import net.omc.config.ConfigAbstract;
+import net.omc.config.value.ValueDef;
+import net.omc.config.value.ValueType;
+import net.omc.database.OMCDatabase;
 import net.omni.nearChat.NearChatPlugin;
-import net.omni.nearChat.database.NearChatDatabase;
-import net.omni.nearChat.util.MainUtil;
-import net.omni.nearChat.util.NearChatConfig;
-import org.bukkit.configuration.file.FileConfiguration;
 
-public class ConfigHandler {
-    private final NearChatPlugin plugin;
-
-    private NearChatConfig nearChatConfig;
-
-    private String plugin_name, plugin_version, plugin_mc_version;
-
-    private int database_save_delay;
-
-    private int nearby_get_delay;
-
-    private int near_block_radius;
-
-    private String host, user, database_name, password;
-    private int port;
-
-    private boolean log_messages;
-
-    private String database_type;
-
-    private int delay_time;
-
-    private boolean delay;
+public class ConfigHandler extends ConfigAbstract {
 
     public ConfigHandler(NearChatPlugin plugin) {
-        this.plugin = plugin;
+        super(plugin);
     }
 
-    public void load() {
-        if (this.nearChatConfig == null)
-            this.nearChatConfig = plugin.getNearConfig();
-
-        boolean def = loadDefaults(); // check if there are empty messages, if so, replace it
+    @Override
+    public void initialize() {
+        flush();
 
         // load messages to cache
-        this.nearby_get_delay = getConfig().getInt("nearby-get-delay");
-        this.database_save_delay = getConfig().getInt("database-save-delay");
-        this.near_block_radius = getConfig().getInt("near-block-radius");
+        builder
+                .fromConfig()
+                .load("nearby-get-delay", ValueType.INT, 10)
+                .load("database-save-delay", ValueType.INT, 6000)
+                .load("near-block-radius", ValueType.INT, 30)
 
-        this.log_messages = getConfig().getBoolean("log-messages");
-        this.database_type = getConfig().getString("database-type");
-        this.delay_time = getConfig().getInt("delay-time");
-        this.delay = getConfig().getBoolean("delay");
+                .load("log-messages", ValueType.BOOLEAN, true)
+                .load("delay-time", ValueType.INT, 3)
+                .load("delay", ValueType.INT, true)
 
-        this.host = getConfig().getString("host");
-        this.port = getConfig().getInt("port");
-        this.database_name = getConfig().getString("database-name");
-        this.user = getConfig().getString("user");
-        this.password = getConfig().getString("password");
+                .fromPlugin()
+                .load("plugin_name", ValueType.PLUGIN_NAME, "N/A")
+                .load("plugin_version", ValueType.PLUGIN_VERSION, "N/A")
+                .load("plugin_mc_version", ValueType.PLUGIN_API, "N/A")
 
-        this.plugin_name = plugin.getDescription().getName();
-        this.plugin_version = plugin.getDescription().getVersion();
-
-        if (MainUtil.VERSION >= 13) // 1.13 version
-            this.plugin_mc_version = plugin.getDescription().getAPIVersion();
-        else
-            this.plugin_mc_version = MainUtil.FULL_VERSION;
-
-        if (!def)
-            plugin.sendConsole("&aLoaded config.");
+                .save();
     }
 
     public void saveToConfig() {
-        nearChatConfig.setNoSave("host", this.host);
-        nearChatConfig.setNoSave("port", this.port);
-        nearChatConfig.setNoSave("user", this.user);
-        nearChatConfig.setNoSave("password", this.password);
+        builder
+                .fromConfig()
+                .toSave("host", ValueType.STRING)
+                .toSave("port", ValueType.INT)
+                .toSave("user", ValueType.STRING)
+                .toSave("password", ValueType.STRING)
 
-        nearChatConfig.setNoSave("nearby-get-delay", this.nearby_get_delay);
-        nearChatConfig.setNoSave("database-save-delay", this.database_save_delay);
-        nearChatConfig.setNoSave("near-block-radius", this.near_block_radius);
-        nearChatConfig.setNoSave("log-messages", this.log_messages);
+                .toSave("nearby-get-delay", ValueType.INT)
+                .toSave("database-save-delay", ValueType.INT)
+                .toSave("near-block-radius", ValueType.INT)
 
-        nearChatConfig.save();
+                .toSave("log-messages", ValueType.BOOLEAN)
+
+                .save();
     }
 
-    private boolean loadDefaults() {
-        boolean def = false;
-
-        if (getConfig().getString("host") == null) {
-            nearChatConfig.setNoSave("host", "<put database host here>");
-            def = true;
-        }
-
-        if (getConfig().getString("user") == null) {
-            nearChatConfig.setNoSave("user", "<put database user here>");
-            def = true;
-        }
-
-        if (getConfig().getString("database-name") == null) {
-            nearChatConfig.setNoSave("database-name", "<put database name here>");
-            def = true;
-        }
-
-        if (getConfig().getString("password") == null) {
-            nearChatConfig.setNoSave("password", "<put database password here>");
-            def = true;
-        }
-
-        if (getConfig().getInt("port") == 0) {
-            nearChatConfig.setNoSave("port", 0);
-            def = true;
-        }
-
-        if (getConfig().getInt("near-block-radius") == 0) {
-            nearChatConfig.setNoSave("near-block-radius", 30);
-            def = true;
-        }
-
-        if (getConfig().getInt("database-save-delay") == 0) {
-            nearChatConfig.setNoSave("database-save-delay", 6000); // 5 min default
-            def = true;
-        }
-
-        if (getConfig().getInt("nearby-get-delay") == 0) {
-            nearChatConfig.setNoSave("nearby-get-delay", 10);
-            def = true;
-        }
-
-        if (getConfig().getString("log-messages") == null) {
-            nearChatConfig.setNoSave("log-messages", true);
-            def = true;
-        }
-
-        if (getConfig().getString("database-type") == null) {
-            nearChatConfig.setNoSave("database-type", "flat-file");
-            def = true;
-        }
-
-        if (getConfig().getInt("delay-time") == 0) {
-            nearChatConfig.setNoSave("delay-time", 3);
-            def = true;
-        }
-
-        if (getConfig().getString("delay") == null) {
-            nearChatConfig.setNoSave("delay", true);
-            def = true;
-        }
-
-        if (def) {
-            plugin.sendConsole("&9Loaded default config values.");
-            this.nearChatConfig.save();
-        }
-
-        return def;
-    }
-
-    public void setDatabase(NearChatDatabase.Type type) {
-        nearChatConfig.set("database-type", type.getLabel());
-        this.database_type = type.getLabel();
+    public void setDatabase(OMCDatabase.Type type) {
+        builder.toSave("database-type", ValueType.STRING, ValueDef.from(type.getLabel())).save();
     }
 
     public int getDelayTime() {
-        return delay_time;
+        return getInt("delay-time");
     }
 
     public boolean isDelay() {
-        return delay;
+        return getBool("delay");
     }
 
     public void setDelayTime(int delay_time) {
-        nearChatConfig.set("delay-time", delay_time);
-        this.delay_time = delay_time;
+        builder.toSave("delay-time", ValueType.INT, ValueDef.from(delay_time)).save();
     }
 
     public void setDelay(boolean delay) {
-        nearChatConfig.set("delay", delay);
-        this.delay = delay;
+        builder.toSave("delay", ValueType.BOOLEAN, ValueDef.from(delay)).save();
     }
 
-    public NearChatDatabase.Type getDatabaseType() {
+    public OMCDatabase.Type getDatabaseType() {
         try {
-            return NearChatDatabase.Type.valueOf(this.database_type.toUpperCase().replace("-", "_"));
+            return OMCDatabase.Type.valueOf(getString("database-type").toUpperCase().replace("-", "_"));
         } catch (IllegalArgumentException e) {
-            plugin.error(plugin.getMessageHandler().getDBSwitchArg());
+            plugin.error(plugin.getDBMessageHandler().getDBSwitchArg());
             return null;
         }
     }
 
-    public boolean checkDev() {
-        String devS = nearChatConfig.getString("dev");
-
-        return devS != null && !devS.isBlank() && nearChatConfig.getBool("dev");
-    }
-
     public boolean isLogging() {
-        return log_messages;
+        return getBool("log-messages");
     }
 
     public int getNearbyGetDelay() {
-        return nearby_get_delay;
+        return getInt("nearby-get-delay");
     }
 
     public String getPluginName() {
-        return plugin_name;
+        return getString("plugin_name");
     }
 
     public String getPluginVersion() {
-        return plugin_version;
+        return getString("plugin_version");
     }
 
     public String getPluginMCVersion() {
-        return plugin_mc_version;
+        return getString("plugin_mc_version");
     }
 
     public int getDatabaseSaveDelay() {
-        return database_save_delay;
+        return getInt("database-save-delay");
     }
 
     public int getNearBlockRadius() {
-        return near_block_radius;
-    }
-
-    public String getHost() {
-        return host;
-    }
-
-    public String getUser() {
-        return user;
-    }
-
-    public String getDatabaseName() {
-        return database_name;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public FileConfiguration getConfig() {
-        return nearChatConfig.getConfig();
+        return getInt("near-block-radius");
     }
 }

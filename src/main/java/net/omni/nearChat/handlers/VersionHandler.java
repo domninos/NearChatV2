@@ -1,8 +1,8 @@
 package net.omni.nearChat.handlers;
 
+import net.omc.util.Libraries;
+import net.omc.util.MainUtil;
 import net.omni.nearChat.NearChatPlugin;
-import net.omni.nearChat.util.Libraries;
-import net.omni.nearChat.util.MainUtil;
 import org.bukkit.Bukkit;
 
 import java.util.concurrent.ExecutionException;

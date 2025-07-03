@@ -1,7 +1,7 @@
 package net.omni.nearChat.brokers;
 
+import net.omc.util.PlayerUtil;
 import net.omni.nearChat.NearChatPlugin;
-import net.omni.nearChat.util.PlayerUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
@@ -32,7 +32,8 @@ public class NearbyBroker extends NCBroker {
 
                 int block_radius = plugin.getConfigHandler().getNearBlockRadius();
 
-                Set<Player> nearbyPlayers = PlayerUtil.getNearbyPlayers(plugin.getPlayerManager(), key, block_radius);
+                Set<Player> nearbyPlayers = PlayerUtil.getNearbyPlayers(key, block_radius,
+                        (p) -> plugin.getPlayerManager().isEnabled(p.getName()));
 
                 entry.setValue(nearbyPlayers);
             }

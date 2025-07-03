@@ -1,10 +1,10 @@
 package net.omni.nearChat.managers;
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
+import net.omc.database.ISQLDatabase;
+import net.omc.database.OMCDatabase;
+import net.omc.util.MainUtil;
 import net.omni.nearChat.NearChatPlugin;
-import net.omni.nearChat.database.ISQLDatabase;
-import net.omni.nearChat.database.NearChatDatabase;
-import net.omni.nearChat.util.MainUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
@@ -75,7 +75,7 @@ public class PAPIManager {
                 }
 
                 case "databases" -> {
-                    return NearChatDatabase.Type.available();
+                    return OMCDatabase.Type.available();
                 }
 
                 case "db_delay" -> {

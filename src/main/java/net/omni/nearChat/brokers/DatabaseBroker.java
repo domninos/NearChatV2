@@ -21,7 +21,7 @@ public class DatabaseBroker extends NCBroker {
             return;
         }
 
-        plugin.sendConsole(plugin.getMessageHandler().getDBTrySave(plugin.getDatabaseHandler().getUpdates()));
+        plugin.sendConsole(plugin.getDBMessageHandler().getDBTrySave(plugin.getDatabaseHandler().getUpdates()));
 
         if (plugin.getDatabaseHandler().isEnabled())
             plugin.getPlayerManager().saveMap(true);

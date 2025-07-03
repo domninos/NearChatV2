@@ -1,9 +1,9 @@
 package net.omni.nearChat.commands.subcommands;
 
+import net.omc.database.OMCDatabase;
+import net.omc.util.Flushable;
 import net.omni.nearChat.NearChatPlugin;
 import net.omni.nearChat.commands.MainCommand;
-import net.omni.nearChat.database.NearChatDatabase;
-import net.omni.nearChat.util.Flushable;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -29,12 +29,12 @@ public class DatabaseSubCommand extends SubCommand implements Flushable {
         if (args.length == 1) {
             try {
                 // reload before accessing config.
-                plugin.getNearConfig().reload();
+                plugin.getOMCConfig().reload();
 
                 if (plugin.getDatabaseHandler().connect())
-                    plugin.sendMessage(sender, plugin.getMessageHandler().getDBConnected());
+                    plugin.sendMessage(sender, plugin.getDBMessageHandler().getDBConnected());
                 else
-                    plugin.sendMessage(sender, plugin.getMessageHandler().getDBErrorConnectUnsuccessful());
+                    plugin.sendMessage(sender, plugin.getDBMessageHandler().getDBErrorConnectUnsuccessful());
 
                 return true;
             } catch (Exception e) {
@@ -53,10 +53,10 @@ public class DatabaseSubCommand extends SubCommand implements Flushable {
                 } else if (args.length == 3) {
                     String databaseArg = args[2];
 
-                    NearChatDatabase.Type type = NearChatDatabase.Type.parseType(databaseArg);
+                    OMCDatabase.Type type = OMCDatabase.Type.parseType(databaseArg);
 
                     if (type == null) {
-                        plugin.sendMessage(sender, plugin.getMessageHandler().getDBSwitchArg());
+                        plugin.sendMessage(sender, plugin.getDBMessageHandler().getDBSwitchArg());
                         return true;
                     }
 
@@ -64,7 +64,7 @@ public class DatabaseSubCommand extends SubCommand implements Flushable {
 
                     if (!plugin.getPlayerManager().isSwitching(name)) {
                         plugin.getPlayerManager().setSwitching(name);
-                        plugin.sendMessage(sender, plugin.getMessageHandler().getDBSwitchWarning());
+                        plugin.sendMessage(sender, plugin.getDBMessageHandler().getDBSwitchWarning());
                         return true;
                     }
 
@@ -75,12 +75,12 @@ public class DatabaseSubCommand extends SubCommand implements Flushable {
                         plugin.getPlayerManager().removeSwitching(name);
 
                         plugin.getConfigHandler().setDatabase(type);
-                        plugin.getNearConfig().reload();
+                        plugin.getOMCConfig().reload();
 
-                        plugin.sendMessage(sender, plugin.getMessageHandler().getDBTry());
+                        plugin.sendMessage(sender, plugin.getDBMessageHandler().getDBTry());
 
                         if (sender instanceof Player)
-                            plugin.sendConsole(plugin.getMessageHandler().getDBTry());
+                            plugin.sendConsole(plugin.getDBMessageHandler().getDBTry());
 
                         if (!type.isLoaded(plugin)) {
                             plugin.sendMessage(sender, plugin.getMessageHandler().getLibraryDownloading());
@@ -95,13 +95,13 @@ public class DatabaseSubCommand extends SubCommand implements Flushable {
                             String toSend;
 
                             if (plugin.getDatabaseHandler().connect()) {
-                                toSend = plugin.getMessageHandler().getDBConnected();
+                                toSend = plugin.getDBMessageHandler().getDBConnected();
 
                                 // load every online players' nearchat status
                                 Bukkit.getOnlinePlayers().forEach(player ->
                                         plugin.getPlayerManager().loadEnabled(player));
                             } else
-                                toSend = plugin.getMessageHandler().getDBErrorConnectUnsuccessful();
+                                toSend = plugin.getDBMessageHandler().getDBErrorConnectUnsuccessful();
 
                             plugin.sendMessage(sender, toSend);
 
