@@ -2,7 +2,6 @@ package net.omni.nearChat.handlers;
 
 import net.omc.config.ConfigAbstract;
 import net.omc.config.value.ValueType;
-import net.omc.database.OMCDatabase;
 import net.omc.util.MainUtil;
 import net.omni.nearChat.NearChatPlugin;
 import org.bukkit.Bukkit;
@@ -11,9 +10,6 @@ import java.util.Arrays;
 import java.util.List;
 
 public class MessageHandler extends ConfigAbstract {
-
-    public static final List<String> EMPTY_LIST = List.of();
-
     private final NearChatPlugin nearChatPlugin;
 
     public MessageHandler(NearChatPlugin plugin) {
@@ -24,6 +20,8 @@ public class MessageHandler extends ConfigAbstract {
     @Override
     public void initialize() {
         flush();
+
+        loadValues(plugin.getDBMessageHandler());
 
         // load messages to cache
         builder.fromConfig()
@@ -250,9 +248,7 @@ public class MessageHandler extends ConfigAbstract {
     }
 
     private String modifyDBMessage(String message) {
-        OMCDatabase.Type type = nearChatPlugin.getConfigHandler().getDatabaseType();
-
-        return type != null ? plugin.translate(message.replace("%db_type%", type.getLabel())) : "NONE";
+        return plugin.getDBMessageHandler().modifyDBMessage(message);
     }
 
 }

@@ -88,7 +88,7 @@ public abstract class MainCommand implements CommandExecutor, Flushable {
         }
 
         pc.setExecutor(this);
-        pc.setTabCompleter(this::getTabCompleter); // TODO test tab completer
+        pc.setTabCompleter(this::getTabCompleter);
 
         registerSubCommands();
         plugin.getCommands().add(this);

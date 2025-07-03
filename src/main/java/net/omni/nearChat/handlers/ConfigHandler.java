@@ -16,6 +16,8 @@ public class ConfigHandler extends ConfigAbstract {
     public void initialize() {
         flush();
 
+        loadValues(plugin.getDBConfigHandler());
+
         // load messages to cache
         builder
                 .fromConfig()
@@ -25,7 +27,7 @@ public class ConfigHandler extends ConfigAbstract {
 
                 .load("log-messages", ValueType.BOOLEAN, true)
                 .load("delay-time", ValueType.INT, 3)
-                .load("delay", ValueType.INT, true)
+                .load("delay", ValueType.BOOLEAN, true)
 
                 .fromPlugin()
                 .load("plugin_name", ValueType.PLUGIN_NAME, "N/A")
@@ -50,10 +52,6 @@ public class ConfigHandler extends ConfigAbstract {
                 .toSave("log-messages", ValueType.BOOLEAN)
 
                 .save();
-    }
-
-    public void setDatabase(OMCDatabase.Type type) {
-        builder.toSave("database-type", ValueType.STRING, ValueDef.from(type.getLabel())).save();
     }
 
     public int getDelayTime() {

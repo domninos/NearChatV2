@@ -29,6 +29,7 @@ public class DatabaseSubCommand extends SubCommand implements Flushable {
         if (args.length == 1) {
             try {
                 // reload before accessing config.
+                plugin.getDBConfigHandler().reload();
                 plugin.getOMCConfig().reload();
 
                 if (plugin.getDatabaseHandler().connect())
@@ -74,8 +75,8 @@ public class DatabaseSubCommand extends SubCommand implements Flushable {
                         // reload before accessing config.
                         plugin.getPlayerManager().removeSwitching(name);
 
-                        plugin.getConfigHandler().setDatabase(type);
-                        plugin.getOMCConfig().reload();
+                        plugin.getDBConfigHandler().setDatabase(type);
+                        plugin.getDBConfigHandler().reload();
 
                         plugin.sendMessage(sender, plugin.getDBMessageHandler().getDBTry());
 

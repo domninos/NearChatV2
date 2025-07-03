@@ -1,9 +1,9 @@
 package net.omni.nearChat.commands;
 
+import net.omc.config.value.ValueDef;
 import net.omc.database.OMCDatabase;
 import net.omni.nearChat.NearChatPlugin;
 import net.omni.nearChat.commands.subcommands.*;
-import net.omni.nearChat.handlers.MessageHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -36,10 +36,10 @@ public class NearChatCommand extends MainCommand {
     @Override
     public List<String> getTabCompleter(CommandSender sender, Command command, String label, String[] args) {
         if (subCommands.isEmpty())
-            return MessageHandler.EMPTY_LIST;
+            return ValueDef.EMPTY_LIST;
 
         if (!sender.hasPermission(getPermission()))
-            return MessageHandler.EMPTY_LIST;
+            return ValueDef.EMPTY_LIST;
 
         List<String> completer = new ArrayList<>();
         List<String> collection = new ArrayList<>();

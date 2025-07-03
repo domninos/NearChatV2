@@ -93,18 +93,24 @@ public final class NearChatPlugin extends OMCPlugin implements Flushable {
 
     @Override
     public void onEnable() {
-        this.gitManager = new GitManager(this);
-
-        versionHandler.checkForUpdates();
-
         this.messageConfig = new OMCConfig(this, "messages.yml", true);
         this.nearConfig = new OMCConfig(this, "config.yml", true);
 
         getDBConfigHandler().load(this.nearConfig);
+        getDBConfigHandler().initialize();
+
         configHandler.load(nearConfig);
+        configHandler.initialize();
 
         getDBMessageHandler().load(this.messageConfig);
+        getDBMessageHandler().initialize();
+
         messageHandler.load(messageConfig);
+        messageHandler.initialize();
+
+        this.gitManager = new GitManager(this);
+
+        versionHandler.checkForUpdates();
 
         this.libraryHandler = OMCApi.getInstance().getLibraryHandler(this);
         libraryHandler.setLibraryPath("net{}omni{}nearChat{}libs");
@@ -150,7 +156,6 @@ public final class NearChatPlugin extends OMCPlugin implements Flushable {
         return messageHandler;
     }
 
-
     public ConfigHandler getConfigHandler() {
         return configHandler;
     }
@@ -192,6 +197,11 @@ public final class NearChatPlugin extends OMCPlugin implements Flushable {
     }
 
     @Override
+    public String getPrefix() {
+        return getMessageHandler().getPrefix();
+    }
+
+    @Override
     public String getNetworkPrefix() {
         return "OMCN";
     }
@@ -219,6 +229,11 @@ public final class NearChatPlugin extends OMCPlugin implements Flushable {
         return this.databaseHandler;
     }
 
+    @Override
+    public void stopLibraryExecutor() {
+        getLibraryHandler().stopExecutor();
+    }
+
     public OMCPlugin asOMC() {
         return this;
     }
@@ -243,6 +258,7 @@ public final class NearChatPlugin extends OMCPlugin implements Flushable {
 
         brokerManager.flush();
 
+        configHandler.flush();
         messageHandler.flush();
 
         Bukkit.getScheduler().cancelTasks(this);

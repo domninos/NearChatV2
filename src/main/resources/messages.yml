@@ -25,7 +25,21 @@ wait_delay: "&cYou must wait %delay% to chat in NearChat." # no need to put in s
 delay_switch_on: "&aSuccessfully enabled delay."
 delay_switch_off: "&cSuccessfully disabled delay."
 delay_set: "&aSuccessfully set delay to %delay% seconds."
-
+db_connected: '[%db_type%] &aSuccessfully connected to database!'
+db_connected_console: '[%db_type%] &aSuccessfully connected to: &3%host%'
+db_switch_warning: '&c&l&oWARNING! &cMay cause data inconsistency. This command is discouraged. Stop the server and reconfigure config.yml. Run this command again to confirm database switch.'
+db_switch_arg: '&aAvailable databases: %databases%.'
+db_disconnected: '[%db_type%] &aDatabase disconnected.'
+db_error_credentials_not_found: 'Database information not found in config.yml. Will not use database...'
+db_error_connect_unsuccessful: '[%db_type%] &cNot successful.'
+db_error_connect_disabled: '[%db_type%] &cCould not connect to database because database is disabled.'
+db_error_connect_already: '[%db_type%] &cCould not connect to database because database is already enabled.'
+db_saved: '[%db_type%] &aSaved database.'
+db_try: '&aTrying to connect..'
+db_init: '&aInitializing &7%db_type%'
+db_try_save: '[%db_type%] &cTrying to save database.. (processing %updates% updates)'
+library_loaded: '&aLoaded %library% libraries.'
+library_downloading: '&aDownloading libraries. Please wait for a few seconds.'
 
 
 
