@@ -63,7 +63,7 @@ public class MessageHandler extends ConfigAbstract {
                         "",
                         "<nearchat.db.switch> &7Available Databases: %databases%",
                         "",
-                        "&bDISCORD: discord.gg/nearchat",
+                        "&bDISCORD: discord.gg/fM8X9JTuaN",
                         "",
                         "&6%plugin_name% running %plugin_version% for MC %plugin_mc_version%",
                         "&7-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"

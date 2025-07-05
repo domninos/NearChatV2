@@ -11,10 +11,8 @@ import net.omni.nearChat.commands.NearChatCommand;
 import net.omni.nearChat.handlers.ConfigHandler;
 import net.omni.nearChat.handlers.DatabaseHandler;
 import net.omni.nearChat.handlers.MessageHandler;
-import net.omni.nearChat.handlers.VersionHandler;
 import net.omni.nearChat.listeners.NCPlayerListener;
 import net.omni.nearChat.managers.BrokerManager;
-import net.omni.nearChat.managers.GitManager;
 import net.omni.nearChat.managers.PAPIManager;
 import net.omni.nearChat.managers.PlayerManager;
 import org.bukkit.Bukkit;
@@ -33,11 +31,11 @@ public final class NearChatPlugin extends OMCPlugin implements Flushable {
     private final ConfigHandler configHandler;
     private final MessageHandler messageHandler;
     private final OMCDatabaseHandler databaseHandler;
-    private final VersionHandler versionHandler;
 
     private PlayerManager playerManager;
     private BrokerManager brokerManager;
-    private GitManager gitManager;
+
+    private final PAPIManager papiManager;
 
 
     private LibraryHandler libraryHandler;
@@ -46,12 +44,11 @@ public final class NearChatPlugin extends OMCPlugin implements Flushable {
         this.databaseHandler = new DatabaseHandler(this);
         this.messageHandler = new MessageHandler(this);
         this.configHandler = new ConfigHandler(this);
-        this.versionHandler = new VersionHandler(this);
+        this.papiManager = new PAPIManager(this);
     }
 
     /*
     TODO:
-        *
         * RETEST ALL DATABASE
         *
         * database to implement: mysql, mariadb, mongodb
@@ -86,7 +83,6 @@ public final class NearChatPlugin extends OMCPlugin implements Flushable {
         *
         *
         *
-        * make messages on MessageHandler follow polymorphism (or store objects in map) [not sure if efficient or necessary]
         * Add /nearchat gui
           * Possibly create inventory handler. (necessary ?) [FUTURE]
      */
@@ -108,9 +104,7 @@ public final class NearChatPlugin extends OMCPlugin implements Flushable {
         messageHandler.load(messageConfig);
         messageHandler.initialize();
 
-        this.gitManager = new GitManager(this);
-
-        versionHandler.checkForUpdates();
+        getVersionManager().checkForUpdates("NearChatV2");
 
         this.libraryHandler = OMCApi.getInstance().getLibraryHandler(this);
         libraryHandler.setLibraryPath("net{}omni{}nearChat{}libs");
@@ -164,18 +158,8 @@ public final class NearChatPlugin extends OMCPlugin implements Flushable {
         return playerManager;
     }
 
-
-    public VersionHandler getVersionHandler() {
-        return versionHandler;
-    }
-
-
     public BrokerManager getBrokerManager() {
         return brokerManager;
-    }
-
-    public GitManager getGitManager() {
-        return gitManager;
     }
 
     public List<MainCommand> getCommands() {
@@ -234,10 +218,6 @@ public final class NearChatPlugin extends OMCPlugin implements Flushable {
         getLibraryHandler().stopExecutor();
     }
 
-    public OMCPlugin asOMC() {
-        return this;
-    }
-
     @Override
     public void flush() {
         nearConfig.save();
@@ -273,11 +253,8 @@ public final class NearChatPlugin extends OMCPlugin implements Flushable {
     }
 
     public void checkPapi() {
-        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-            PAPIManager papiManager = new PAPIManager(this);
-
+        if (papiManager.isEnabled())
             papiManager.checkPapi();
-        }
     }
 
     // TODO support HolographicDisplaysAPI (only send holograms to players nearby and has nearchat)

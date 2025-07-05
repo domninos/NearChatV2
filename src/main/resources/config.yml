@@ -1,7 +1,10 @@
+# FOR SUPPORT, PLEASE JOIN OUR DISCORD SERVER:
+# discord.gg/fM8X9JTuaN
+
 # NOTE: leave empty if you want to use a flat-file database (stores data to a .txt file) or sqlite (stores data to a .db file)
 host: ""
 port: ""
-database-name: "" # only for SQL type database [POSTGRESQL, MySQL]
+database-name: "" # only for SQL type database [PostgreSQL, MySQL]
 user: ""
 password: ""
 

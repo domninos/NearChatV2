@@ -1,5 +1,6 @@
 package net.omni.nearChat.listeners;
 
+import me.clip.placeholderapi.PlaceholderAPI;
 import net.omni.nearChat.NearChatPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -35,11 +36,11 @@ public class NCPlayerListener implements Listener {
             return;
         }
 
-        if (plugin.getVersionHandler().hasUpdate()) {
+        if (plugin.getVersionManager().hasUpdate()) {
             if (player.isOp() || player.hasPermission("nearchat.notify")) {
                 // if player has permission for update notifications
                 plugin.sendMessage(player, "&eThere is an update available! Please update to "
-                        + plugin.getVersionHandler().getVersionUpdate());
+                        + plugin.getVersionManager().getVersionUpdate());
             }
         }
 
@@ -116,8 +117,15 @@ public class NCPlayerListener implements Listener {
             format = format.replace("%prefix%", plugin.getMessageHandler().getPrefix());
         if (format.contains("%player%"))
             format = format.replace("%player%", player.getDisplayName());
-        if (format.contains("%chat%"))
-            format = format.replace("%chat%", event.getMessage());
+
+        if (plugin.isEnabled()) {
+            if (PlaceholderAPI.containsPlaceholders(format)) {
+                format = PlaceholderAPI.setPlaceholders(player, format);
+            }
+        } else { // no PAPI
+            if (format.contains("%chat%"))
+                format = format.replace("%chat%", event.getMessage());
+        }
 
         format = plugin.translate(format);
 

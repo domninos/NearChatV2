@@ -18,8 +18,12 @@ public class PAPIManager {
         this.plugin = plugin;
     }
 
+    public boolean isEnabled() {
+        return Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI");
+    }
+
     public void checkPapi() {
-        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI"))
+        if (isEnabled())
             new NearChatExpansion(plugin).register();
     }
 
@@ -42,7 +46,7 @@ public class PAPIManager {
 
         @Override
         public @NotNull String getVersion() {
-            return plugin.getVersionHandler().getCurrentVersion();
+            return plugin.getVersionManager().getCurrentVersion();
         }
 
         @Override
@@ -54,7 +58,7 @@ public class PAPIManager {
 
                 case "host" -> {
                     if (!plugin.getDatabaseHandler().isSQL())
-                        return null;
+                        return "N/A";
 
                     return ((ISQLDatabase) plugin.getDatabaseHandler().getAdapter().getDatabase()).getHost();
                 }
@@ -99,11 +103,11 @@ public class PAPIManager {
                 }
 
                 default -> {
-                    return null;
+                    return "N/A";
                 }
             }
 
-            return null;
+            return "N/A";
         }
 
         @Override
