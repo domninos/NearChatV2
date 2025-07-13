@@ -1,14 +1,13 @@
 package net.omni.nearChat.commands.subcommands;
 
 import net.omc.database.OMCDatabase;
-import net.omc.util.Flushable;
 import net.omni.nearChat.NearChatPlugin;
 import net.omni.nearChat.commands.MainCommand;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public class DatabaseSubCommand extends SubCommand implements Flushable {
+public class DatabaseSubCommand extends SubCommand {
 
     public DatabaseSubCommand(NearChatPlugin plugin, MainCommand mainCommand) {
         super(plugin, mainCommand);
@@ -40,6 +39,9 @@ public class DatabaseSubCommand extends SubCommand implements Flushable {
                 return true;
             } catch (Exception e) {
                 plugin.error("Something went wrong loading database: ", e);
+
+                if (sender instanceof Player)
+                    plugin.sendMessage(sender, "Could not setup database. Please check the console for more information.");
             }
         } else {
             if (args[1].equalsIgnoreCase("switch")) {
@@ -113,6 +115,9 @@ public class DatabaseSubCommand extends SubCommand implements Flushable {
                         return true;
                     } catch (Exception e) {
                         plugin.error("Something went wrong loading database: ", e);
+
+                        if (sender instanceof Player)
+                            plugin.sendMessage(sender, "Could not setup database. Please check the console for more information.");
                     }
 
                 }
@@ -133,9 +138,5 @@ public class DatabaseSubCommand extends SubCommand implements Flushable {
     @Override
     public String getPermission() {
         return "nearchat.db";
-    }
-
-    @Override
-    public void flush() {
     }
 }

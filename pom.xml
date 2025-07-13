@@ -110,7 +110,7 @@
             <groupId>net.omc</groupId>
             <artifactId>OMCApi</artifactId>
             <version>1.0.0</version>
-            <scope>compile</scope>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>me.clip</groupId>

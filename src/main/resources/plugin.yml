@@ -4,7 +4,8 @@ main: net.omni.nearChat.NearChatPlugin
 api-version: '1.13' # for testing paper spark || performance
 authors: [ domninos ]
 softdepend: [ "PlaceholderAPI" ]
-description: A simple chat plugin where players can create their own chat groups. They can also turn on settings to where they can only receive messages from within X blocks away.
+depend: [ "OMCApi" ]
+description: A simple chat plugin where players can talk to other players nearby. They can also turn on settings to where they can only receive messages from within X blocks away.
 commands:
   nearchat:
     usage: /<command>

@@ -26,6 +26,7 @@ public class NearChatCommand extends MainCommand {
         subCommands.add(new DatabaseSubCommand(plugin, this));
         subCommands.add(new ReloadSubCommand(plugin, this));
         subCommands.add(new DelaySubCommand(plugin, this));
+        subCommands.add(new LicenseSubCommand(plugin, this));
     }
 
     @Override

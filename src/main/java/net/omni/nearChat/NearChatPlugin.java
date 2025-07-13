@@ -5,6 +5,7 @@ import net.omc.OMCPlugin;
 import net.omc.config.OMCConfig;
 import net.omc.handlers.LibraryHandler;
 import net.omc.handlers.OMCDatabaseHandler;
+import net.omc.managers.LicenseManager;
 import net.omc.util.Flushable;
 import net.omni.nearChat.commands.MainCommand;
 import net.omni.nearChat.commands.NearChatCommand;
@@ -32,12 +33,10 @@ public final class NearChatPlugin extends OMCPlugin implements Flushable {
     private final MessageHandler messageHandler;
     private final OMCDatabaseHandler databaseHandler;
 
+    private LicenseManager licenseManager;
     private PlayerManager playerManager;
     private BrokerManager brokerManager;
-
     private final PAPIManager papiManager;
-
-
     private LibraryHandler libraryHandler;
 
     public NearChatPlugin() {
@@ -53,7 +52,6 @@ public final class NearChatPlugin extends OMCPlugin implements Flushable {
         *
         * database to implement: mysql, mariadb, mongodb
         *
-        * check for sqlite driver. if not found, revert to flat-file
         *  - make sure to include flat-file is not encouraged as it is resource intensive
         *
         *
@@ -66,15 +64,10 @@ public final class NearChatPlugin extends OMCPlugin implements Flushable {
         *
         *
         *
-        *
-        *
         * block censored/blacklisted words (research for more accuracy)
         * add admin command to inspect nearchat of player (get all messages sent from and to player)
         *
         *
-        *
-        * Make all messages on messages.yml.
-        * Redo messages (make sure to replace on MessageHandler.java)
         *
         *
         *
@@ -104,12 +97,14 @@ public final class NearChatPlugin extends OMCPlugin implements Flushable {
         messageHandler.load(messageConfig);
         messageHandler.initialize();
 
-        getVersionManager().checkForUpdates("NearChatV2");
+        this.licenseManager = getLicenseManager();
+
+        checkLicense("nearchat");
+        checkForUpdates("NearChatV2");
 
         this.libraryHandler = OMCApi.getInstance().getLibraryHandler(this);
         libraryHandler.setLibraryPath("net{}omni{}nearChat{}libs");
         libraryHandler.ensureMainLibraries();
-
 
         this.brokerManager = new BrokerManager(this);
 

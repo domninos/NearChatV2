@@ -15,7 +15,6 @@ nearchat_disabled_player: "&cDisabled NearChat for player %player%"
 nearchat_player_not_found: "&cCould not find %player%"
 no_permission: "&cYou do not have permission to use this command."
 reloaded_config: "&aReloaded config and messages.yml"
-created_file: "&aSuccessfully created %file_name%" # _MAY_ produce the default value
 broker_stop: "[%db_type%] &cDatabase disabled. Cancelling %broker% broker.."
 broker_empty_cancel: "[%db_type%] &cThere are no players using nearchat. Cancelled the %broker% broker."
 broker_cancel: "&cCancelled the %broker% broker."
